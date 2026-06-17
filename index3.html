@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Materiały dydaktyczne</title>
+
+<style>
+body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    background:linear-gradient(135deg,#eef6ff,#f7f9fc);
+    color:#1f2937;
+}
+
+.container{
+    max-width:1100px;
+    margin:auto;
+    padding:30px 20px;
+}
+
+h1{
+    text-align:center;
+    margin-bottom:10px;
+}
+
+.subtitle{
+    text-align:center;
+    color:#6b7280;
+    margin-bottom:35px;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+    gap:20px;
+}
+
+.card{
+    background:white;
+    border-radius:20px;
+    padding:25px;
+    text-decoration:none;
+    color:inherit;
+    box-shadow:0 8px 20px rgba(0,0,0,0.08);
+    transition:0.2s;
+}
+
+.card:hover{
+    transform:translateY(-5px);
+}
+
+.icon{
+    font-size:42px;
+}
+
+.title{
+    font-size:20px;
+    font-weight:700;
+    margin-top:10px;
+}
+
+.desc{
+    margin-top:10px;
+    color:#6b7280;
+    line-height:1.5;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>📚 Materiały dydaktyczne</h1>
+<p class="subtitle">
+Wybierz aktywność.
+</p>
+
+<div class="grid">
+
+<a class="card" href="reakcje.html">
+<div class="icon">🧪</div>
+<div class="title">Reakcje charakterystyczne</div>
+<div class="desc">
+Interaktywny symulator reakcji charakterystycznych.
+</div>
+</a>
+
+<a class="card" href="redoks.html">
+<div class="icon">⚡</div>
+<div class="title">Redoks</div>
+<div class="desc">
+Bilans jonowo-elektronowy i reakcje utleniania-redukcji.
+</div>
+</a>
+
+<a class="card" href="fenole.html">
+<div class="icon">🧬</div>
+<div class="title">Fenole</div>
+<div class="desc">
+Powtórka właściwości i reakcji fenoli.
+</div>
+</a>
+
+<a class="card" href="escape_room.html">
+<div class="icon">🔍</div>
+<div class="title">Escape Room</div>
+<div class="desc">
+Chemiczne zagadki i zadania problemowe.
+</div>
+</a>
+
+</div>
+
+</div>
+
+</body>
+</html>
