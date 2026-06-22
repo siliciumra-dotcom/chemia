@@ -1,1 +1,121 @@
 
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chemia</title>
+
+<style>
+body{
+    margin:0;
+    padding:40px 20px;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    background:linear-gradient(135deg,#eef6ff,#f7f9fc);
+    color:#1f2937;
+}
+
+.container{
+    max-width:900px;
+    margin:auto;
+}
+
+h1{
+    text-align:center;
+    margin-bottom:10px;
+    font-size:42px;
+}
+
+.subtitle{
+    text-align:center;
+    color:#6b7280;
+    margin-bottom:40px;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+    gap:25px;
+}
+
+.card{
+    background:white;
+    border-radius:24px;
+    padding:30px;
+    text-decoration:none;
+    color:inherit;
+    box-shadow:0 10px 25px rgba(0,0,0,.08);
+    transition:.2s;
+}
+
+.card:hover{
+    transform:translateY(-5px);
+}
+
+.icon{
+    font-size:48px;
+    margin-bottom:15px;
+}
+
+.title{
+    font-size:26px;
+    font-weight:700;
+    margin-bottom:10px;
+}
+
+.desc{
+    color:#6b7280;
+    line-height:1.5;
+}
+
+.back{
+    margin-top:30px;
+    text-align:center;
+}
+
+.back a{
+    color:#2563eb;
+    text-decoration:none;
+    font-weight:600;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>🧪 Chemia</h1>
+
+<div class="subtitle">
+Materiały interaktywne do chemii
+</div>
+
+<div class="grid">
+
+<a class="card" href="reakcje.html">
+    <div class="icon">⚗️</div>
+    <div class="title">Reakcje charakterystyczne</div>
+    <div class="desc">
+        Wersja do samodzielnego rozwiązywania.
+    </div>
+</a>
+
+<a class="card" href="reakcje_odp.html">
+    <div class="icon">📖</div>
+    <div class="title">Reakcje charakterystyczne – odpowiedzi</div>
+    <div class="desc">
+        Wersja z rozwiązaniami i wyjaśnieniami.
+    </div>
+</a>
+
+</div>
+
+<div class="back">
+    <a href="../index.html">⬅ Powrót do strony głównej</a>
+</div>
+
+</div>
+
+</body>
+</html>
