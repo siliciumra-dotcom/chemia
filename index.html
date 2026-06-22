@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="pl">
+<html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Materiały dydaktyczne</title>
+<title>Español</title>
 
 <style>
 body{
@@ -15,7 +15,7 @@ body{
 }
 
 .container{
-    max-width:1000px;
+    max-width:900px;
     margin:auto;
 }
 
@@ -34,13 +34,14 @@ h1{
 .grid{
     display:grid;
     grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
-    gap:25px;
+    gap:20px;
 }
 
 .card{
+    display:block;
     background:white;
     border-radius:24px;
-    padding:30px;
+    padding:28px;
     text-decoration:none;
     color:inherit;
     box-shadow:0 10px 25px rgba(0,0,0,.08);
@@ -52,19 +53,30 @@ h1{
 }
 
 .icon{
-    font-size:48px;
-    margin-bottom:15px;
+    font-size:42px;
+    margin-bottom:10px;
 }
 
 .title{
-    font-size:28px;
+    font-size:24px;
     font-weight:700;
-    margin-bottom:10px;
+    margin-bottom:8px;
 }
 
 .desc{
     color:#6b7280;
     line-height:1.5;
+}
+
+.back{
+    margin-top:30px;
+    text-align:center;
+}
+
+.back a{
+    text-decoration:none;
+    color:#2563eb;
+    font-weight:700;
 }
 </style>
 </head>
@@ -73,30 +85,50 @@ h1{
 
 <div class="container">
 
-<h1>📚 Materiały dydaktyczne</h1>
+<h1>🇪🇸 Español</h1>
 
 <div class="subtitle">
-Wybierz przedmiot
+Juegos y materiales interactivos
 </div>
 
 <div class="grid">
 
-<a class="card" href="chemia/">
-    <div class="icon">🧪</div>
-    <div class="title">Chemia</div>
+<a class="card" href="tiempos.html">
+    <div class="icon">⏳</div>
+    <div class="title">Tiempos verbales</div>
     <div class="desc">
-        Reakcje charakterystyczne, mechanizmy reakcji, zadania i gry interaktywne.
+        Juegos para practicar los tiempos verbales.
     </div>
 </a>
 
-<a class="card" href="hiszpański/">
-    <div class="icon">🇪🇸</div>
-    <div class="title">Hiszpański</div>
+<a class="card" href="adjetivos.html">
+    <div class="icon">🎭</div>
+    <div class="title">Adjetivos</div>
     <div class="desc">
-        Gry językowe, czasy gramatyczne, słownictwo i materiały interaktywne.
+        ¿Quién o qué soy? Adivina usando descripciones y pistas.
     </div>
 </a>
 
+<a class="card" href="#">
+    <div class="icon">🎒</div>
+    <div class="title">Vocabulario</div>
+    <div class="desc">
+        Próximamente.
+    </div>
+</a>
+
+<a class="card" href="#">
+    <div class="icon">🎮</div>
+    <div class="title">Juegos</div>
+    <div class="desc">
+        Próximamente.
+    </div>
+</a>
+
+</div>
+
+<div class="back">
+    <a href="../index.html">⬅ Volver a la página principal</a>
 </div>
 
 </div>
