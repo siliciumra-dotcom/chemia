@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>¿Quién o qué soy? — Juego de adjetivos</title>
+
+<style>
+:root{
+    --dark:#1f2937;
+    --muted:#6b7280;
+    --white:#ffffff;
+    --blue:#dbeafe;
+    --green:#dcfce7;
+    --yellow:#fef3c7;
+    --purple:#ede9fe;
+    --orange:#ffedd5;
+    --red:#fee2e2;
+    --success:#dcfce7;
+}
+*{box-sizing:border-box}
+body{
+    margin:0;
+    min-height:100vh;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    background:
+        radial-gradient(circle at top left, #fff7ed 0, transparent 35%),
+        radial-gradient(circle at bottom right, #dbeafe 0, transparent 40%),
+        linear-gradient(135deg,#f8fafc,#eef6ff);
+    color:var(--dark);
+    padding:30px;
+}
+.container{max-width:1050px;margin:auto}
+.header{text-align:center;margin-bottom:24px}
+h1{font-size:clamp(34px,5vw,56px);margin:0 0 8px;letter-spacing:-1px}
+.subtitle{color:var(--muted);font-size:18px;margin:0}
+.top-panel,.controls{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:12px;
+    flex-wrap:wrap;
+}
+.top-panel{margin:25px 0}
+select,button,input{
+    border:2px solid var(--dark);
+    border-radius:16px;
+    padding:12px 18px;
+    font-size:16px;
+    font-weight:800;
+    background:white;
+}
+button{
+    cursor:pointer;
+    box-shadow:0 5px 0 var(--dark);
+    transition:.15s;
+}
+button:hover{transform:translateY(-2px);box-shadow:0 7px 0 var(--dark)}
+button:active{transform:translateY(2px);box-shadow:0 3px 0 var(--dark)}
+.game-card{
+    background:rgba(255,255,255,.94);
+    border:3px solid var(--dark);
+    border-radius:34px;
+    box-shadow:0 18px 45px rgba(15,23,42,.16);
+    overflow:hidden;
+}
+.card-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:14px;
+    flex-wrap:wrap;
+    padding:24px 28px;
+    border-bottom:3px solid var(--dark);
+}
+.category,.points{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    border:2px solid var(--dark);
+    border-radius:999px;
+    padding:10px 18px;
+    font-weight:900;
+}
+.category.personas{background:var(--blue)}
+.category.animales{background:var(--green)}
+.category.objetos{background:var(--yellow)}
+.category.lugares{background:var(--purple)}
+.points{background:var(--orange)}
+.counter{color:var(--muted);font-weight:900}
+.progress-wrap{
+    width:100%;
+    height:14px;
+    background:#e5e7eb;
+    border-top:3px solid var(--dark);
+    border-bottom:3px solid var(--dark);
+}
+.progress{
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg,#60a5fa,#34d399);
+    transition:.25s;
+}
+.card-body{
+    padding:34px;
+    display:grid;
+    gap:22px;
+}
+.question{text-align:center}
+.question-mark{font-size:58px;margin-bottom:8px}
+.question h2{margin:0;font-size:clamp(30px,4vw,46px)}
+.description-box{
+    background:#f8fafc;
+    border:3px solid var(--dark);
+    border-radius:24px;
+    padding:22px;
+    text-align:center;
+}
+.description-label{
+    font-size:14px;
+    font-weight:900;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:.8px;
+    margin-bottom:8px;
+}
+.description{
+    font-size:clamp(22px,3vw,31px);
+    font-weight:800;
+    line-height:1.3;
+}
+.hints{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+    gap:15px;
+}
+.hint{
+    min-height:76px;
+    border:2px dashed #cbd5e1;
+    border-radius:22px;
+    background:#f8fafc;
+    color:#94a3b8;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:12px;
+    font-size:22px;
+    font-weight:900;
+    transition:.25s;
+}
+.hint.visible{
+    color:#065f46;
+    background:#ecfdf5;
+    border:2px solid var(--dark);
+    animation:pop .25s ease-out;
+}
+@keyframes pop{from{transform:scale(.92);opacity:.2}to{transform:scale(1);opacity:1}}
+.answer-zone{
+    display:grid;
+    grid-template-columns:1fr auto auto;
+    gap:12px;
+}
+#studentAnswer{
+    width:100%;
+    font-size:20px;
+    font-weight:800;
+}
+.feedback{
+    display:none;
+    text-align:center;
+    font-size:24px;
+    font-weight:900;
+    border:3px solid var(--dark);
+    border-radius:20px;
+    padding:16px;
+}
+.feedback.ok{display:block;background:var(--success);color:#166534}
+.feedback.no{display:block;background:var(--red);color:#991b1b}
+.answer{
+    display:none;
+    text-align:center;
+    font-size:clamp(32px,5vw,54px);
+    font-weight:1000;
+    color:#7c2d12;
+    background:#ffedd5;
+    border:3px solid #7c2d12;
+    border-radius:24px;
+    padding:22px;
+    animation:pop .25s ease-out;
+}
+.answer.visible{display:block}
+.controls{padding:0 34px 34px}
+.footer{text-align:center;color:var(--muted);margin-top:18px;line-height:1.5}
+.back{text-align:center;margin-top:20px}
+.back a{color:#2563eb;font-weight:800;text-decoration:none}
+@media(max-width:760px){
+    body{padding:16px}
+    .card-body{padding:22px}
+    .controls{padding:0 22px 24px}
+    .card-top{padding:18px}
+    .answer-zone{grid-template-columns:1fr}
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<div class="header">
+    <h1>🎭 ¿Quién o qué soy?</h1>
+    <p class="subtitle">Lee la descripción general. Escribe tu respuesta o usa las pistas-adjetivos.</p>
+</div>
+
+<div class="top-panel">
+    <select id="categoryFilter" onchange="changeCategory()">
+        <option value="todos">Todas las categorías</option>
+        <option value="Personas">👩 Personas</option>
+        <option value="Animales">🐶 Animales</option>
+        <option value="Objetos">📱 Objetos</option>
+        <option value="Lugares">🌍 Lugares</option>
+    </select>
+    <button onclick="shuffleCards()">🔀 Mezclar</button>
+</div>
+
+<div class="game-card">
+    <div class="card-top">
+        <div id="category" class="category">Categoría</div>
+        <div id="points" class="points">🏆 5 puntos</div>
+        <div id="counter" class="counter">1 / 40</div>
+    </div>
+
+    <div class="progress-wrap">
+        <div id="progress" class="progress"></div>
+    </div>
+
+    <div class="card-body">
+        <div class="question">
+            <div class="question-mark">❓</div>
+            <h2>¿Quién o qué soy?</h2>
+        </div>
+
+        <div class="description-box">
+            <div class="description-label">Descripción</div>
+            <div id="description" class="description"></div>
+        </div>
+
+        <div class="answer-zone">
+            <input id="studentAnswer" type="text" placeholder="Escribe la respuesta aquí..." onkeydown="answerKey(event)">
+            <button onclick="checkAnswer()">Comprobar</button>
+            <button onclick="clearAnswer()">Borrar</button>
+        </div>
+
+        <div id="feedback" class="feedback"></div>
+
+        <div class="hints">
+            <div id="hint0" class="hint">⭐ Pista 1</div>
+            <div id="hint1" class="hint">⭐ Pista 2</div>
+            <div id="hint2" class="hint">⭐ Pista 3</div>
+            <div id="hint3" class="hint">⭐ Pista 4</div>
+        </div>
+
+        <div id="answer" class="answer"></div>
+    </div>
+
+    <div class="controls">
+        <button onclick="prevCard()">⬅ Anterior</button>
+        <button onclick="showHint()">💡 Mostrar pista</button>
+        <button onclick="showAnswer()">✅ Mostrar respuesta</button>
+        <button onclick="nextCard()">Siguiente ➡</button>
+    </div>
+</div>
+
+<div class="footer">
+    Puntuación: descripción sola = 5 puntos, 1 pista = 4, 2 pistas = 3, 3 pistas = 2, 4 pistas = 1, respuesta mostrada = 0.<br>
+    Teclado: → siguiente, ← anterior, espacio = pista. Enter en el campo = comprobar.
+</div>
+
+<div class="back">
+    <a href="index.html">⬅ Volver a Hiszpański</a>
+</div>
+
+</div>
+
+<script>
+const allCards = [
+{cat:"Personas",answer:"Un profesor",description:"Es una persona que suele formar parte de la vida de muchas personas.",hints:["paciente","trabajador","inteligente","exigente"]},
+{cat:"Personas",answer:"Un médico",description:"Es una persona que puede ser importante en momentos difíciles.",hints:["responsable","atento","serio","preparado"]},
+{cat:"Personas",answer:"Una actriz",description:"Es una persona que muchas veces aparece delante del público.",hints:["creativa","elegante","famosa","talentosa"]},
+{cat:"Personas",answer:"Un futbolista",description:"Es una persona relacionada con una actividad muy popular.",hints:["rápido","fuerte","competitivo","deportivo"]},
+{cat:"Personas",answer:"Una abuela",description:"Es una persona que puede tener un papel importante en una familia.",hints:["amable","paciente","cariñosa","sabia"]},
+{cat:"Personas",answer:"Un cantante",description:"Es una persona que puede emocionar a otras personas.",hints:["creativo","artístico","famoso","musical"]},
+{cat:"Personas",answer:"Un estudiante",description:"Es una persona que está en una etapa de aprendizaje.",hints:["joven","curioso","trabajador","responsable"]},
+{cat:"Personas",answer:"Un policía",description:"Es una persona que suele estar relacionada con la seguridad.",hints:["serio","responsable","valiente","fuerte"]},
+{cat:"Personas",answer:"Un cocinero",description:"Es una persona que trabaja con algo que todos necesitamos.",hints:["creativo","organizado","rápido","talentoso"]},
+{cat:"Personas",answer:"Un influencer",description:"Es una persona que está muy presente en la vida digital.",hints:["moderno","popular","creativo","famoso"]},
+
+{cat:"Animales",answer:"Un perro",description:"Es un ser vivo que muchas personas conocen muy bien.",hints:["activo","juguetón","cariñoso","fiel"]},
+{cat:"Animales",answer:"Un gato",description:"Es un ser vivo que muchas personas tienen cerca.",hints:["tranquilo","curioso","elegante","independiente"]},
+{cat:"Animales",answer:"Un tiburón",description:"Es un ser vivo que normalmente vemos solo en imágenes o documentales.",hints:["grande","rápido","fuerte","peligroso"]},
+{cat:"Animales",answer:"Una jirafa",description:"Es un ser vivo que no encontramos normalmente en nuestra ciudad.",hints:["tranquila","grande","elegante","altísima"]},
+{cat:"Animales",answer:"Un león",description:"Es un ser vivo que normalmente no vemos en nuestra vida diaria.",hints:["grande","salvaje","fuerte","majestuoso"]},
+{cat:"Animales",answer:"Un pingüino",description:"Es un animal conocido en muchos países.",hints:["gracioso","pequeño","blanco y negro","adorable"]},
+{cat:"Animales",answer:"Un elefante",description:"Es un ser vivo impresionante para muchas personas.",hints:["grande","fuerte","inteligente","tranquilo"]},
+{cat:"Animales",answer:"Un caballo",description:"Es un ser vivo que ha acompañado a las personas durante mucho tiempo.",hints:["rápido","elegante","fuerte","noble"]},
+{cat:"Animales",answer:"Un mono",description:"Es un ser vivo que muchas personas observan con curiosidad.",hints:["divertido","ágil","curioso","inteligente"]},
+{cat:"Animales",answer:"Un águila",description:"Es un ser vivo que asociamos con libertad.",hints:["rápida","fuerte","salvaje","majestuosa"]},
+
+{cat:"Objetos",answer:"Un móvil",description:"Es un objeto que forma parte de la vida moderna.",hints:["útil","pequeño","portátil","moderno"]},
+{cat:"Objetos",answer:"Una bicicleta",description:"Es un objeto que ayuda a moverse de un lugar a otro.",hints:["práctica","ligera","rápida","ecológica"]},
+{cat:"Objetos",answer:"Un ordenador",description:"Es un objeto que usamos para muchas actividades diferentes.",hints:["útil","moderno","potente","digital"]},
+{cat:"Objetos",answer:"Una mochila",description:"Es un objeto que ayuda a llevar otras cosas.",hints:["práctica","ligera","cómoda","resistente"]},
+{cat:"Objetos",answer:"Un coche",description:"Es un objeto relacionado con el movimiento y la vida cotidiana.",hints:["cómodo","rápido","moderno","caro"]},
+{cat:"Objetos",answer:"Un paraguas",description:"Es un objeto que puede ser muy útil fuera de casa.",hints:["ligero","práctico","resistente","impermeable"]},
+{cat:"Objetos",answer:"Una cámara de fotos",description:"Es un objeto relacionado con momentos importantes.",hints:["pequeña","moderna","creativa","visual"]},
+{cat:"Objetos",answer:"Un reloj",description:"Es un objeto pequeño que puede estar siempre con nosotros.",hints:["útil","preciso","elegante","puntual"]},
+{cat:"Objetos",answer:"Una maleta",description:"Es un objeto que usamos especialmente en algunas situaciones.",hints:["grande","práctica","resistente","pesada"]},
+{cat:"Objetos",answer:"Un libro",description:"Es un objeto que puede abrirnos otros mundos.",hints:["interesante","educativo","largo","útil"]},
+
+{cat:"Lugares",answer:"Una playa",description:"Es un lugar relacionado con el tiempo libre.",hints:["bonita","tranquila","soleada","arenosa"]},
+{cat:"Lugares",answer:"Una ciudad",description:"Es un lugar donde puede pasar de todo.",hints:["grande","moderna","ruidosa","turística"]},
+{cat:"Lugares",answer:"Una montaña",description:"Es un lugar natural que puede impresionar mucho.",hints:["alta","fría","tranquila","impresionante"]},
+{cat:"Lugares",answer:"Un restaurante",description:"Es un lugar donde muchas personas pasan tiempo juntas.",hints:["acogedor","elegante","delicioso","caro"]},
+{cat:"Lugares",answer:"Un hotel",description:"Es un lugar relacionado con estar fuera de casa.",hints:["cómodo","tranquilo","moderno","elegante"]},
+{cat:"Lugares",answer:"Un museo",description:"Es un lugar que puede ser interesante para aprender.",hints:["cultural","histórico","grande","silencioso"]},
+{cat:"Lugares",answer:"Un aeropuerto",description:"Es un lugar relacionado con empezar o terminar algo.",hints:["grande","moderno","internacional","concurrido"]},
+{cat:"Lugares",answer:"Un parque",description:"Es un lugar donde las personas pueden descansar.",hints:["verde","tranquilo","agradable","bonito"]},
+{cat:"Lugares",answer:"Un castillo",description:"Es un lugar que suele despertar la imaginación.",hints:["antiguo","misterioso","histórico","impresionante"]},
+{cat:"Lugares",answer:"Una isla",description:"Es un lugar que muchas personas imaginan como especial.",hints:["tranquila","exótica","pequeña","paradisíaca"]}
+];
+
+let cards=[...allCards];
+let index=0;
+let hintsShown=0;
+let answerShown=false;
+
+function categoryData(cat){
+    if(cat==="Personas") return {text:"👩 Personas", cls:"personas"};
+    if(cat==="Animales") return {text:"🐶 Animales", cls:"animales"};
+    if(cat==="Objetos") return {text:"📱 Objetos", cls:"objetos"};
+    if(cat==="Lugares") return {text:"🌍 Lugares", cls:"lugares"};
+    return {text:cat, cls:""};
+}
+
+function resetCard(){
+    hintsShown=0;
+    answerShown=false;
+    document.getElementById("studentAnswer").value="";
+    const feedback=document.getElementById("feedback");
+    feedback.className="feedback";
+    feedback.textContent="";
+}
+
+function normalize(text){
+    return text.toLowerCase()
+        .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+        .replace(/[¿?¡!.,]/g,"")
+        .replace(/\b(un|una|el|la|los|las)\b/g,"")
+        .replace(/\s+/g," ")
+        .trim();
+}
+
+function calculatePoints(){
+    if(answerShown) return 0;
+    if(hintsShown===0) return 5;
+    if(hintsShown===1) return 4;
+    if(hintsShown===2) return 3;
+    if(hintsShown===3) return 2;
+    return 1;
+}
+
+function render(){
+    const card=cards[index];
+    const cat=categoryData(card.cat);
+    const catEl=document.getElementById("category");
+    catEl.textContent=cat.text;
+    catEl.className="category "+cat.cls;
+
+    document.getElementById("description").textContent=card.description;
+    document.getElementById("answer").textContent=card.answer;
+    document.getElementById("answer").classList.toggle("visible",answerShown);
+    document.getElementById("counter").textContent=(index+1)+" / "+cards.length;
+    document.getElementById("points").textContent="🏆 "+calculatePoints()+" puntos";
+    document.getElementById("progress").style.width=(((index+1)/cards.length)*100)+"%";
+
+    for(let i=0;i<4;i++){
+        const el=document.getElementById("hint"+i);
+        if(i<hintsShown){
+            el.textContent="⭐ "+card.hints[i];
+            el.classList.add("visible");
+        }else{
+            el.textContent="⭐ Pista "+(i+1);
+            el.classList.remove("visible");
+        }
+    }
+}
+
+function showHint(){
+    if(hintsShown<4){
+        hintsShown++;
+        render();
+    }
+}
+
+function showAnswer(){
+    answerShown=true;
+    render();
+}
+
+function checkAnswer(){
+    const user=document.getElementById("studentAnswer").value;
+    const correct=cards[index].answer;
+    const feedback=document.getElementById("feedback");
+
+    if(normalize(user)===normalize(correct)){
+        feedback.className="feedback ok";
+        feedback.textContent="✅ ¡Correcto! Puntos ganados: "+calculatePoints();
+    }else{
+        feedback.className="feedback no";
+        feedback.textContent="❌ Todavía no. Puedes pedir otra pista.";
+    }
+}
+
+function clearAnswer(){
+    document.getElementById("studentAnswer").value="";
+    const feedback=document.getElementById("feedback");
+    feedback.className="feedback";
+    feedback.textContent="";
+}
+
+function answerKey(e){
+    if(e.key==="Enter"){
+        e.preventDefault();
+        checkAnswer();
+    }
+}
+
+function nextCard(){
+    index=(index+1)%cards.length;
+    resetCard();
+    render();
+}
+
+function prevCard(){
+    index=(index-1+cards.length)%cards.length;
+    resetCard();
+    render();
+}
+
+function shuffleCards(){
+    for(let i=cards.length-1;i>0;i--){
+        const j=Math.floor(Math.random()*(i+1));
+        [cards[i],cards[j]]=[cards[j],cards[i]];
+    }
+    index=0;
+    resetCard();
+    render();
+}
+
+function changeCategory(){
+    const value=document.getElementById("categoryFilter").value;
+    cards=value==="todos" ? [...allCards] : allCards.filter(card=>card.cat===value);
+    index=0;
+    resetCard();
+    render();
+}
+
+document.addEventListener("keydown",function(e){
+    if(document.activeElement.id==="studentAnswer") return;
+    if(e.key==="ArrowRight") nextCard();
+    if(e.key==="ArrowLeft") prevCard();
+    if(e.key===" "){
+        e.preventDefault();
+        showHint();
+    }
+});
+
+render();
+</script>
+</body>
+</html>
