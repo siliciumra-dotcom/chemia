@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="pl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Español</title>
+<title>Hiszpański</title>
 
 <style>
 body{
@@ -15,7 +15,7 @@ body{
 }
 
 .container{
-    max-width:1000px;
+    max-width:1100px;
     margin:auto;
 }
 
@@ -32,16 +32,21 @@ h1{
     font-size:18px;
 }
 
+.section-title{
+    font-size:28px;
+    margin:35px 0 20px;
+}
+
 .grid{
     display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
-    gap:24px;
+    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+    gap:22px;
 }
 
 .card{
     display:block;
     background:white;
-    padding:30px;
+    padding:28px;
     border-radius:24px;
     text-decoration:none;
     color:inherit;
@@ -54,12 +59,12 @@ h1{
 }
 
 .icon{
-    font-size:50px;
+    font-size:44px;
     margin-bottom:12px;
 }
 
 .title{
-    font-size:26px;
+    font-size:24px;
     font-weight:700;
     margin-bottom:10px;
 }
@@ -69,8 +74,13 @@ h1{
     line-height:1.5;
 }
 
+.intensive{
+    border:3px solid #f97316;
+    background:#fff7ed;
+}
+
 .back{
-    margin-top:40px;
+    margin-top:45px;
     text-align:center;
 }
 
@@ -86,11 +96,65 @@ h1{
 
 <div class="container">
 
-<h1>🇪🇸 Español</h1>
+<h1>🇪🇸 Hiszpański</h1>
 
 <div class="subtitle">
-Juegos, gramática y vocabulario interactivo
+Materiały interaktywne według poziomu
 </div>
+
+<h2 class="section-title">📚 Poziomy</h2>
+
+<div class="grid">
+
+<a class="card" href="a1/">
+    <div class="icon">🌱</div>
+    <div class="title">A1</div>
+    <div class="desc">
+        Podstawowe słownictwo, pierwsze czasowniki, proste zdania i gry startowe.
+    </div>
+</a>
+
+<a class="card" href="a2/">
+    <div class="icon">🌿</div>
+    <div class="title">A2</div>
+    <div class="desc">
+        Codzienne sytuacje, czasy podstawowe, opisy i prosta komunikacja.
+    </div>
+</a>
+
+<a class="card" href="b1/">
+    <div class="icon">🌳</div>
+    <div class="title">B1</div>
+    <div class="desc">
+        Opowiadanie, argumentowanie, warunki, opinie i dłuższe wypowiedzi.
+    </div>
+</a>
+
+<a class="card" href="b2/">
+    <div class="icon">🚀</div>
+    <div class="title">B2</div>
+    <div class="desc">
+        Debaty, niuanse językowe, zaawansowane struktury i swobodna komunikacja.
+    </div>
+</a>
+
+</div>
+
+<h2 class="section-title">🔥 Program specjalny</h2>
+
+<div class="grid">
+
+<a class="card intensive" href="intensywny/">
+    <div class="icon">🔥</div>
+    <div class="title">Intensywny hiszpański</div>
+    <div class="desc">
+        Materiały do szybkich powtórek, kursów intensywnych i zajęć specjalnych.
+    </div>
+</a>
+
+</div>
+
+<h2 class="section-title">🎮 Gry ogólne</h2>
 
 <div class="grid">
 
@@ -98,7 +162,7 @@ Juegos, gramática y vocabulario interactivo
     <div class="icon">⏳</div>
     <div class="title">Tiempos verbales</div>
     <div class="desc">
-        Presente, pasado, futuro, condicional y mucho más.
+        Gra do ćwiczenia podstawowych czasów.
     </div>
 </a>
 
@@ -106,34 +170,14 @@ Juegos, gramática y vocabulario interactivo
     <div class="icon">🎭</div>
     <div class="title">Adjetivos</div>
     <div class="desc">
-        ¿Quién o qué soy? Descubre la respuesta usando descripciones y pistas.
-    </div>
-</a>
-
-<a class="card" href="#">
-    <div class="icon">📚</div>
-    <div class="title">Vocabulario</div>
-    <div class="desc">
-        Juegos de palabras y temas léxicos.
-        <br><br>
-        Próximamente.
-    </div>
-</a>
-
-<a class="card" href="#">
-    <div class="icon">🎮</div>
-    <div class="title">Juegos</div>
-    <div class="desc">
-        Escape rooms, superviviente, pasapalabra y más.
-        <br><br>
-        Próximamente.
+        ¿Quién o qué soy? Opisy i przymiotniki.
     </div>
 </a>
 
 </div>
 
 <div class="back">
-    <a href="../index.html">⬅ Volver a la página principal</a>
+    <a href="../index.html">⬅ Powrót do strony głównej</a>
 </div>
 
 </div>
