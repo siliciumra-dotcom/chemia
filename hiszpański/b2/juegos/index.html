@@ -3,108 +3,46 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Países y ciudades</title>
+<title>B2 - Juegos</title>
 
 <style>
-body{
-    margin:0;
-    padding:40px 20px;
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-    background:linear-gradient(135deg,#fff7ed,#eef6ff);
-    color:#1f2937;
-}
-
-.container{
-    max-width:900px;
-    margin:auto;
-}
-
-.hero{
-    text-align:center;
-    margin-bottom:30px;
-}
-
-.hero h1{
-    font-size:48px;
-    margin-bottom:10px;
-}
-
-.hero p{
-    color:#6b7280;
-    font-size:18px;
-}
-
-.card{
-    background:white;
-    border-radius:24px;
-    padding:30px;
-    text-align:center;
-    box-shadow:0 10px 25px rgba(0,0,0,.08);
-}
-
-.icon{
-    font-size:80px;
-    margin-bottom:15px;
-}
-
-.btn{
-    display:inline-block;
-    margin-top:20px;
-    padding:14px 26px;
-    background:#facc15;
-    color:#1f2937;
-    text-decoration:none;
-    border-radius:14px;
-    font-weight:800;
-}
-
-.back{
-    text-align:center;
-    margin-top:30px;
-}
-
-.back a{
-    text-decoration:none;
-    color:#2563eb;
-    font-weight:700;
-}
+body{margin:0;padding:40px 20px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:linear-gradient(135deg,#fff7ed,#eef6ff);color:#1f2937}
+.container{max-width:1000px;margin:auto}
+h1{text-align:center;font-size:48px;margin-bottom:10px}
+.subtitle{text-align:center;color:#6b7280;margin-bottom:40px;font-size:18px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px}
+.card{display:block;background:white;padding:30px;border-radius:24px;text-decoration:none;color:inherit;box-shadow:0 10px 25px rgba(0,0,0,.08);transition:.2s}
+.card:hover{transform:translateY(-5px)}
+.icon{font-size:48px;margin-bottom:12px}
+.title{font-size:26px;font-weight:700;margin-bottom:10px}
+.desc{color:#6b7280;line-height:1.5}
+.back{text-align:center;margin-top:40px}
+.back a{text-decoration:none;color:#2563eb;font-weight:700}
 </style>
 </head>
 
 <body>
-
 <div class="container">
 
-<div class="hero">
-    <h1>🌍 Países y ciudades</h1>
-    <p>
-        Juego clásico con letras, tiempo y puntuación.
-    </p>
-</div>
+<h1>🎮 Juegos</h1>
+<div class="subtitle">Nivel B2 — elige un juego</div>
 
-<div class="card">
+<div class="grid">
 
-    <div class="icon">🎲</div>
-
-    <h2>Países, ciudades...</h2>
-
-    <p>
-        Consigue una letra y completa todas las categorías antes de que termine el tiempo.
-    </p>
-
-    <a href="juego_ciudades_paises.html" class="btn">
-        ▶️ Empezar juego
-    </a>
+<a class="card" href="ciudades_paises/">
+    <div class="icon">🌍</div>
+    <div class="title">Países y ciudades</div>
+    <div class="desc">
+        Juego clásico de categorías con letras, tiempo y puntuación.
+    </div>
+</a>
 
 </div>
 
 <div class="back">
-    <a href="../index.html">
-        ⬅ Volver a Juegos
-    </a>
+    <a href="../index.html">⬅ Volver a B2</a>
 </div>
 
 </div>
-
 </body>
 </html>
