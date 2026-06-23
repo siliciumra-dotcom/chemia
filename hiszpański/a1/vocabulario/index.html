@@ -3,10 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>La ciudad</title>
+<title>A1 - Vocabulario</title>
 
 <style>
-
 body{
     margin:0;
     padding:40px 20px;
@@ -16,70 +15,63 @@ body{
 }
 
 .container{
-    max-width:1100px;
+    max-width:1000px;
     margin:auto;
 }
 
-.hero{
+h1{
     text-align:center;
-    margin-bottom:30px;
-}
-
-.hero h1{
-    font-size:52px;
+    font-size:46px;
     margin-bottom:10px;
 }
 
-.hero p{
+.subtitle{
+    text-align:center;
     color:#6b7280;
+    margin-bottom:40px;
     font-size:18px;
 }
 
+.grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+    gap:24px;
+}
+
 .card{
-    background:white;
-    border-radius:28px;
-    padding:25px;
-    box-shadow:0 10px 25px rgba(0,0,0,.08);
-    margin-bottom:25px;
-}
-
-.image{
-    width:100%;
-    border-radius:20px;
     display:block;
-}
-
-.buttons{
-    display:flex;
-    gap:15px;
-    justify-content:center;
-    flex-wrap:wrap;
-    margin-top:20px;
-}
-
-.btn{
-    display:inline-block;
-    background:#2563eb;
-    color:white;
+    background:white;
+    padding:30px;
+    border-radius:24px;
     text-decoration:none;
-    padding:14px 24px;
-    border-radius:14px;
-    font-weight:700;
+    color:inherit;
+    box-shadow:0 10px 25px rgba(0,0,0,.08);
     transition:.2s;
 }
 
-.btn:hover{
-    transform:translateY(-2px);
+.card:hover{
+    transform:translateY(-5px);
 }
 
-.info{
-    text-align:center;
+.icon{
+    font-size:48px;
+    margin-bottom:12px;
+}
+
+.title{
+    font-size:26px;
+    font-weight:700;
+    margin-bottom:10px;
+}
+
+.desc{
     color:#6b7280;
+    line-height:1.5;
 }
 
 .back{
+    margin-top:40px;
     text-align:center;
-    margin-top:30px;
 }
 
 .back a{
@@ -87,7 +79,6 @@ body{
     color:#2563eb;
     font-weight:700;
 }
-
 </style>
 </head>
 
@@ -95,42 +86,42 @@ body{
 
 <div class="container">
 
-<div class="hero">
-    <h1>🏙️ La ciudad</h1>
-    <p>Vocabulario básico de la ciudad – Nivel A1</p>
+<h1>📚 Vocabulario</h1>
+
+<div class="subtitle">
+Nivel A1 — elige un tema
 </div>
 
-<div class="card">
+<div class="grid">
 
-    <img src="ciudad.png" alt="La ciudad" class="image">
-
-    <div class="buttons">
-
-        <a class="btn" href="ciudad.png" target="_blank">
-            🔍 Ver imagen completa
-        </a>
-
+<a class="card" href="la_ciudad.html">
+    <div class="icon">🏙️</div>
+    <div class="title">La ciudad</div>
+    <div class="desc">
+        Aprende el vocabulario básico de la ciudad.
     </div>
+</a>
 
-</div>
+<a class="card" href="#">
+    <div class="icon">🌳</div>
+    <div class="title">El parque</div>
+    <div class="desc">
+        Próximamente: vocabulario del parque.
+    </div>
+</a>
 
-<div class="card info">
-
-    <h2>¿Qué puedes encontrar en la ciudad?</h2>
-
-    <p>
-        la calle • el edificio • la tienda • el banco •
-        el hospital • la escuela • la estación • el semáforo •
-        el autobús • el coche • la bicicleta • el taxi •
-        la plaza • la iglesia • el museo • el hotel
-    </p>
+<a class="card" href="#">
+    <div class="icon">🛒</div>
+    <div class="title">El supermercado</div>
+    <div class="desc">
+        Próximamente: alimentos y compras.
+    </div>
+</a>
 
 </div>
 
 <div class="back">
-    <a href="../index.html">
-        ⬅ Volver a vocabulario
-    </a>
+    <a href="../index.html">⬅ Volver a A1</a>
 </div>
 
 </div>
