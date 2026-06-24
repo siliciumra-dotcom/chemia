@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Historias locas A2</title>
+
+<style>
+:root{
+    --dark:#111827;
+    --muted:#6b7280;
+    --blue:#2563eb;
+    --green:#16a34a;
+    --yellow:#facc15;
+    --red:#ef4444;
+}
+*{box-sizing:border-box}
+
+body{
+    margin:0;
+    min-height:100vh;
+    padding:30px;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    background:
+        radial-gradient(circle at top left,rgba(250,204,21,.30),transparent 32%),
+        radial-gradient(circle at bottom right,rgba(96,165,250,.32),transparent 36%),
+        linear-gradient(135deg,#fff7ed,#eef6ff);
+    color:var(--dark);
+}
+
+.container{max-width:1180px;margin:auto}
+
+header{text-align:center;margin-bottom:24px}
+h1{font-size:clamp(36px,5vw,62px);margin:0 0 8px;letter-spacing:-1px}
+.subtitle{color:var(--muted);font-size:19px;margin:0}
+
+.rules{
+    background:white;
+    border-radius:26px;
+    padding:22px;
+    box-shadow:0 10px 25px rgba(0,0,0,.08);
+    margin-bottom:24px;
+}
+
+.rules h2{margin-top:0}
+.rules-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:12px;
+}
+.rule{
+    background:#f8fafc;
+    padding:14px;
+    border-radius:18px;
+    font-weight:700;
+}
+
+.game{
+    display:grid;
+    grid-template-columns:1fr 360px;
+    gap:24px;
+}
+
+.board,.result,.story-box{
+    background:white;
+    border-radius:30px;
+    padding:24px;
+    box-shadow:0 14px 35px rgba(0,0,0,.10);
+}
+
+.categories{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+    gap:16px;
+}
+
+.category{
+    border-radius:24px;
+    padding:18px;
+    min-height:270px;
+    position:relative;
+    transition:.2s;
+}
+
+.category.active{
+    outline:4px solid #111827;
+    transform:scale(1.02);
+}
+
+.category.done{
+    opacity:.82;
+}
+
+.category h3{margin:0 0 12px;font-size:22px}
+.category ol{margin:0;padding-left:24px}
+.category li{margin:9px 0;font-weight:700;line-height:1.25}
+
+.personaje{background:#dcfce7}
+.lugar{background:#dbeafe}
+.objeto{background:#fef3c7}
+.adjetivo{background:#fce7f3}
+.accion{background:#ede9fe}
+.tiempo{background:#ffedd5}
+
+.side{display:flex;flex-direction:column;gap:18px}
+
+.selected{
+    display:grid;
+    gap:10px;
+}
+
+.pill{
+    padding:13px 14px;
+    border-radius:16px;
+    background:#f8fafc;
+    border:2px solid #e5e7eb;
+    font-weight:800;
+    transition:.2s;
+}
+
+.pill.active{
+    border-color:#2563eb;
+    background:#eff6ff;
+    transform:scale(1.02);
+}
+
+.pill.done{
+    border-color:#16a34a;
+    background:#ecfdf5;
+}
+
+.number{
+    display:inline-flex;
+    width:30px;
+    height:30px;
+    border-radius:50%;
+    align-items:center;
+    justify-content:center;
+    background:#111827;
+    color:white;
+    margin-right:8px;
+    font-weight:900;
+}
+
+.roll-value{
+    display:block;
+    margin-top:8px;
+    font-size:18px;
+    color:#111827;
+}
+
+button{
+    border:0;
+    border-radius:20px;
+    padding:15px 20px;
+    font-size:17px;
+    font-weight:900;
+    cursor:pointer;
+    background:#2563eb;
+    color:white;
+    box-shadow:0 10px 20px rgba(37,99,235,.25);
+    transition:.15s;
+    width:100%;
+}
+
+button:hover{transform:translateY(-3px)}
+button:disabled{
+    opacity:.45;
+    cursor:not-allowed;
+    transform:none;
+}
+
+.secondary{
+    background:#facc15;
+    color:#111827;
+    box-shadow:0 10px 20px rgba(250,204,21,.25);
+}
+
+.danger{
+    background:#ef4444;
+    color:white;
+}
+
+.green{
+    background:#16a34a;
+}
+
+textarea{
+    width:100%;
+    min-height:220px;
+    border:2px solid #e5e7eb;
+    border-radius:20px;
+    padding:16px;
+    font-size:17px;
+    font-family:inherit;
+    resize:vertical;
+}
+
+.help{color:var(--muted);line-height:1.5;font-weight:600}
+
+.status{
+    margin:12px 0 0;
+    padding:12px;
+    border-radius:16px;
+    background:#f8fafc;
+    color:#374151;
+    font-weight:800;
+    text-align:center;
+}
+
+.back{text-align:center;margin-top:24px}
+.back a{color:#2563eb;font-weight:800;text-decoration:none}
+
+@media(max-width:960px){
+    .game{grid-template-columns:1fr}
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<header>
+    <h1>🎲 Historias locas A2</h1>
+    <p class="subtitle">Haz girar cada categoría, detén el sorteo y crea una historia absurda.</p>
+</header>
+
+<section class="rules">
+    <h2>📌 ¿Cómo jugar?</h2>
+    <div class="rules-grid">
+        <div class="rule">1. Pulsa <strong>Empezar juego</strong>.</div>
+        <div class="rule">2. Detén cada categoría cuando quieras.</div>
+        <div class="rule">3. Usa todos los elementos elegidos.</div>
+        <div class="rule">4. Escribe mínimo 8 frases con <strong>porque, pero, después, también</strong>.</div>
+    </div>
+</section>
+
+<div class="game">
+
+<main class="board">
+
+<div class="categories">
+
+<section class="category personaje" id="cat0">
+<h3>1. Personajes<br><small>¿Quién?</small></h3>
+<ol>
+<li>un profesor de español</li>
+<li>una abuela muy activa</li>
+<li>un turista perdido</li>
+<li>un futbolista famoso</li>
+<li>una estudiante inteligente</li>
+<li>un extraterrestre simpático</li>
+</ol>
+</section>
+
+<section class="category lugar" id="cat1">
+<h3>2. Lugares<br><small>¿Dónde?</small></h3>
+<ol>
+<li>en una playa desierta</li>
+<li>en un supermercado</li>
+<li>en un hotel de lujo</li>
+<li>en una estación de tren</li>
+<li>en una isla misteriosa</li>
+<li>en un parque enorme</li>
+</ol>
+</section>
+
+<section class="category objeto" id="cat2">
+<h3>3. Objetos<br><small>¿Qué?</small></h3>
+<ol>
+<li>una bicicleta rosa</li>
+<li>una pizza gigante</li>
+<li>un teléfono antiguo</li>
+<li>una mochila mágica</li>
+<li>un perro robot</li>
+<li>una llave misteriosa</li>
+</ol>
+</section>
+
+<section class="category adjetivo" id="cat3">
+<h3>4. Adjetivos<br><small>¿Cómo?</small></h3>
+<ol>
+<li>muy divertido/a</li>
+<li>extraño/a</li>
+<li>rápido/a</li>
+<li>elegante</li>
+<li>desastroso/a</li>
+<li>increíble</li>
+</ol>
+</section>
+
+<section class="category accion" id="cat4">
+<h3>5. Acciones<br><small>¿Qué hace?</small></h3>
+<ol>
+<li>encuentra un tesoro</li>
+<li>pierde todo su dinero</li>
+<li>compra cien plátanos</li>
+<li>conoce a una celebridad</li>
+<li>salva a un gato</li>
+<li>se hace famoso/a</li>
+</ol>
+</section>
+
+<section class="category tiempo" id="cat5">
+<h3>6. Tiempo<br><small>¿Cuándo?</small></h3>
+<ol>
+<li>Ayer...</li>
+<li>La semana pasada...</li>
+<li>Esta mañana...</li>
+<li>El próximo verano...</li>
+<li>Mañana...</li>
+<li>Si ganara un millón de euros...</li>
+</ol>
+</section>
+
+</div>
+
+</main>
+
+<aside class="side">
+
+<section class="result">
+<h2>⭐ Elementos elegidos</h2>
+
+<div class="selected">
+<div class="pill" id="pill0"><span class="number" id="n0">?</span>Personaje <span class="roll-value" id="r0">—</span></div>
+<div class="pill" id="pill1"><span class="number" id="n1">?</span>Lugar <span class="roll-value" id="r1">—</span></div>
+<div class="pill" id="pill2"><span class="number" id="n2">?</span>Objeto <span class="roll-value" id="r2">—</span></div>
+<div class="pill" id="pill3"><span class="number" id="n3">?</span>Adjetivo <span class="roll-value" id="r3">—</span></div>
+<div class="pill" id="pill4"><span class="number" id="n4">?</span>Acción <span class="roll-value" id="r4">—</span></div>
+<div class="pill" id="pill5"><span class="number" id="n5">?</span>Tiempo <span class="roll-value" id="r5">—</span></div>
+</div>
+
+<p class="status" id="status">Pulsa “Empezar juego”.</p>
+
+<button id="mainButton" onclick="mainAction()">🎬 Empezar juego</button>
+<br><br>
+<button class="secondary" onclick="clearStory()">🧽 Borrar texto</button>
+<br><br>
+<button class="danger" onclick="resetGame()">🔄 Reiniciar sorteo</button>
+</section>
+
+<section class="story-box">
+<h2>✍️ Tu historia</h2>
+<p class="help">Usa todos los elementos. La historia debe ser absurda, divertida y lógica.</p>
+<textarea id="story" placeholder="Escribe aquí tu historia..."></textarea>
+</section>
+
+</aside>
+
+</div>
+
+<div class="back">
+    <a href="../index.html">⬅ Volver a Juegos</a>
+</div>
+
+</div>
+
+<script>
+const data = [
+    ["un profesor de español","una abuela muy activa","un turista perdido","un futbolista famoso","una estudiante inteligente","un extraterrestre simpático"],
+    ["en una playa desierta","en un supermercado","en un hotel de lujo","en una estación de tren","en una isla misteriosa","en un parque enorme"],
+    ["una bicicleta rosa","una pizza gigante","un teléfono antiguo","una mochila mágica","un perro robot","una llave misteriosa"],
+    ["muy divertido/a","extraño/a","rápido/a","elegante","desastroso/a","increíble"],
+    ["encuentra un tesoro","pierde todo su dinero","compra cien plátanos","conoce a una celebridad","salva a un gato","se hace famoso/a"],
+    ["Ayer...","La semana pasada...","Esta mañana...","El próximo verano...","Mañana...","Si ganara un millón de euros..."]
+];
+
+const names = ["personaje","lugar","objeto","adjetivo","acción","tiempo"];
+
+let currentCategory = 0;
+let rolling = false;
+let interval = null;
+let gameStarted = false;
+
+function setActive(index){
+    for(let i=0;i<6;i++){
+        document.getElementById("cat"+i).classList.remove("active");
+        document.getElementById("pill"+i).classList.remove("active");
+    }
+
+    if(index < 6){
+        document.getElementById("cat"+index).classList.add("active");
+        document.getElementById("pill"+index).classList.add("active");
+    }
+}
+
+function rollCurrent(){
+    const i = currentCategory;
+    const randomIndex = Math.floor(Math.random() * 6);
+
+    document.getElementById("n"+i).textContent = randomIndex + 1;
+    document.getElementById("r"+i).textContent = data[i][randomIndex];
+}
+
+function startRolling(){
+    rolling = true;
+    setActive(currentCategory);
+    document.getElementById("mainButton").textContent = "⏹️ Detener " + names[currentCategory];
+    document.getElementById("status").textContent = "Sorteando: " + names[currentCategory] + "...";
+
+    interval = setInterval(rollCurrent, 90);
+}
+
+function stopRolling(){
+    rolling = false;
+    clearInterval(interval);
+    interval = null;
+
+    rollCurrent();
+
+    document.getElementById("cat"+currentCategory).classList.remove("active");
+    document.getElementById("cat"+currentCategory).classList.add("done");
+    document.getElementById("pill"+currentCategory).classList.remove("active");
+    document.getElementById("pill"+currentCategory).classList.add("done");
+
+    currentCategory++;
+
+    if(currentCategory < 6){
+        document.getElementById("status").textContent = "Ahora toca: " + names[currentCategory] + ".";
+        document.getElementById("mainButton").textContent = "🎲 Sortear " + names[currentCategory];
+    }else{
+        document.getElementById("status").textContent = "¡Listo! Ahora escribid una historia loca.";
+        document.getElementById("mainButton").textContent = "✅ Sorteo terminado";
+        document.getElementById("mainButton").disabled = true;
+    }
+}
+
+function mainAction(){
+    if(!gameStarted){
+        gameStarted = true;
+        currentCategory = 0;
+        startRolling();
+        return;
+    }
+
+    if(rolling){
+        stopRolling();
+    }else if(currentCategory < 6){
+        startRolling();
+    }
+}
+
+function resetGame(){
+    clearInterval(interval);
+    interval = null;
+    currentCategory = 0;
+    rolling = false;
+    gameStarted = false;
+
+    for(let i=0;i<6;i++){
+        document.getElementById("n"+i).textContent = "?";
+        document.getElementById("r"+i).textContent = "—";
+        document.getElementById("cat"+i).classList.remove("active","done");
+        document.getElementById("pill"+i).classList.remove("active","done");
+    }
+
+    document.getElementById("mainButton").disabled = false;
+    document.getElementById("mainButton").textContent = "🎬 Empezar juego";
+    document.getElementById("status").textContent = "Pulsa “Empezar juego”.";
+}
+
+function clearStory(){
+    document.getElementById("story").value = "";
+}
+</script>
+
+</body>
+</html>
