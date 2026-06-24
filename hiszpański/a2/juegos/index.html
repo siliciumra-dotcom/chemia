@@ -3,34 +3,44 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>A2 - Vocabulario</title>
+<title>A2 - Juegos</title>
+
 <style>
 body{margin:0;padding:40px 20px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:linear-gradient(135deg,#fff7ed,#eef6ff);color:#1f2937}
-.container{max-width:900px;margin:auto}
-h1{text-align:center;font-size:42px}
-.subtitle{text-align:center;color:#6b7280;margin-bottom:35px}
-.card{background:white;padding:35px;border-radius:24px;text-align:center;box-shadow:0 10px 25px rgba(0,0,0,.08)}
-.icon{font-size:52px;margin-bottom:12px}
+.container{max-width:1000px;margin:auto}
+h1{text-align:center;font-size:48px;margin-bottom:10px}
+.subtitle{text-align:center;color:#6b7280;margin-bottom:40px;font-size:18px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px}
+.card{display:block;background:white;padding:30px;border-radius:24px;text-decoration:none;color:inherit;box-shadow:0 10px 25px rgba(0,0,0,.08);transition:.2s}
+.card:hover{transform:translateY(-5px)}
+.icon{font-size:48px;margin-bottom:12px}
 .title{font-size:26px;font-weight:700;margin-bottom:10px}
-.desc{color:#6b7280}
-.back{margin-top:35px;text-align:center}
+.desc{color:#6b7280;line-height:1.5}
+.back{text-align:center;margin-top:40px}
 .back a{text-decoration:none;color:#2563eb;font-weight:700}
 </style>
 </head>
+
 <body>
 <div class="container">
 
-<h1>📚 Vocabulario</h1>
-<div class="subtitle">Nivel A2</div>
+<h1>🎮 Juegos</h1>
+<div class="subtitle">Nivel A2 — elige una categoría de juegos</div>
 
-<div class="card">
-    <div class="icon">🚧</div>
-    <div class="title">Próximamente</div>
-    <div class="desc">Aquí aparecerán juegos de vocabulario para nivel A2.</div>
+<div class="grid">
+
+<a class="card" href="adjetivos/">
+    <div class="icon">🎭</div>
+    <div class="title">Adjetivos</div>
+    <div class="desc">
+        Juegos para practicar descripciones, comparaciones y adjetivos.
+    </div>
+</a>
+
 </div>
 
 <div class="back">
-<a href="../index.html">⬅ Volver a A2</a>
+    <a href="../index.html">⬅ Volver a A2</a>
 </div>
 
 </div>
