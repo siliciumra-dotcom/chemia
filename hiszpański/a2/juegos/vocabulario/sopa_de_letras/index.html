@@ -1,1 +1,124 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sopa de letras · A2</title>
 
+<style>
+
+body{
+    margin:0;
+    padding:40px 20px;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    background:linear-gradient(135deg,#fff7ed,#eef6ff);
+    color:#1f2937;
+}
+
+.container{
+    max-width:1100px;
+    margin:auto;
+}
+
+h1{
+    text-align:center;
+    font-size:48px;
+    margin-bottom:10px;
+}
+
+.subtitle{
+    text-align:center;
+    color:#6b7280;
+    margin-bottom:45px;
+    font-size:18px;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+    gap:24px;
+}
+
+.card{
+    display:block;
+    background:white;
+    padding:30px;
+    border-radius:24px;
+    text-decoration:none;
+    color:inherit;
+    box-shadow:0 10px 25px rgba(0,0,0,.08);
+    transition:.25s;
+}
+
+.card:hover{
+    transform:translateY(-6px);
+    box-shadow:0 18px 35px rgba(0,0,0,.12);
+}
+
+.icon{
+    font-size:58px;
+    margin-bottom:15px;
+}
+
+.title{
+    font-size:26px;
+    font-weight:700;
+    margin-bottom:10px;
+}
+
+.desc{
+    color:#6b7280;
+    line-height:1.6;
+}
+
+.back{
+    margin-top:50px;
+    text-align:center;
+}
+
+.back a{
+    text-decoration:none;
+    color:#2563eb;
+    font-weight:700;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>🔎 Sopa de letras</h1>
+
+<div class="subtitle">
+Encuentra el vocabulario escondido y amplía tu léxico jugando.
+</div>
+
+<div class="grid">
+
+<a class="card" href="viaje_abre_la_mente/">
+
+<div class="icon">🌍</div>
+
+<div class="title">
+El viaje abre la mente
+</div>
+
+<div class="desc">
+Encuentra todas las palabras relacionadas con los viajes, la cultura,
+las experiencias y el aprendizaje.
+</div>
+
+</a>
+
+</div>
+
+<div class="back">
+<a href="../">⬅ Volver a Juegos de vocabulario</a>
+</div>
+
+</div>
+
+</body>
+</html>
