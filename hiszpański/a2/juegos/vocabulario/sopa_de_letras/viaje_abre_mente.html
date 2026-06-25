@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sopa de letras · El viaje abre la mente</title>
+
+<style>
+body{
+    margin:0;
+    padding:25px 15px;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    background:linear-gradient(135deg,#fff7ed,#eef6ff);
+    color:#1f2937;
+}
+
+.container{
+    max-width:1100px;
+    margin:auto;
+}
+
+h1{
+    text-align:center;
+    font-size:38px;
+    margin-bottom:5px;
+}
+
+.subtitle{
+    text-align:center;
+    color:#0f766e;
+    font-size:22px;
+    font-weight:700;
+    margin-bottom:25px;
+}
+
+.layout{
+    display:grid;
+    grid-template-columns:1fr 280px;
+    gap:24px;
+}
+
+.board{
+    background:white;
+    padding:20px;
+    border-radius:24px;
+    box-shadow:0 10px 25px rgba(0,0,0,.08);
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(18,1fr);
+    gap:5px;
+}
+
+.cell{
+    aspect-ratio:1/1;
+    border-radius:10px;
+    background:#f8fafc;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:800;
+    font-size:20px;
+    cursor:pointer;
+    user-select:none;
+    border:2px solid transparent;
+}
+
+.cell.selected{
+    background:#fde68a;
+    border-color:#f59e0b;
+}
+
+.cell.found{
+    background:#99f6e4;
+    color:#134e4a;
+}
+
+.side{
+    background:white;
+    padding:22px;
+    border-radius:24px;
+    box-shadow:0 10px 25px rgba(0,0,0,.08);
+}
+
+.side h2{
+    text-align:center;
+    margin-bottom:15px;
+    color:#0f766e;
+}
+
+.words{
+    display:grid;
+    gap:8px;
+}
+
+.word{
+    padding:8px 10px;
+    background:#f8fafc;
+    border-radius:10px;
+    font-weight:600;
+}
+
+.word.done{
+    text-decoration:line-through;
+    background:#ccfbf1;
+    color:#0f766e;
+}
+
+.buttons{
+    margin-top:18px;
+    display:grid;
+    gap:10px;
+}
+
+button{
+    border:none;
+    padding:14px;
+    border-radius:14px;
+    font-size:16px;
+    font-weight:800;
+    cursor:pointer;
+}
+
+.check{
+    background:#0f766e;
+    color:white;
+}
+
+.reset{
+    background:#e5e7eb;
+    color:#111827;
+}
+
+.message{
+    text-align:center;
+    margin-top:18px;
+    font-weight:800;
+    color:#be123c;
+}
+
+.back{
+    text-align:center;
+    margin-top:30px;
+}
+
+.back a{
+    text-decoration:none;
+    color:#2563eb;
+    font-weight:800;
+}
+
+@media(max-width:850px){
+    .layout{
+        grid-template-columns:1fr;
+    }
+
+    .grid{
+        gap:3px;
+    }
+
+    .cell{
+        font-size:13px;
+        border-radius:6px;
+    }
+
+    h1{
+        font-size:30px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>🌍 El viaje abre la mente</h1>
+<div class="subtitle">Sopa de letras</div>
+
+<div class="layout">
+
+<div class="board">
+    <div class="grid" id="grid"></div>
+
+    <div class="buttons">
+        <button class="check" onclick="checkSelection()">Comprobar palabra</button>
+        <button class="reset" onclick="resetSelection()">Borrar selección</button>
+    </div>
+
+    <div class="message" id="message">Selecciona letras en línea recta.</div>
+</div>
+
+<div class="side">
+    <h2>Palabras</h2>
+    <div class="words" id="wordList"></div>
+</div>
+
+</div>
+
+<div class="back">
+    <a href="../">⬅ Volver a Debate</a>
+</div>
+
+</div>
+
+<script>
+const words = [
+    "VIAJE",
+    "AVENTURA",
+    "DESTINO",
+    "BILLETE",
+    "EQUIPAJE",
+    "TURISTA",
+    "RECUERDO",
+    "IDIOMA",
+    "GASTRONOMIA",
+    "PAISAJE",
+    "DESCUBRIR",
+    "VOLAR",
+    "RUTA",
+    "ALOJAMIENTO",
+    "CLIMA",
+    "CULTURA",
+    "APRENDER",
+    "TOLERANCIA",
+    "EXPERIENCIA",
+    "PERSPECTIVA",
+    "EXPLORAR",
+    "DESCONECTAR",
+    "INSPIRACION",
+    "PRESUPUESTO",
+    "PLANIFICAR",
+    "REGRESAR"
+];
+
+const size = 18;
+const letters = "ABCDEFGHIJKLMNÑOPQRSTUVWXYZ";
+let grid = Array.from({length:size},()=>Array(size).fill(""));
+let selected = [];
+let found = [];
+
+const directions = [
+    [0,1],
+    [1,0],
+    [1,1],
+    [-1,1]
+];
+
+function normalize(word){
+    return word
+        .toUpperCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g,"")
+        .replace(/\s/g,"");
+}
+
+function canPlace(word,row,col,dr,dc){
+    for(let i=0;i<word.length;i++){
+        const r = row + dr*i;
+        const c = col + dc*i;
+        if(r<0 || r>=size || c<0 || c>=size) return false;
+        if(grid[r][c] !== "" && grid[r][c] !== word[i]) return false;
+    }
+    return true;
+}
+
+function placeWord(word){
+    let clean = normalize(word);
+    let placed = false;
+    let attempts = 0;
+
+    while(!placed && attempts < 500){
+        attempts++;
+        const [dr,dc] = directions[Math.floor(Math.random()*directions.length)];
+        const row = Math.floor(Math.random()*size);
+        const col = Math.floor(Math.random()*size);
+
+        if(canPlace(clean,row,col,dr,dc)){
+            for(let i=0;i<clean.length;i++){
+                grid[row+dr*i][col+dc*i] = clean[i];
+            }
+            placed = true;
+        }
+    }
+}
+
+function fillGrid(){
+    for(let r=0;r<size;r++){
+        for(let c=0;c<size;c++){
+            if(grid[r][c] === ""){
+                grid[r][c] = letters[Math.floor(Math.random()*letters.length)];
+            }
+        }
+    }
+}
+
+function renderGrid(){
+    const gridDiv = document.getElementById("grid");
+    gridDiv.innerHTML = "";
+
+    for(let r=0;r<size;r++){
+        for(let c=0;c<size;c++){
+            const cell = document.createElement("div");
+            cell.className = "cell";
+            cell.innerText = grid[r][c];
+            cell.dataset.row = r;
+            cell.dataset.col = c;
+            cell.onclick = () => selectCell(cell);
+            gridDiv.appendChild(cell);
+        }
+    }
+}
+
+function renderWords(){
+    const list = document.getElementById("wordList");
+    list.innerHTML = "";
+
+    words.forEach(word=>{
+        const div = document.createElement("div");
+        div.className = "word";
+        div.id = "word-" + normalize(word);
+        div.innerText = word.toLowerCase();
+        list.appendChild(div);
+    });
+}
+
+function selectCell(cell){
+    const key = cell.dataset.row + "-" + cell.dataset.col;
+
+    if(selected.some(item=>item.key === key)){
+        cell.classList.remove("selected");
+        selected = selected.filter(item=>item.key !== key);
+    }else{
+        cell.classList.add("selected");
+        selected.push({
+            key,
+            row:Number(cell.dataset.row),
+            col:Number(cell.dataset.col),
+            letter:cell.innerText,
+            element:cell
+        });
+    }
+}
+
+function checkSelection(){
+    if(selected.length < 2){
+        document.getElementById("message").innerText = "Selecciona una palabra completa.";
+        return;
+    }
+
+    selected.sort((a,b)=> a.row-b.row || a.col-b.col);
+
+    const word = selected.map(x=>x.letter).join("");
+    const reversed = selected.map(x=>x.letter).reverse().join("");
+
+    const match = words.find(w => normalize(w) === word || normalize(w) === reversed);
+
+    if(match && !found.includes(normalize(match))){
+        selected.forEach(x=>{
+            x.element.classList.remove("selected");
+            x.element.classList.add("found");
+        });
+
+        document.getElementById("word-" + normalize(match)).classList.add("done");
+        found.push(normalize(match));
+        selected = [];
+
+        document.getElementById("message").innerText = "¡Muy bien! Has encontrado: " + match.toLowerCase();
+
+        if(found.length === words.length){
+            document.getElementById("message").innerText = "🎉 ¡Has encontrado todas las palabras!";
+        }
+    }else{
+        document.getElementById("message").innerText = "Todavía no. Prueba otra selección.";
+    }
+}
+
+function resetSelection(){
+    selected.forEach(x=>x.element.classList.remove("selected"));
+    selected = [];
+    document.getElementById("message").innerText = "Selección borrada.";
+}
+
+function startGame(){
+    words.forEach(placeWord);
+    fillGrid();
+    renderGrid();
+    renderWords();
+}
+
+startGame();
+</script>
+
+</body>
+</html>
