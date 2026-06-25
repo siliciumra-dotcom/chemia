@@ -13,45 +13,12 @@ body{
     background:linear-gradient(135deg,#fff7ed,#eef6ff);
     color:#1f2937;
 }
-
-.container{
-    max-width:1100px;
-    margin:auto;
-}
-
-h1{
-    text-align:center;
-    font-size:38px;
-    margin-bottom:5px;
-}
-
-.subtitle{
-    text-align:center;
-    color:#0f766e;
-    font-size:22px;
-    font-weight:700;
-    margin-bottom:25px;
-}
-
-.layout{
-    display:grid;
-    grid-template-columns:1fr 280px;
-    gap:24px;
-}
-
-.board{
-    background:white;
-    padding:20px;
-    border-radius:24px;
-    box-shadow:0 10px 25px rgba(0,0,0,.08);
-}
-
-.grid{
-    display:grid;
-    grid-template-columns:repeat(18,1fr);
-    gap:5px;
-}
-
+.container{max-width:1100px;margin:auto}
+h1{text-align:center;font-size:38px;margin-bottom:5px}
+.subtitle{text-align:center;color:#0f766e;font-size:22px;font-weight:700;margin-bottom:25px}
+.layout{display:grid;grid-template-columns:1fr 280px;gap:24px}
+.board,.side{background:white;padding:20px;border-radius:24px;box-shadow:0 10px 25px rgba(0,0,0,.08)}
+.grid{display:grid;grid-template-columns:repeat(18,1fr);gap:5px}
 .cell{
     aspect-ratio:1/1;
     border-radius:10px;
@@ -65,108 +32,24 @@ h1{
     user-select:none;
     border:2px solid transparent;
 }
-
-.cell.selected{
-    background:#fde68a;
-    border-color:#f59e0b;
-}
-
-.cell.found{
-    background:#99f6e4;
-    color:#134e4a;
-}
-
-.side{
-    background:white;
-    padding:22px;
-    border-radius:24px;
-    box-shadow:0 10px 25px rgba(0,0,0,.08);
-}
-
-.side h2{
-    text-align:center;
-    margin-bottom:15px;
-    color:#0f766e;
-}
-
-.words{
-    display:grid;
-    gap:8px;
-}
-
-.word{
-    padding:8px 10px;
-    background:#f8fafc;
-    border-radius:10px;
-    font-weight:600;
-}
-
-.word.done{
-    text-decoration:line-through;
-    background:#ccfbf1;
-    color:#0f766e;
-}
-
-.buttons{
-    margin-top:18px;
-    display:grid;
-    gap:10px;
-}
-
-button{
-    border:none;
-    padding:14px;
-    border-radius:14px;
-    font-size:16px;
-    font-weight:800;
-    cursor:pointer;
-}
-
-.check{
-    background:#0f766e;
-    color:white;
-}
-
-.reset{
-    background:#e5e7eb;
-    color:#111827;
-}
-
-.message{
-    text-align:center;
-    margin-top:18px;
-    font-weight:800;
-    color:#be123c;
-}
-
-.back{
-    text-align:center;
-    margin-top:30px;
-}
-
-.back a{
-    text-decoration:none;
-    color:#2563eb;
-    font-weight:800;
-}
-
+.cell.selected{background:#fde68a;border-color:#f59e0b}
+.cell.found{background:#99f6e4;color:#134e4a}
+.side h2{text-align:center;margin-bottom:15px;color:#0f766e}
+.words{display:grid;gap:8px}
+.word{padding:8px 10px;background:#f8fafc;border-radius:10px;font-weight:600}
+.word.done{text-decoration:line-through;background:#ccfbf1;color:#0f766e}
+.buttons{margin-top:18px;display:grid;gap:10px}
+button{border:none;padding:14px;border-radius:14px;font-size:16px;font-weight:800;cursor:pointer}
+.check{background:#0f766e;color:white}
+.reset{background:#e5e7eb;color:#111827}
+.message{text-align:center;margin-top:18px;font-weight:800;color:#be123c}
+.back{text-align:center;margin-top:30px}
+.back a{text-decoration:none;color:#2563eb;font-weight:800}
 @media(max-width:850px){
-    .layout{
-        grid-template-columns:1fr;
-    }
-
-    .grid{
-        gap:3px;
-    }
-
-    .cell{
-        font-size:13px;
-        border-radius:6px;
-    }
-
-    h1{
-        font-size:30px;
-    }
+    .layout{grid-template-columns:1fr}
+    .grid{gap:3px}
+    .cell{font-size:13px;border-radius:6px}
+    h1{font-size:30px}
 }
 </style>
 </head>
@@ -199,7 +82,7 @@ button{
 </div>
 
 <div class="back">
-    <a href="../">⬅ Volver a Debate</a>
+    <a href="./index.html">⬅ Volver a sopas de letras</a>
 </div>
 
 </div>
@@ -244,7 +127,11 @@ const directions = [
     [0,1],
     [1,0],
     [1,1],
-    [-1,1]
+    [-1,1],
+    [0,-1],
+    [-1,0],
+    [-1,-1],
+    [1,-1]
 ];
 
 function normalize(word){
@@ -266,11 +153,10 @@ function canPlace(word,row,col,dr,dc){
 }
 
 function placeWord(word){
-    let clean = normalize(word);
-    let placed = false;
+    const clean = normalize(word);
     let attempts = 0;
 
-    while(!placed && attempts < 500){
+    while(attempts < 1000){
         attempts++;
         const [dr,dc] = directions[Math.floor(Math.random()*directions.length)];
         const row = Math.floor(Math.random()*size);
@@ -280,9 +166,11 @@ function placeWord(word){
             for(let i=0;i<clean.length;i++){
                 grid[row+dr*i][col+dc*i] = clean[i];
             }
-            placed = true;
+            return true;
         }
     }
+
+    return false;
 }
 
 function fillGrid(){
@@ -343,16 +231,56 @@ function selectCell(cell){
     }
 }
 
+function isStraightLine(items){
+    if(items.length < 2) return false;
+
+    const sorted = [...items];
+    const first = sorted[0];
+    const second = sorted[1];
+
+    const dr = Math.sign(second.row - first.row);
+    const dc = Math.sign(second.col - first.col);
+
+    if(dr === 0 && dc === 0) return false;
+
+    sorted.sort((a,b)=>{
+        if(dr !== 0) return a.row - b.row;
+        return a.col - b.col;
+    });
+
+    for(let i=1;i<sorted.length;i++){
+        if(sorted[i].row - sorted[i-1].row !== dr) return false;
+        if(sorted[i].col - sorted[i-1].col !== dc) return false;
+    }
+
+    return true;
+}
+
+function orderSelection(items){
+    const sorted = [...items];
+
+    sorted.sort((a,b)=>{
+        if(a.row !== b.row) return a.row - b.row;
+        return a.col - b.col;
+    });
+
+    return sorted;
+}
+
 function checkSelection(){
     if(selected.length < 2){
         document.getElementById("message").innerText = "Selecciona una palabra completa.";
         return;
     }
 
-    selected.sort((a,b)=> a.row-b.row || a.col-b.col);
+    if(!isStraightLine(selected)){
+        document.getElementById("message").innerText = "Selecciona letras en línea recta.";
+        return;
+    }
 
-    const word = selected.map(x=>x.letter).join("");
-    const reversed = selected.map(x=>x.letter).reverse().join("");
+    const ordered = orderSelection(selected);
+    const word = ordered.map(x=>x.letter).join("");
+    const reversed = ordered.map(x=>x.letter).reverse().join("");
 
     const match = words.find(w => normalize(w) === word || normalize(w) === reversed);
 
