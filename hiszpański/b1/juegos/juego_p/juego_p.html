@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El juego de la P</title>
+
+<style>
+body{
+    margin:0;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg,#fff1f2,#eef2ff);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+    color:#1f2937;
+}
+
+.card{
+    background:white;
+    width:90%;
+    max-width:420px;
+    border-radius:28px;
+    padding:30px 24px;
+    text-align:center;
+    box-shadow:0 10px 30px rgba(0,0,0,.12);
+}
+
+h1{
+    font-size:28px;
+    margin-bottom:10px;
+}
+
+.subtitle{
+    font-size:15px;
+    color:#6b7280;
+    margin-bottom:25px;
+}
+
+.word{
+    font-size:42px;
+    font-weight:900;
+    margin:35px 0;
+    color:#be123c;
+}
+
+.rule{
+    background:#fef3c7;
+    padding:14px;
+    border-radius:16px;
+    font-size:15px;
+    margin-bottom:25px;
+}
+
+button{
+    width:100%;
+    border:none;
+    border-radius:18px;
+    padding:16px;
+    font-size:18px;
+    font-weight:700;
+    margin-top:12px;
+    cursor:pointer;
+}
+
+.main{
+    background:#be123c;
+    color:white;
+}
+
+.secondary{
+    background:#e5e7eb;
+    color:#111827;
+}
+
+.counter{
+    margin-top:18px;
+    font-size:14px;
+    color:#6b7280;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+    <h1>🎲 El juego de la P</h1>
+    <p class="subtitle">Explica la palabra usando palabras que empiecen por P.</p>
+
+    <div class="rule">
+        ⏱️ Tienes 45 segundos. <br>
+        ❌ No puedes decir la palabra exacta.
+    </div>
+
+    <div class="word" id="word">Pulsa empezar</div>
+
+    <button class="main" onclick="newWord()">Nueva palabra</button>
+    <button class="secondary" onclick="resetGame()">Reiniciar</button>
+
+    <div class="counter" id="counter">0 / 30 palabras usadas</div>
+</div>
+
+<script>
+const words = [
+    "aeropuerto",
+    "profesor",
+    "vacaciones",
+    "restaurante",
+    "examen",
+    "familia",
+    "teléfono",
+    "dinero",
+    "amor",
+    "fiesta",
+    "hospital",
+    "supermercado",
+    "playa",
+    "montaña",
+    "cine",
+    "música",
+    "perro",
+    "gato",
+    "coche",
+    "bicicleta",
+    "hotel",
+    "avión",
+    "café",
+    "pizza",
+    "trabajo",
+    "escuela",
+    "viaje",
+    "cumpleaños",
+    "policía",
+    "internet"
+];
+
+let used = [];
+
+function newWord(){
+    if(used.length === words.length){
+        document.getElementById("word").innerText = "¡Fin del juego!";
+        document.getElementById("counter").innerText = "30 / 30 palabras usadas";
+        return;
+    }
+
+    let available = words.filter(word => !used.includes(word));
+    let randomWord = available[Math.floor(Math.random() * available.length)];
+
+    used.push(randomWord);
+
+    document.getElementById("word").innerText = randomWord;
+    document.getElementById("counter").innerText = used.length + " / 30 palabras usadas";
+}
+
+function resetGame(){
+    used = [];
+    document.getElementById("word").innerText = "Pulsa empezar";
+    document.getElementById("counter").innerText = "0 / 30 palabras usadas";
+}
+</script>
+
+</body>
+</html>
