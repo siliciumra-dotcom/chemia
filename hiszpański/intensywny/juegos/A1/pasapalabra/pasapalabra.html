@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pasapalabra · Verbos regulares</title>
+  <style>
+    :root{
+      --bg-1:#07111f;
+      --bg-2:#0d1b2a;
+      --panel:rgba(13,27,42,.78);
+      --panel-strong:#10243a;
+      --text:#f7fbff;
+      --muted:#9fb0c3;
+      --line:rgba(255,255,255,.10);
+      --blue:#38bdf8;
+      --cyan:#22d3ee;
+      --green:#34d399;
+      --red:#fb7185;
+      --yellow:#fbbf24;
+      --shadow:0 24px 70px rgba(0,0,0,.36);
+    }
+
+    *{box-sizing:border-box}
+
+    html,body{
+      min-height:100%;
+      margin:0;
+    }
+
+    body{
+      font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at 10% 15%, rgba(34,211,238,.13), transparent 25rem),
+        radial-gradient(circle at 85% 80%, rgba(56,189,248,.12), transparent 28rem),
+        linear-gradient(145deg,var(--bg-1),var(--bg-2));
+      overflow-x:hidden;
+    }
+
+    body::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      opacity:.32;
+      background-image:
+        linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+      background-size:42px 42px;
+      mask-image:linear-gradient(to bottom,black,transparent 85%);
+    }
+
+    button,input{font:inherit}
+
+    .app{
+      width:min(1220px,100%);
+      margin:0 auto;
+      padding:28px clamp(16px,3vw,38px) 34px;
+      position:relative;
+      z-index:1;
+    }
+
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:24px;
+      margin-bottom:22px;
+    }
+
+    .eyebrow{
+      margin:0 0 8px;
+      color:var(--cyan);
+      text-transform:uppercase;
+      letter-spacing:.16em;
+      font-size:.72rem;
+      font-weight:800;
+    }
+
+    h1{
+      margin:0;
+      font-size:clamp(2rem,5vw,4.25rem);
+      line-height:.95;
+      letter-spacing:-.055em;
+    }
+
+    h1 span{
+      display:block;
+      margin-top:8px;
+      color:var(--muted);
+      font-size:clamp(.85rem,1.5vw,1.05rem);
+      letter-spacing:.02em;
+      font-weight:650;
+    }
+
+    .controls{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+
+    .btn{
+      border:1px solid var(--line);
+      color:var(--text);
+      background:rgba(255,255,255,.055);
+      border-radius:14px;
+      padding:11px 15px;
+      font-weight:800;
+      cursor:pointer;
+      transition:.2s ease;
+      box-shadow:0 8px 22px rgba(0,0,0,.12);
+    }
+
+    .btn:hover{
+      transform:translateY(-2px);
+      background:rgba(255,255,255,.09);
+      border-color:rgba(255,255,255,.18);
+    }
+
+    .btn:active{transform:translateY(0)}
+
+    .btn-primary{
+      color:#042032;
+      border-color:transparent;
+      background:linear-gradient(135deg,var(--cyan),var(--blue));
+    }
+
+    .game-layout{
+      display:grid;
+      grid-template-columns:minmax(430px,1.08fr) minmax(340px,.92fr);
+      gap:24px;
+      align-items:stretch;
+    }
+
+    .panel{
+      background:linear-gradient(180deg,rgba(18,39,61,.82),rgba(10,24,39,.76));
+      border:1px solid var(--line);
+      border-radius:28px;
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(18px);
+    }
+
+    .wheel-panel{
+      min-height:665px;
+      position:relative;
+      display:grid;
+      place-items:center;
+      overflow:hidden;
+    }
+
+    .wheel-panel::after{
+      content:"";
+      position:absolute;
+      width:57%;
+      aspect-ratio:1;
+      border-radius:50%;
+      border:1px solid rgba(255,255,255,.07);
+      box-shadow:
+        0 0 0 20px rgba(255,255,255,.018),
+        inset 0 0 60px rgba(56,189,248,.055);
+      pointer-events:none;
+    }
+
+    .wheel{
+      position:relative;
+      width:min(570px,92%);
+      aspect-ratio:1;
+    }
+
+    .letter{
+      position:absolute;
+      left:50%;
+      top:50%;
+      width:44px;
+      height:44px;
+      margin:-22px;
+      display:grid;
+      place-items:center;
+      border-radius:50%;
+      color:#d9e8f4;
+      background:#183047;
+      border:1px solid rgba(255,255,255,.13);
+      box-shadow:0 10px 22px rgba(0,0,0,.22);
+      font-weight:900;
+      transition:transform .22s ease,background .22s ease,box-shadow .22s ease,border-color .22s ease;
+      user-select:none;
+    }
+
+    .letter.current{
+      color:#062236;
+      background:linear-gradient(135deg,var(--cyan),var(--blue));
+      border-color:transparent;
+      box-shadow:0 0 0 7px rgba(34,211,238,.12),0 12px 26px rgba(0,0,0,.28);
+      z-index:4;
+    }
+
+    .letter.correct{
+      color:#05261b;
+      background:var(--green);
+      border-color:transparent;
+    }
+
+    .letter.wrong{
+      color:#3b0712;
+      background:var(--red);
+      border-color:transparent;
+    }
+
+    .letter.passed{
+      color:#332002;
+      background:var(--yellow);
+      border-color:transparent;
+    }
+
+    .letter.current{
+      color:#062236;
+      background:linear-gradient(135deg,var(--cyan),var(--blue));
+      border-color:transparent;
+      box-shadow:0 0 0 7px rgba(34,211,238,.12),0 12px 26px rgba(0,0,0,.28);
+      z-index:4;
+    }
+
+    .wheel-center{
+      position:absolute;
+      inset:50% auto auto 50%;
+      transform:translate(-50%,-50%);
+      width:46%;
+      aspect-ratio:1;
+      display:grid;
+      place-items:center;
+      text-align:center;
+      border-radius:50%;
+      z-index:2;
+    }
+
+    .wheel-center strong{
+      display:block;
+      font-size:clamp(2.2rem,6vw,4.6rem);
+      line-height:1;
+      letter-spacing:-.07em;
+    }
+
+    .wheel-center span{
+      display:block;
+      margin-top:8px;
+      color:var(--muted);
+      font-size:.82rem;
+      font-weight:750;
+      text-transform:uppercase;
+      letter-spacing:.12em;
+    }
+
+    .stats{
+      position:absolute;
+      left:22px;
+      right:22px;
+      bottom:20px;
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:10px;
+      z-index:5;
+    }
+
+    .stat{
+      padding:12px 14px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      background:rgba(3,12,22,.54);
+      text-align:center;
+    }
+
+    .stat b{
+      display:block;
+      font-size:1.35rem;
+      letter-spacing:-.03em;
+    }
+
+    .stat small{
+      color:var(--muted);
+      font-size:.68rem;
+      text-transform:uppercase;
+      letter-spacing:.10em;
+      font-weight:800;
+    }
+
+    .question-panel{
+      padding:clamp(24px,4vw,42px);
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      min-height:665px;
+    }
+
+    .progress-row{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:15px;
+      margin-bottom:28px;
+      color:var(--muted);
+      font-size:.86rem;
+      font-weight:750;
+    }
+
+    .progress{
+      height:7px;
+      width:100%;
+      overflow:hidden;
+      border-radius:999px;
+      background:rgba(255,255,255,.07);
+    }
+
+    .progress > span{
+      display:block;
+      height:100%;
+      width:0;
+      border-radius:inherit;
+      background:linear-gradient(90deg,var(--cyan),var(--blue));
+      transition:width .28s ease;
+    }
+
+    .letter-chip{
+      width:64px;
+      height:64px;
+      display:grid;
+      place-items:center;
+      margin-bottom:24px;
+      border-radius:18px;
+      color:#052238;
+      background:linear-gradient(135deg,var(--cyan),var(--blue));
+      box-shadow:0 13px 35px rgba(34,211,238,.16);
+      font-size:1.8rem;
+      font-weight:950;
+    }
+
+    .prompt-label{
+      margin:0 0 9px;
+      color:var(--muted);
+      text-transform:uppercase;
+      letter-spacing:.14em;
+      font-size:.72rem;
+      font-weight:850;
+    }
+
+    .verb{
+      margin:0;
+      font-size:clamp(2.6rem,5.8vw,5.15rem);
+      line-height:1;
+      letter-spacing:-.065em;
+    }
+
+    .pronoun{
+      margin:16px 0 30px;
+      color:#d6e8f4;
+      font-size:clamp(1.2rem,2vw,1.55rem);
+      font-weight:750;
+    }
+
+    .pronoun strong{color:var(--cyan)}
+
+    .answer-wrap{
+      display:grid;
+      grid-template-columns:1fr auto;
+      gap:10px;
+    }
+
+    .answer{
+      width:100%;
+      min-width:0;
+      border:1px solid rgba(255,255,255,.15);
+      outline:none;
+      border-radius:16px;
+      padding:15px 17px;
+      color:var(--text);
+      background:rgba(1,10,19,.54);
+      font-size:1.06rem;
+      font-weight:750;
+      transition:.2s ease;
+    }
+
+    .answer::placeholder{color:#718397}
+
+    .answer:focus{
+      border-color:rgba(34,211,238,.75);
+      box-shadow:0 0 0 4px rgba(34,211,238,.10);
+    }
+
+    .action-row{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      margin-top:11px;
+    }
+
+    .action-row .btn{
+      padding:14px 15px;
+      border-radius:16px;
+    }
+
+    .feedback{
+      min-height:52px;
+      margin:18px 0 0;
+      color:var(--muted);
+      font-weight:750;
+      line-height:1.45;
+    }
+
+    .feedback.good{color:var(--green)}
+    .feedback.bad{color:var(--red)}
+    .feedback.pass{color:var(--yellow)}
+
+    .keyboard-hint{
+      margin-top:auto;
+      padding-top:20px;
+      color:#718397;
+      font-size:.78rem;
+      line-height:1.45;
+    }
+
+    kbd{
+      display:inline-grid;
+      place-items:center;
+      min-width:23px;
+      height:22px;
+      padding:0 6px;
+      border-radius:6px;
+      border:1px solid rgba(255,255,255,.14);
+      border-bottom-width:2px;
+      background:rgba(255,255,255,.05);
+      color:#cddae5;
+      font:700 .72rem/1 ui-monospace,SFMono-Regular,Menlo,monospace;
+    }
+
+    .overlay{
+      position:fixed;
+      inset:0;
+      z-index:20;
+      display:none;
+      place-items:center;
+      padding:20px;
+      background:rgba(2,8,16,.72);
+      backdrop-filter:blur(10px);
+    }
+
+    .overlay.open{display:grid}
+
+    .result-card{
+      width:min(520px,100%);
+      padding:34px;
+      text-align:center;
+      border-radius:28px;
+      border:1px solid var(--line);
+      background:linear-gradient(180deg,#132b43,#0b1c2d);
+      box-shadow:var(--shadow);
+    }
+
+    .result-icon{
+      width:78px;
+      height:78px;
+      display:grid;
+      place-items:center;
+      margin:0 auto 18px;
+      border-radius:24px;
+      color:#052238;
+      background:linear-gradient(135deg,var(--cyan),var(--blue));
+      font-size:2rem;
+      font-weight:950;
+    }
+
+    .result-card h2{
+      margin:0;
+      font-size:clamp(2rem,7vw,3.25rem);
+      letter-spacing:-.055em;
+    }
+
+    .result-card p{
+      color:var(--muted);
+      line-height:1.55;
+    }
+
+    .result-score{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:10px;
+      margin:24px 0;
+    }
+
+    .result-score div{
+      padding:14px 8px;
+      border-radius:16px;
+      background:rgba(255,255,255,.05);
+      border:1px solid var(--line);
+    }
+
+    .result-score b{
+      display:block;
+      font-size:1.5rem;
+    }
+
+    .result-score span{
+      color:var(--muted);
+      font-size:.72rem;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      font-weight:800;
+    }
+
+    .toast{
+      position:fixed;
+      left:50%;
+      bottom:24px;
+      z-index:30;
+      transform:translate(-50%,20px);
+      opacity:0;
+      pointer-events:none;
+      padding:12px 16px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      color:var(--text);
+      background:#10243a;
+      box-shadow:0 14px 34px rgba(0,0,0,.35);
+      font-weight:750;
+      transition:.25s ease;
+    }
+
+    .toast.show{
+      opacity:1;
+      transform:translate(-50%,0);
+    }
+
+    @media (max-width:930px){
+      .topbar{align-items:flex-end}
+      .game-layout{grid-template-columns:1fr}
+      .wheel-panel{min-height:620px}
+      .question-panel{min-height:auto}
+    }
+
+    @media (max-width:620px){
+      .app{padding:20px 12px 24px}
+      .topbar{display:block}
+      .controls{justify-content:flex-start;margin-top:18px}
+      .wheel-panel{min-height:500px;border-radius:22px}
+      .wheel{width:98%}
+      .letter{
+        width:34px;
+        height:34px;
+        margin:-17px;
+        font-size:.76rem;
+      }
+      .stats{left:12px;right:12px;bottom:12px}
+      .stat{padding:9px 6px}
+      .stat b{font-size:1.08rem}
+      .question-panel{padding:24px;border-radius:22px}
+      .answer-wrap{grid-template-columns:1fr}
+      .answer-wrap .btn{width:100%}
+      .result-card{padding:26px 20px}
+    }
+
+    @media (prefers-reduced-motion:reduce){
+      *,*::before,*::after{
+        scroll-behavior:auto!important;
+        transition:none!important;
+        animation:none!important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Presente de indicativo</p>
+        <h1>Pasapalabra
+          <span>verbos regulares · -AR · -ER · -IR</span>
+        </h1>
+      </div>
+      <div class="controls">
+        <button class="btn" id="soundBtn" type="button" aria-pressed="true">🔊 Dźwięk</button>
+        <button class="btn" id="restartBtn" type="button">↻ Nowa gra</button>
+      </div>
+    </header>
+
+    <section class="game-layout">
+      <div class="panel wheel-panel">
+        <div class="wheel" id="wheel" aria-label="Koło liter">
+          <div class="wheel-center">
+            <div>
+              <strong id="timer">04:00</strong>
+              <span>tiempo</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="stats">
+          <div class="stat">
+            <b id="correctCount">0</b>
+            <small>poprawne</small>
+          </div>
+          <div class="stat">
+            <b id="wrongCount">0</b>
+            <small>błędne</small>
+          </div>
+          <div class="stat">
+            <b id="pendingCount">27</b>
+            <small>pozostało</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel question-panel">
+        <div class="progress-row">
+          <div class="progress" aria-label="Postęp gry"><span id="progressBar"></span></div>
+          <span id="progressText">0/27</span>
+        </div>
+
+        <div class="letter-chip" id="currentLetter">A</div>
+        <p class="prompt-label">Odmień czasownik</p>
+        <h2 class="verb" id="verb">aprender</h2>
+        <p class="pronoun">dla osoby: <strong id="pronoun">él</strong></p>
+
+        <form id="answerForm" autocomplete="off">
+          <div class="answer-wrap">
+            <input
+              class="answer"
+              id="answerInput"
+              type="text"
+              inputmode="text"
+              placeholder="Wpisz poprawną formę…"
+              aria-label="Twoja odpowiedź"
+              spellcheck="false"
+            />
+            <button class="btn btn-primary" type="submit">Sprawdź</button>
+          </div>
+        </form>
+
+        <div class="action-row">
+          <button class="btn" id="passBtn" type="button">Pasapalabra</button>
+          <button class="btn" id="showBtn" type="button">Pokaż odpowiedź</button>
+        </div>
+
+        <p class="feedback" id="feedback" aria-live="polite">
+          Wpisz formę czasownika w presente de indicativo.
+        </p>
+
+        <p class="keyboard-hint">
+          <kbd>Enter</kbd> sprawdza odpowiedź · <kbd>Esc</kbd> = Pasapalabra.
+          Akcenty nie są wymagane.
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <div class="overlay" id="resultOverlay" role="dialog" aria-modal="true" aria-labelledby="resultTitle">
+    <div class="result-card">
+      <div class="result-icon">✓</div>
+      <h2 id="resultTitle">¡Muy bien!</h2>
+      <p id="resultMessage">Gra zakończona.</p>
+      <div class="result-score">
+        <div><b id="resultCorrect">0</b><span>poprawne</span></div>
+        <div><b id="resultWrong">0</b><span>błędne</span></div>
+        <div><b id="resultPercent">0%</b><span>wynik</span></div>
+      </div>
+      <button class="btn btn-primary" id="playAgainBtn" type="button">Zagraj ponownie</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const alphabet = [
+      "A","B","C","D","E","F","G","H","I","J","K","L","M","N","Ñ",
+      "O","P","Q","R","S","T","U","V","W","X","Y","Z"
+    ];
+
+    const questionBank = {
+      "A": [
+        { verb:"aprender", pronoun:"él", answer:"aprende" },
+        { verb:"ayudar", pronoun:"nosotros", answer:"ayudamos" },
+        { verb:"admirar", pronoun:"tú", answer:"admiras" }
+      ],
+      "B": [
+        { verb:"bailar", pronoun:"nosotros", answer:"bailamos" },
+        { verb:"beber", pronoun:"yo", answer:"bebo" },
+        { verb:"buscar", pronoun:"ellos", answer:"buscan" }
+      ],
+      "C": [
+        { verb:"comer", pronoun:"tú", answer:"comes" },
+        { verb:"caminar", pronoun:"ella", answer:"camina" },
+        { verb:"cantar", pronoun:"vosotros", answer:"cantáis" }
+      ],
+      "D": [
+        { verb:"dibujar", pronoun:"ella", answer:"dibuja" },
+        { verb:"desayunar", pronoun:"yo", answer:"desayuno" },
+        { verb:"descansar", pronoun:"ellos", answer:"descansan" }
+      ],
+      "E": [
+        { verb:"escribir", pronoun:"yo", answer:"escribo" },
+        { verb:"estudiar", pronoun:"vosotros", answer:"estudiáis" },
+        { verb:"escuchar", pronoun:"él", answer:"escucha" }
+      ],
+      "F": [
+        { verb:"fumar", pronoun:"ellos", answer:"fuman" },
+        { verb:"firmar", pronoun:"tú", answer:"firmas" },
+        { verb:"formar", pronoun:"nosotros", answer:"formamos" }
+      ],
+      "G": [
+        { verb:"ganar", pronoun:"vosotros", answer:"ganáis" },
+        { verb:"gastar", pronoun:"yo", answer:"gasto" },
+        { verb:"guardar", pronoun:"ella", answer:"guarda" }
+      ],
+      "H": [
+        { verb:"hablar", pronoun:"usted", answer:"habla" },
+        { verb:"habitar", pronoun:"ellos", answer:"habitan" },
+        { verb:"heredar", pronoun:"tú", answer:"heredas" }
+      ],
+      "I": [
+        { verb:"imaginar", pronoun:"yo", answer:"imagino" },
+        { verb:"invitar", pronoun:"nosotros", answer:"invitamos" },
+        { verb:"intentar", pronoun:"ella", answer:"intenta" }
+      ],
+      "J": [
+        { verb:"juntar", pronoun:"tú", answer:"juntas" },
+        { verb:"juzgar", pronoun:"ellos", answer:"juzgan" },
+        { verb:"jubilar", pronoun:"usted", answer:"jubila" }
+      ],
+      "K": [
+        { verb:"kitesurfear", pronoun:"yo", answer:"kitesurfeo" },
+        { verb:"karaokear", pronoun:"ellos", answer:"karaokean" }
+      ],
+      "L": [
+        { verb:"lavar", pronoun:"nosotros", answer:"lavamos" },
+        { verb:"limpiar", pronoun:"tú", answer:"limpias" },
+        { verb:"leer", pronoun:"ella", answer:"lee" }
+      ],
+      "M": [
+        { verb:"mirar", pronoun:"ellos", answer:"miran" },
+        { verb:"mandar", pronoun:"yo", answer:"mando" },
+        { verb:"montar", pronoun:"vosotros", answer:"montáis" }
+      ],
+      "N": [
+        { verb:"nadar", pronoun:"yo", answer:"nado" },
+        { verb:"necesitar", pronoun:"ellos", answer:"necesitan" },
+        { verb:"nombrar", pronoun:"tú", answer:"nombras" }
+      ],
+      "Ñ": [
+        { verb:"enseñar", pronoun:"tú", answer:"enseñas", containsLetter:true },
+        { verb:"bañar", pronoun:"él", answer:"baña", containsLetter:true }
+      ],
+      "O": [
+        { verb:"organizar", pronoun:"vosotros", answer:"organizáis" },
+        { verb:"observar", pronoun:"yo", answer:"observo" },
+        { verb:"ocupar", pronoun:"ellos", answer:"ocupan" }
+      ],
+      "P": [
+        { verb:"preguntar", pronoun:"él", answer:"pregunta" },
+        { verb:"practicar", pronoun:"ella", answer:"practica" },
+        { verb:"permitir", pronoun:"yo", answer:"permito" }
+      ],
+      "Q": [
+        { verb:"quedar", pronoun:"nosotros", answer:"quedamos" },
+        { verb:"quemar", pronoun:"tú", answer:"quemas" },
+        { verb:"quitar", pronoun:"ellos", answer:"quitan" }
+      ],
+      "R": [
+        { verb:"responder", pronoun:"ella", answer:"responde" },
+        { verb:"recibir", pronoun:"yo", answer:"recibo" },
+        { verb:"reparar", pronoun:"vosotros", answer:"reparáis" }
+      ],
+      "S": [
+        { verb:"subir", pronoun:"tú", answer:"subes" },
+        { verb:"saltar", pronoun:"ellos", answer:"saltan" },
+        { verb:"saludar", pronoun:"yo", answer:"saludo" }
+      ],
+      "T": [
+        { verb:"trabajar", pronoun:"ustedes", answer:"trabajan" },
+        { verb:"terminar", pronoun:"vosotros", answer:"termináis" },
+        { verb:"tomar", pronoun:"ella", answer:"toma" }
+      ],
+      "U": [
+        { verb:"usar", pronoun:"yo", answer:"uso" },
+        { verb:"utilizar", pronoun:"ellos", answer:"utilizan" },
+        { verb:"unir", pronoun:"nosotros", answer:"unimos" }
+      ],
+      "V": [
+        { verb:"vender", pronoun:"vosotros", answer:"vendéis" },
+        { verb:"vivir", pronoun:"ellos", answer:"viven" },
+        { verb:"visitar", pronoun:"usted", answer:"visita" }
+      ],
+      "W": [
+        { verb:"windsurfear", pronoun:"nosotros", answer:"windsurfeamos" }
+      ],
+      "X": [
+        { verb:"xerocopiar", pronoun:"ella", answer:"xerocopia" }
+      ],
+      "Y": [
+        { verb:"yodurar", pronoun:"ellos", answer:"yoduran" }
+      ],
+      "Z": [
+        { verb:"zapatear", pronoun:"yo", answer:"zapateo" },
+        { verb:"zumbar", pronoun:"ellos", answer:"zumban" }
+      ]
+    };
+
+    const START_TIME = 4 * 60;
+
+    const wheel = document.getElementById("wheel");
+    const timerEl = document.getElementById("timer");
+    const currentLetterEl = document.getElementById("currentLetter");
+    const verbEl = document.getElementById("verb");
+    const pronounEl = document.getElementById("pronoun");
+    const answerInput = document.getElementById("answerInput");
+    const answerForm = document.getElementById("answerForm");
+    const passBtn = document.getElementById("passBtn");
+    const showBtn = document.getElementById("showBtn");
+    const restartBtn = document.getElementById("restartBtn");
+    const playAgainBtn = document.getElementById("playAgainBtn");
+    const soundBtn = document.getElementById("soundBtn");
+    const feedback = document.getElementById("feedback");
+    const progressBar = document.getElementById("progressBar");
+    const progressText = document.getElementById("progressText");
+    const correctCountEl = document.getElementById("correctCount");
+    const wrongCountEl = document.getElementById("wrongCount");
+    const pendingCountEl = document.getElementById("pendingCount");
+    const overlay = document.getElementById("resultOverlay");
+    const toast = document.getElementById("toast");
+
+    let game = [];
+    let currentIndex = 0;
+    let timeLeft = START_TIME;
+    let timerId = null;
+    let gameOver = false;
+    let soundOn = true;
+    let audioCtx = null;
+
+    function shuffle(array){
+      const copy = [...array];
+      for(let i = copy.length - 1; i > 0; i--){
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function normalize(text){
+      return text
+        .trim()
+        .toLocaleLowerCase("es")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g,"")
+        .replace(/[¿?¡!.,;:]/g,"")
+        .replace(/\s+/g," ");
+    }
+
+    function buildWheel(){
+      wheel.querySelectorAll(".letter").forEach(el => el.remove());
+      const radius = Math.max(120, (wheel.clientWidth / 2) - (window.innerWidth <= 620 ? 26 : 34));
+
+      alphabet.forEach((letter,index) => {
+        const angle = (index / alphabet.length) * 360 - 90;
+        const el = document.createElement("div");
+        el.className = "letter";
+        el.textContent = letter;
+        el.dataset.index = index;
+        el.style.transform = `rotate(${angle}deg) translate(${radius}px) rotate(${-angle}deg)`;
+        wheel.appendChild(el);
+      });
+    }
+
+    function prepareGame(){
+      game = alphabet.map(letter => {
+        const options = questionBank[letter];
+        const selected = options[Math.floor(Math.random() * options.length)];
+        return {
+          letter,
+          ...selected,
+          status:"pending"
+        };
+      });
+
+      currentIndex = 0;
+      timeLeft = START_TIME;
+      gameOver = false;
+      overlay.classList.remove("open");
+      clearInterval(timerId);
+      buildWheel();
+      startTimer();
+      updateUI();
+      setTimeout(() => answerInput.focus(),100);
+    }
+
+    function startTimer(){
+      renderTimer();
+      timerId = setInterval(() => {
+        timeLeft--;
+        renderTimer();
+        if(timeLeft <= 0){
+          finishGame(true);
+        }
+      },1000);
+    }
+
+    function renderTimer(){
+      const minutes = Math.floor(timeLeft / 60).toString().padStart(2,"0");
+      const seconds = (timeLeft % 60).toString().padStart(2,"0");
+      timerEl.textContent = `${minutes}:${seconds}`;
+    }
+
+    function updateUI(message = "", type = ""){
+      const item = game[currentIndex];
+      if(!item) return;
+
+      currentLetterEl.textContent = item.letter;
+      verbEl.textContent = item.verb;
+      pronounEl.textContent = item.pronoun;
+      document.querySelector(".prompt-label").textContent =
+        item.containsLetter ? "Czasownik zawiera literę Ñ" : `Czasownik na literę ${item.letter}`;
+      answerInput.value = "";
+      answerInput.disabled = gameOver;
+      passBtn.disabled = gameOver;
+      showBtn.disabled = gameOver;
+
+      feedback.className = `feedback ${type}`.trim();
+      feedback.textContent = message || "Wpisz formę czasownika w presente de indicativo.";
+
+      document.querySelectorAll(".letter").forEach((el,index) => {
+        el.className = "letter";
+        const status = game[index].status;
+        if(status !== "pending") el.classList.add(status);
+        if(index === currentIndex && !gameOver) el.classList.add("current");
+      });
+
+      const correct = game.filter(q => q.status === "correct").length;
+      const wrong = game.filter(q => q.status === "wrong").length;
+      const pending = game.filter(q => q.status === "pending" || q.status === "passed").length;
+      const completed = correct + wrong;
+
+      correctCountEl.textContent = correct;
+      wrongCountEl.textContent = wrong;
+      pendingCountEl.textContent = pending;
+      progressText.textContent = `${completed}/${game.length}`;
+      progressBar.style.width = `${(completed / game.length) * 100}%`;
+    }
+
+    function getNextPlayableIndex(fromIndex){
+      for(let step = 1; step <= game.length; step++){
+        const idx = (fromIndex + step) % game.length;
+        if(game[idx].status === "pending" || game[idx].status === "passed"){
+          return idx;
+        }
+      }
+      return -1;
+    }
+
+    function moveNext(message,type){
+      const next = getNextPlayableIndex(currentIndex);
+      if(next === -1){
+        finishGame(false);
+        return;
+      }
+      currentIndex = next;
+      updateUI(message,type);
+      setTimeout(() => answerInput.focus(),60);
+    }
+
+    function submitAnswer(){
+      if(gameOver) return;
+      const item = game[currentIndex];
+      const value = answerInput.value;
+
+      if(!value.trim()){
+        showToast("Najpierw wpisz odpowiedź.");
+        answerInput.focus();
+        return;
+      }
+
+      if(normalize(value) === normalize(item.answer)){
+        item.status = "correct";
+        playTone("correct");
+        moveNext(`✓ Poprawnie: ${item.pronoun} ${item.answer}.`,"good");
+      }else{
+        item.status = "wrong";
+        playTone("wrong");
+        moveNext(`✕ Poprawna odpowiedź: ${item.pronoun} ${item.answer}.`,"bad");
+      }
+    }
+
+    function passQuestion(){
+      if(gameOver) return;
+      const item = game[currentIndex];
+      item.status = "passed";
+      playTone("pass");
+      moveNext("Pasapalabra — wrócimy do tego czasownika.","pass");
+    }
+
+    function revealAnswer(){
+      if(gameOver) return;
+      const item = game[currentIndex];
+      item.status = "wrong";
+      playTone("wrong");
+      moveNext(`Odpowiedź: ${item.pronoun} ${item.answer}.`,"bad");
+    }
+
+    function finishGame(timeExpired){
+      if(gameOver) return;
+      gameOver = true;
+      clearInterval(timerId);
+
+      game.forEach(item => {
+        if(item.status === "pending" || item.status === "passed"){
+          item.status = "wrong";
+        }
+      });
+
+      updateUI();
+
+      const correct = game.filter(q => q.status === "correct").length;
+      const wrong = game.length - correct;
+      const percent = Math.round((correct / game.length) * 100);
+
+      document.getElementById("resultCorrect").textContent = correct;
+      document.getElementById("resultWrong").textContent = wrong;
+      document.getElementById("resultPercent").textContent = `${percent}%`;
+
+      const title = percent >= 90 ? "¡Excelente!" :
+                    percent >= 70 ? "¡Muy bien!" :
+                    percent >= 50 ? "¡Buen trabajo!" : "¡Sigue practicando!";
+
+      document.getElementById("resultTitle").textContent = title;
+      document.getElementById("resultMessage").textContent = timeExpired
+        ? `Czas minął. Udało Ci się poprawnie rozwiązać ${correct} z ${game.length} przykładów.`
+        : `Koło ukończone. Udało Ci się poprawnie rozwiązać ${correct} z ${game.length} przykładów.`;
+
+      overlay.classList.add("open");
+      playTone(percent >= 70 ? "finish" : "pass");
+    }
+
+    function showToast(text){
+      toast.textContent = text;
+      toast.classList.add("show");
+      clearTimeout(showToast.timeout);
+      showToast.timeout = setTimeout(() => toast.classList.remove("show"),1700);
+    }
+
+    function playTone(type){
+      if(!soundOn) return;
+      try{
+        audioCtx ??= new (window.AudioContext || window.webkitAudioContext)();
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        const frequencies = {
+          correct:[520,680],
+          wrong:[220,165],
+          pass:[330,330],
+          finish:[520,780]
+        }[type] || [440,440];
+
+        osc.type = type === "wrong" ? "sawtooth" : "sine";
+        osc.frequency.setValueAtTime(frequencies[0],now);
+        osc.frequency.exponentialRampToValueAtTime(frequencies[1],now + .16);
+        gain.gain.setValueAtTime(.0001,now);
+        gain.gain.exponentialRampToValueAtTime(.11,now + .02);
+        gain.gain.exponentialRampToValueAtTime(.0001,now + .19);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + .2);
+      }catch(e){}
+    }
+
+    answerForm.addEventListener("submit",event => {
+      event.preventDefault();
+      submitAnswer();
+    });
+
+    passBtn.addEventListener("click",passQuestion);
+    showBtn.addEventListener("click",revealAnswer);
+    restartBtn.addEventListener("click",prepareGame);
+    playAgainBtn.addEventListener("click",prepareGame);
+
+    soundBtn.addEventListener("click",() => {
+      soundOn = !soundOn;
+      soundBtn.setAttribute("aria-pressed",String(soundOn));
+      soundBtn.textContent = soundOn ? "🔊 Dźwięk" : "🔇 Dźwięk";
+    });
+
+    document.addEventListener("keydown",event => {
+      if(event.key === "Escape" && !gameOver){
+        event.preventDefault();
+        passQuestion();
+      }
+    });
+
+    window.addEventListener("resize",() => {
+      clearTimeout(window.__wheelResize);
+      window.__wheelResize = setTimeout(() => {
+        buildWheel();
+        updateUI();
+      },150);
+    });
+
+    prepareGame();
+  </script>
+</body>
+</html>
