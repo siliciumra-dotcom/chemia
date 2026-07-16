@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Telediario B2</title>
+
+
+<style>
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap');
+
+
+*{
+box-sizing:border-box;
+font-family:Poppins,sans-serif;
+}
+
+
+body{
+
+margin:0;
+
+height:100vh;
+
+display:flex;
+
+justify-content:center;
+
+align-items:center;
+
+background:
+linear-gradient(135deg,#101820,#1f4068);
+
+color:white;
+
+}
+
+
+
+.container{
+
+width:90%;
+max-width:750px;
+
+text-align:center;
+
+}
+
+
+
+h1{
+
+font-size:45px;
+
+}
+
+
+
+.subtitle{
+
+opacity:.8;
+
+margin-bottom:30px;
+
+}
+
+
+
+.machine{
+
+height:300px;
+
+background:rgba(255,255,255,.12);
+
+border-radius:30px;
+
+padding:30px;
+
+display:flex;
+
+justify-content:center;
+
+align-items:center;
+
+box-shadow:0 20px 50px rgba(0,0,0,.4);
+
+overflow:hidden;
+
+}
+
+
+
+.card{
+
+background:white;
+
+color:#222;
+
+width:90%;
+
+padding:30px;
+
+border-radius:25px;
+
+transform:scale(1);
+
+transition:.3s;
+
+}
+
+
+
+.icon{
+
+font-size:60px;
+
+}
+
+
+
+.title{
+
+font-size:32px;
+
+font-weight:800;
+
+margin-top:10px;
+
+}
+
+
+
+.desc{
+
+color:#666;
+
+margin-top:10px;
+
+}
+
+
+
+.spin{
+
+margin-top:35px;
+
+padding:18px 45px;
+
+border:none;
+
+border-radius:50px;
+
+font-size:22px;
+
+font-weight:800;
+
+cursor:pointer;
+
+background:#22d3ee;
+
+color:#052238;
+
+}
+
+
+.spin:hover{
+
+transform:scale(1.08);
+
+}
+
+
+
+.loading{
+
+animation:shake .12s infinite;
+
+}
+
+
+
+@keyframes shake{
+
+0%{
+transform:translateY(-5px);
+}
+
+50%{
+transform:translateY(5px);
+}
+
+100%{
+transform:translateY(-5px);
+}
+
+}
+
+
+
+.final{
+
+animation:pop .6s ease;
+
+}
+
+
+
+@keyframes pop{
+
+0%{
+
+transform:scale(.2);
+
+opacity:0;
+
+}
+
+100%{
+
+transform:scale(1);
+
+opacity:1;
+
+}
+
+}
+
+
+</style>
+
+</head>
+
+
+
+<body>
+
+
+<div class="container">
+
+
+<h1>📰 Telediario B2</h1>
+
+
+<div class="subtitle">
+
+Redacción de noticias · Sorteo de sección
+
+</div>
+
+
+
+
+<div class="machine">
+
+
+<div class="card" id="card">
+
+
+<div class="icon">
+
+🎤
+
+</div>
+
+
+<div class="title">
+
+¿Quién presenta la noticia?
+
+</div>
+
+
+<div class="desc">
+
+Pulsa el botón y descubre tu sección
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+
+
+<button class="spin" onclick="startDraw()">
+
+🎲 Sortear noticia
+
+</button>
+
+
+
+</div>
+
+
+
+
+
+<script>
+
+
+const topics=[
+
+
+{
+icon:"🌍",
+title:"Internacional",
+desc:"Crisis mundial, acuerdos entre países o acontecimientos internacionales."
+},
+
+{
+icon:"🏛️",
+title:"Política",
+desc:"Elecciones, nuevas leyes o conflictos políticos."
+},
+
+{
+icon:"💰",
+title:"Economía",
+desc:"Crisis económica, empresas, empleo o dinero."
+},
+
+{
+icon:"🔬",
+title:"Ciencia y tecnología",
+desc:"Inventos, inteligencia artificial o descubrimientos."
+},
+
+{
+icon:"🌱",
+title:"Medio ambiente",
+desc:"Cambio climático, contaminación o soluciones ecológicas."
+},
+
+{
+icon:"⚽",
+title:"Deportes",
+desc:"Victorias, polémicas o historias deportivas."
+},
+
+{
+icon:"🎭",
+title:"Cultura y sociedad",
+desc:"Famosos, películas, tendencias o fenómenos sociales."
+},
+
+{
+icon:"🚨",
+title:"Sucesos",
+desc:"Misterios, accidentes, investigaciones o rescates."
+}
+
+
+];
+
+
+
+let running=false;
+
+
+
+function startDraw(){
+
+
+if(running)
+return;
+
+
+running=true;
+
+
+
+let card=document.getElementById("card");
+
+
+
+card.classList.add("loading");
+
+
+
+let counter=0;
+
+
+let interval=setInterval(()=>{
+
+
+let random=
+topics[Math.floor(Math.random()*topics.length)];
+
+
+
+card.innerHTML=`
+
+<div class="icon">
+
+${random.icon}
+
+</div>
+
+<div class="title">
+
+${random.title}
+
+</div>
+
+<div class="desc">
+
+Buscando noticia...
+
+</div>
+
+`;
+
+
+
+counter++;
+
+
+
+if(counter>25){
+
+
+clearInterval(interval);
+
+
+
+let final=
+topics[Math.floor(Math.random()*topics.length)];
+
+
+
+card.classList.remove("loading");
+
+card.classList.add("final");
+
+
+
+card.innerHTML=`
+
+<div class="icon">
+
+${final.icon}
+
+</div>
+
+
+<div class="title">
+
+📰 ${final.title}
+
+</div>
+
+
+<div class="desc">
+
+${final.desc}
+
+<br><br>
+
+<strong>
+¡Preparad vuestro telediario!
+</strong>
+
+</div>
+
+`;
+
+
+
+running=false;
+
+
+
+}
+
+
+
+},100);
+
+
+
+}
+
+
+
+</script>
+
+
+</body>
+
+</html>
