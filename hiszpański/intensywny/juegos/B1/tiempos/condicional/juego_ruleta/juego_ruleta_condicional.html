@@ -1,1 +1,851 @@
+<!DOCTYPE html>
+<html lang="es">
 
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Ruleta de preguntas</title>
+
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap");
+
+    * {
+      box-sizing: border-box;
+      font-family: "Poppins", sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      background: linear-gradient(135deg, #667eea, #764ba2);
+    }
+
+    .app {
+      width: 100%;
+      max-width: 1200px;
+      padding: 30px;
+
+      color: white;
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 30px;
+      backdrop-filter: blur(15px);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+    }
+
+    h1 {
+      margin: 0 0 30px;
+      text-align: center;
+      font-size: clamp(2rem, 5vw, 2.4rem);
+    }
+
+    .content {
+      display: grid;
+      grid-template-columns: 330px 1fr;
+      gap: 30px;
+    }
+
+    .panel {
+      padding: 25px;
+
+      color: #333;
+      background: white;
+      border-radius: 20px;
+    }
+
+    .panel h2 {
+      margin-top: 0;
+    }
+
+    textarea {
+      width: 100%;
+      height: 110px;
+      padding: 15px;
+
+      resize: vertical;
+
+      border: 1px solid #ddd;
+      border-radius: 15px;
+
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    textarea:focus {
+      outline: 3px solid rgba(102, 126, 234, 0.2);
+      border-color: #667eea;
+    }
+
+    button {
+      border: none;
+      border-radius: 50px;
+
+      cursor: pointer;
+
+      font-size: 16px;
+      font-weight: 700;
+
+      transition:
+        transform 0.2s ease,
+        opacity 0.2s ease,
+        background 0.2s ease;
+    }
+
+    button:hover:not(:disabled) {
+      transform: translateY(-2px);
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
+    }
+
+    .add {
+      width: 100%;
+      margin-top: 15px;
+      padding: 15px 25px;
+
+      color: white;
+      background: #667eea;
+    }
+
+    .add:hover:not(:disabled) {
+      background: #5668d7;
+    }
+
+    .list-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      margin-top: 24px;
+      margin-bottom: 10px;
+    }
+
+    .list-header h3 {
+      margin: 0;
+      font-size: 1rem;
+    }
+
+    .counter {
+      padding: 5px 10px;
+
+      color: #667eea;
+      background: #eef0ff;
+      border-radius: 20px;
+
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .list {
+      max-height: 290px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+
+      margin-bottom: 8px;
+      padding: 10px 10px 10px 13px;
+
+      background: #f3f4f6;
+      border-radius: 12px;
+
+      animation: itemIn 0.25s ease;
+    }
+
+    .item-number {
+      flex: 0 0 auto;
+
+      color: #667eea;
+      font-weight: 700;
+    }
+
+    .item-text {
+      flex: 1;
+      min-width: 0;
+
+      overflow-wrap: anywhere;
+      line-height: 1.35;
+    }
+
+    .remove {
+      flex: 0 0 auto;
+
+      width: 38px;
+      height: 38px;
+      padding: 0;
+
+      display: grid;
+      place-items: center;
+
+      color: #dc2626;
+      background: #fee2e2;
+      border-radius: 11px;
+
+      font-size: 16px;
+    }
+
+    .remove:hover:not(:disabled) {
+      color: white;
+      background: #dc2626;
+    }
+
+    .empty-list {
+      padding: 20px 12px;
+
+      color: #777;
+      background: #f8f8f8;
+      border: 2px dashed #ddd;
+      border-radius: 12px;
+
+      text-align: center;
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .game {
+      min-width: 0;
+
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .wheel-box {
+      position: relative;
+      width: min(600px, 100%);
+      aspect-ratio: 1;
+    }
+
+    canvas {
+      display: block;
+
+      width: 100%;
+      height: 100%;
+
+      background: white;
+      border-radius: 50%;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+    }
+
+    .pointer {
+      position: absolute;
+      top: -38px;
+      left: 50%;
+      z-index: 10;
+
+      transform: translateX(-50%);
+
+      color: #ffdd59;
+      font-size: 55px;
+      line-height: 1;
+      text-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
+    }
+
+    .spin {
+      margin-top: 30px;
+      padding: 18px 65px;
+
+      color: #333;
+      background: #ffdd59;
+
+      font-size: 22px;
+      box-shadow: 0 10px 25px rgba(255, 221, 89, 0.25);
+    }
+
+    .spin:hover:not(:disabled) {
+      background: #ffe477;
+    }
+
+    .result {
+      width: 90%;
+      min-height: 95px;
+      margin-top: 25px;
+      padding: 25px;
+
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      color: #333;
+      background: white;
+      border-radius: 20px;
+
+      text-align: center;
+      font-size: 22px;
+      font-weight: 600;
+    }
+
+    .result.show {
+      animation: resultIn 0.5s ease;
+    }
+
+    @keyframes itemIn {
+      from {
+        opacity: 0;
+        transform: translateY(7px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes resultIn {
+      0% {
+        transform: scale(0.94);
+      }
+
+      50% {
+        transform: scale(1.04);
+      }
+
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    @media (max-width: 900px) {
+      .content {
+        grid-template-columns: 1fr;
+      }
+
+      .panel {
+        order: 2;
+      }
+
+      .game {
+        order: 1;
+      }
+
+      .wheel-box {
+        max-width: 500px;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .app {
+        padding: 22px 14px;
+        border-radius: 22px;
+      }
+
+      .panel {
+        padding: 20px;
+      }
+
+      .pointer {
+        top: -28px;
+        font-size: 42px;
+      }
+
+      .spin {
+        width: 100%;
+        padding: 15px 25px;
+        font-size: 19px;
+      }
+
+      .result {
+        width: 100%;
+        padding: 20px;
+        font-size: 18px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <main class="app">
+
+    <h1>🎡 Ruleta de preguntas</h1>
+
+    <div class="content">
+
+      <section class="panel">
+
+        <h2>Añadir pregunta</h2>
+
+        <textarea
+          id="question"
+          placeholder="Escribe una pregunta..."
+          maxlength="180"
+        ></textarea>
+
+        <button
+          class="add"
+          id="addButton"
+          type="button"
+          onclick="addQuestion()"
+        >
+          ➕ Añadir pregunta
+        </button>
+
+        <div class="list-header">
+          <h3>Preguntas de la ruleta</h3>
+          <span class="counter" id="questionCounter">0 preguntas</span>
+        </div>
+
+        <div class="list" id="list"></div>
+
+      </section>
+
+      <section class="game">
+
+        <div class="wheel-box">
+
+          <div class="pointer" aria-hidden="true">
+            ▼
+          </div>
+
+          <canvas
+            id="wheel"
+            width="600"
+            height="600"
+            aria-label="Ruleta de preguntas"
+          ></canvas>
+
+        </div>
+
+        <button
+          class="spin"
+          id="spinButton"
+          type="button"
+          onclick="spin()"
+        >
+          🎲 GIRAR
+        </button>
+
+        <div class="result" id="result" aria-live="polite">
+          La pregunta aparecerá aquí
+        </div>
+
+      </section>
+
+    </div>
+
+  </main>
+
+  <script>
+    let questions = [
+      "¿Cómo te llamas?",
+      "¿Dónde vives?",
+      "¿Qué haces si llueve?",
+      "¿Qué comida te gusta?"
+    ];
+
+    const canvas = document.getElementById("wheel");
+    const ctx = canvas.getContext("2d");
+
+    const questionInput = document.getElementById("question");
+    const list = document.getElementById("list");
+    const result = document.getElementById("result");
+    const spinButton = document.getElementById("spinButton");
+    const addButton = document.getElementById("addButton");
+    const questionCounter = document.getElementById("questionCounter");
+
+    let angle = 0;
+    let spinning = false;
+
+    function drawWheel() {
+      const center = canvas.width / 2;
+      const radius = canvas.width / 2;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const total = questions.length;
+
+      if (total === 0) {
+        drawEmptyWheel(center, radius);
+        return;
+      }
+
+      const slice = (Math.PI * 2) / total;
+
+      for (let i = 0; i < total; i++) {
+        const start = angle + i * slice;
+        const end = start + slice;
+
+        ctx.beginPath();
+        ctx.moveTo(center, center);
+        ctx.arc(center, center, radius, start, end);
+        ctx.closePath();
+
+        ctx.fillStyle = `hsl(${i * 360 / total}, 75%, 65%)`;
+        ctx.fill();
+
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.7)";
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        drawQuestionText(
+          questions[i],
+          start,
+          slice,
+          center,
+          radius,
+          total
+        );
+      }
+
+      drawCenter(center);
+    }
+
+    function drawQuestionText(
+      question,
+      start,
+      slice,
+      center,
+      radius,
+      total
+    ) {
+      ctx.save();
+
+      ctx.translate(center, center);
+      ctx.rotate(start + slice / 2);
+
+      ctx.fillStyle = "#222";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+
+      let fontSize = 18;
+
+      if (total > 8) {
+        fontSize = 15;
+      }
+
+      if (total > 12) {
+        fontSize = 12;
+      }
+
+      ctx.font = `700 ${fontSize}px Poppins`;
+
+      const maxCharacters = total > 10 ? 13 : 18;
+      const lines = createTextLines(question, maxCharacters);
+
+      const limitedLines = lines.slice(0, 4);
+
+      limitedLines.forEach((text, index) => {
+        let displayedText = text;
+
+        if (index === 3 && lines.length > 4) {
+          displayedText = `${text.slice(0, -3)}...`;
+        }
+
+        ctx.fillText(
+          displayedText.trim(),
+          radius * 0.58,
+          (index - (limitedLines.length - 1) / 2) * (fontSize + 6)
+        );
+      });
+
+      ctx.restore();
+    }
+
+    function createTextLines(text, maxCharacters) {
+      const words = text.split(/\s+/);
+      const lines = [];
+
+      let currentLine = "";
+
+      words.forEach(word => {
+        const testLine = currentLine
+          ? `${currentLine} ${word}`
+          : word;
+
+        if (
+          testLine.length > maxCharacters &&
+          currentLine !== ""
+        ) {
+          lines.push(currentLine);
+          currentLine = word;
+        } else {
+          currentLine = testLine;
+        }
+      });
+
+      if (currentLine) {
+        lines.push(currentLine);
+      }
+
+      return lines;
+    }
+
+    function drawCenter(center) {
+      ctx.beginPath();
+      ctx.arc(center, center, 55, 0, Math.PI * 2);
+
+      ctx.fillStyle = "white";
+      ctx.fill();
+
+      ctx.strokeStyle = "rgba(102, 126, 234, 0.25)";
+      ctx.lineWidth = 5;
+      ctx.stroke();
+
+      ctx.fillStyle = "#667eea";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.font = "700 24px Poppins";
+      ctx.fillText("¡GIRA!", center, center);
+    }
+
+    function drawEmptyWheel(center, radius) {
+      ctx.beginPath();
+      ctx.arc(center, center, radius - 3, 0, Math.PI * 2);
+
+      ctx.fillStyle = "#f4f4f5";
+      ctx.fill();
+
+      ctx.strokeStyle = "#d4d4d8";
+      ctx.lineWidth = 5;
+      ctx.stroke();
+
+      ctx.fillStyle = "#777";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.font = "600 22px Poppins";
+
+      ctx.fillText(
+        "Añade una pregunta",
+        center,
+        center - 15
+      );
+
+      ctx.font = "400 17px Poppins";
+
+      ctx.fillText(
+        "para empezar el juego",
+        center,
+        center + 22
+      );
+    }
+
+    function addQuestion() {
+      if (spinning) {
+        return;
+      }
+
+      const text = questionInput.value.trim();
+
+      if (text === "") {
+        questionInput.focus();
+        return;
+      }
+
+      questions.push(text);
+
+      questionInput.value = "";
+      result.textContent = "La pregunta aparecerá aquí";
+
+      updateGame();
+      questionInput.focus();
+    }
+
+    function removeQuestion(index) {
+      if (spinning) {
+        return;
+      }
+
+      questions.splice(index, 1);
+
+      angle = 0;
+
+      result.textContent = questions.length
+        ? "La pregunta aparecerá aquí"
+        : "Añade al menos una pregunta para jugar";
+
+      updateGame();
+    }
+
+    function updateList() {
+      list.innerHTML = "";
+
+      questionCounter.textContent =
+        questions.length === 1
+          ? "1 pregunta"
+          : `${questions.length} preguntas`;
+
+      if (questions.length === 0) {
+        const emptyMessage = document.createElement("div");
+
+        emptyMessage.className = "empty-list";
+        emptyMessage.textContent =
+          "Todavía no hay preguntas. Añade una para crear la ruleta.";
+
+        list.appendChild(emptyMessage);
+        return;
+      }
+
+      questions.forEach((question, index) => {
+        const item = document.createElement("div");
+        item.className = "item";
+
+        const number = document.createElement("span");
+        number.className = "item-number";
+        number.textContent = `${index + 1}.`;
+
+        const text = document.createElement("span");
+        text.className = "item-text";
+        text.textContent = question;
+
+        const removeButton = document.createElement("button");
+        removeButton.className = "remove";
+        removeButton.type = "button";
+        removeButton.title = "Eliminar pregunta";
+        removeButton.setAttribute(
+          "aria-label",
+          `Eliminar pregunta ${index + 1}`
+        );
+        removeButton.textContent = "🗑";
+
+        removeButton.addEventListener("click", () => {
+          removeQuestion(index);
+        });
+
+        item.appendChild(number);
+        item.appendChild(text);
+        item.appendChild(removeButton);
+
+        list.appendChild(item);
+      });
+    }
+
+    function updateGame() {
+      updateList();
+      drawWheel();
+
+      spinButton.disabled =
+        questions.length === 0 || spinning;
+
+      addButton.disabled = spinning;
+    }
+
+    function setControlsDuringSpin(isSpinning) {
+      spinButton.disabled =
+        isSpinning || questions.length === 0;
+
+      addButton.disabled = isSpinning;
+      questionInput.disabled = isSpinning;
+
+      document
+        .querySelectorAll(".remove")
+        .forEach(button => {
+          button.disabled = isSpinning;
+        });
+    }
+
+    function spin() {
+      if (spinning || questions.length === 0) {
+        return;
+      }
+
+      spinning = true;
+      setControlsDuringSpin(true);
+
+      result.classList.remove("show");
+      result.textContent = "La ruleta está girando...";
+
+      const totalRotation =
+        (Math.random() * 5 + 6) * Math.PI * 2;
+
+      const startAngle = angle;
+      const endAngle = angle + totalRotation;
+
+      const duration = 6000;
+      let startTime = null;
+
+      function animate(time) {
+        if (startTime === null) {
+          startTime = time;
+        }
+
+        const progress = Math.min(
+          (time - startTime) / duration,
+          1
+        );
+
+        const ease =
+          1 - Math.pow(1 - progress, 4);
+
+        angle =
+          startAngle +
+          (endAngle - startAngle) * ease;
+
+        drawWheel();
+
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+          return;
+        }
+
+        angle = endAngle;
+        drawWheel();
+
+        const normalized =
+          (
+            angle % (Math.PI * 2) +
+            Math.PI * 2
+          ) % (Math.PI * 2);
+
+        const slice =
+          (Math.PI * 2) / questions.length;
+
+        const pointerAngle =
+          3 * Math.PI / 2;
+
+        const relative =
+          (
+            pointerAngle -
+            normalized +
+            Math.PI * 2
+          ) % (Math.PI * 2);
+
+        let selectedIndex =
+          Math.floor(relative / slice);
+
+        if (selectedIndex >= questions.length) {
+          selectedIndex = questions.length - 1;
+        }
+
+        result.textContent =
+          `💬 ${questions[selectedIndex]}`;
+
+        result.classList.remove("show");
+        void result.offsetWidth;
+        result.classList.add("show");
+
+        spinning = false;
+        setControlsDuringSpin(false);
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    questionInput.addEventListener("keydown", event => {
+      if (
+        event.key === "Enter" &&
+        !event.shiftKey
+      ) {
+        event.preventDefault();
+        addQuestion();
+      }
+    });
+
+    updateGame();
+  </script>
+
+</body>
+
+</html>
