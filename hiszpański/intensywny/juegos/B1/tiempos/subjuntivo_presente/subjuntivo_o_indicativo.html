@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Juego de español: indicativo o subjuntivo" />
+  <title>¿Indicativo o subjuntivo?</title>
+
+  <style>
+    :root {
+      --bg-1: #fff7ed;
+      --bg-2: #eef6ff;
+      --card: rgba(255, 255, 255, 0.88);
+      --text: #172033;
+      --muted: #64748b;
+      --line: rgba(148, 163, 184, 0.25);
+      --primary: #7c3aed;
+      --primary-2: #a855f7;
+      --indicativo: #0ea5e9;
+      --indicativo-dark: #0284c7;
+      --subjuntivo: #f97316;
+      --subjuntivo-dark: #ea580c;
+      --success: #16a34a;
+      --error: #dc2626;
+      --shadow: 0 22px 60px rgba(51, 65, 85, 0.16);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      min-height: 100%;
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      padding: 24px;
+      overflow-x: hidden;
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 10% 10%, rgba(249, 115, 22, 0.18), transparent 28%),
+        radial-gradient(circle at 90% 15%, rgba(14, 165, 233, 0.18), transparent 30%),
+        linear-gradient(135deg, var(--bg-1), var(--bg-2));
+      display: grid;
+      place-items: center;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    .blob {
+      position: fixed;
+      border-radius: 999px;
+      filter: blur(8px);
+      opacity: 0.42;
+      pointer-events: none;
+      animation: float 8s ease-in-out infinite;
+    }
+
+    .blob.one {
+      width: 180px;
+      height: 180px;
+      left: -50px;
+      top: 18%;
+      background: #fbbf24;
+    }
+
+    .blob.two {
+      width: 230px;
+      height: 230px;
+      right: -80px;
+      bottom: 8%;
+      background: #a78bfa;
+      animation-delay: -3s;
+    }
+
+    .app {
+      width: min(900px, 100%);
+      position: relative;
+      z-index: 1;
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .logo {
+      width: 52px;
+      height: 52px;
+      border-radius: 17px;
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      color: white;
+      font-size: 25px;
+      font-weight: 900;
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      box-shadow: 0 12px 26px rgba(124, 58, 237, 0.28);
+      transform: rotate(-4deg);
+    }
+
+    .brand-text {
+      min-width: 0;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: clamp(1.25rem, 3vw, 2rem);
+      line-height: 1.05;
+      letter-spacing: -0.035em;
+    }
+
+    .brand p {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .score-box {
+      min-width: 128px;
+      padding: 12px 16px;
+      text-align: center;
+      border: 1px solid rgba(255,255,255,0.7);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.72);
+      backdrop-filter: blur(14px);
+      box-shadow: 0 10px 28px rgba(51, 65, 85, 0.1);
+    }
+
+    .score-box span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.75rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    .score-box strong {
+      display: inline-block;
+      margin-top: 2px;
+      font-size: 1.55rem;
+      line-height: 1;
+    }
+
+    .score-box.bump strong {
+      animation: scoreBump 0.5s ease;
+    }
+
+    .card {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      border-radius: 32px;
+      background: var(--card);
+      backdrop-filter: blur(18px);
+      box-shadow: var(--shadow);
+    }
+
+    .game-screen {
+      padding: clamp(22px, 5vw, 48px);
+    }
+
+    .progress-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 12px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      font-weight: 750;
+    }
+
+    .progress-track {
+      height: 12px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: #e8edf5;
+      box-shadow: inset 0 1px 3px rgba(15, 23, 42, 0.08);
+    }
+
+    .progress-fill {
+      width: 0%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--primary), #ec4899);
+      transition: width 0.45s cubic-bezier(.2,.8,.2,1);
+    }
+
+    .question-wrap {
+      min-height: 270px;
+      display: grid;
+      align-content: center;
+      padding: 34px 0 24px;
+      text-align: center;
+    }
+
+    .eyebrow {
+      margin: 0 0 14px;
+      color: var(--primary);
+      font-size: 0.82rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+    }
+
+    .sentence {
+      margin: 0 auto;
+      max-width: 720px;
+      font-size: clamp(1.45rem, 4vw, 2.5rem);
+      line-height: 1.32;
+      letter-spacing: -0.03em;
+      text-wrap: balance;
+    }
+
+    .verb {
+      display: inline-block;
+      padding: 0.08em 0.3em 0.14em;
+      border-radius: 0.42em;
+      color: #6d28d9;
+      background: rgba(124, 58, 237, 0.11);
+      box-shadow: inset 0 -2px 0 rgba(124, 58, 237, 0.16);
+    }
+
+    .instruction {
+      margin: 18px 0 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .answers {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .answer-btn {
+      position: relative;
+      min-height: 104px;
+      border: 0;
+      border-radius: 24px;
+      color: white;
+      cursor: pointer;
+      overflow: hidden;
+      isolation: isolate;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+    }
+
+    .answer-btn::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      background: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.34), transparent 30%);
+    }
+
+    .answer-btn:hover:not(:disabled) {
+      transform: translateY(-4px) scale(1.01);
+      filter: saturate(1.08);
+    }
+
+    .answer-btn:active:not(:disabled) {
+      transform: translateY(0) scale(0.98);
+    }
+
+    .answer-btn:focus-visible,
+    .next-btn:focus-visible,
+    .restart-btn:focus-visible {
+      outline: 4px solid rgba(124, 58, 237, 0.25);
+      outline-offset: 4px;
+    }
+
+    .answer-btn:disabled {
+      cursor: default;
+    }
+
+    .answer-btn.indicativo {
+      background: linear-gradient(135deg, var(--indicativo), var(--indicativo-dark));
+      box-shadow: 0 14px 30px rgba(14, 165, 233, 0.26);
+    }
+
+    .answer-btn.subjuntivo {
+      background: linear-gradient(135deg, var(--subjuntivo), var(--subjuntivo-dark));
+      box-shadow: 0 14px 30px rgba(249, 115, 22, 0.27);
+    }
+
+    .answer-btn .mode {
+      display: block;
+      font-size: clamp(1.05rem, 2.8vw, 1.35rem);
+      font-weight: 900;
+      letter-spacing: -0.02em;
+    }
+
+    .answer-btn .hint {
+      display: block;
+      margin-top: 5px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      opacity: 0.88;
+    }
+
+    .answer-btn.correct {
+      animation: correctPulse 0.7s ease;
+      box-shadow: 0 0 0 5px rgba(22, 163, 74, 0.18), 0 18px 38px rgba(22, 163, 74, 0.28);
+    }
+
+    .answer-btn.wrong {
+      animation: shake 0.5s ease;
+      filter: grayscale(0.2) brightness(0.9);
+      box-shadow: 0 0 0 5px rgba(220, 38, 38, 0.16);
+    }
+
+    .answer-btn.dimmed {
+      opacity: 0.45;
+      transform: scale(0.98);
+    }
+
+    .feedback-area {
+      min-height: 92px;
+      display: grid;
+      align-items: center;
+      margin-top: 16px;
+    }
+
+    .feedback {
+      display: none;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 13px;
+      padding: 14px 16px;
+      border-radius: 20px;
+      animation: feedbackIn 0.4s ease both;
+    }
+
+    .feedback.show {
+      display: grid;
+    }
+
+    .feedback.success {
+      color: #166534;
+      background: rgba(220, 252, 231, 0.92);
+      border: 1px solid rgba(22, 163, 74, 0.18);
+    }
+
+    .feedback.error {
+      color: #991b1b;
+      background: rgba(254, 226, 226, 0.92);
+      border: 1px solid rgba(220, 38, 38, 0.16);
+    }
+
+    .feedback-icon {
+      width: 40px;
+      height: 40px;
+      display: grid;
+      place-items: center;
+      border-radius: 14px;
+      color: white;
+      font-size: 1.1rem;
+      font-weight: 1000;
+    }
+
+    .success .feedback-icon {
+      background: var(--success);
+    }
+
+    .error .feedback-icon {
+      background: var(--error);
+    }
+
+    .feedback strong {
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    .feedback small {
+      display: block;
+      color: inherit;
+      opacity: 0.82;
+      line-height: 1.35;
+    }
+
+    .next-btn {
+      border: 0;
+      border-radius: 14px;
+      padding: 11px 15px;
+      color: white;
+      background: #172033;
+      font-weight: 850;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: transform 0.18s ease, background 0.18s ease;
+    }
+
+    .next-btn:hover {
+      transform: translateX(3px);
+      background: #0f172a;
+    }
+
+    .points-pop {
+      position: absolute;
+      left: 50%;
+      top: 46%;
+      z-index: 10;
+      pointer-events: none;
+      color: var(--success);
+      font-size: 2.2rem;
+      font-weight: 1000;
+      text-shadow: 0 4px 18px rgba(255,255,255,0.9);
+      opacity: 0;
+      transform: translate(-50%, 0) scale(0.7);
+    }
+
+    .points-pop.show {
+      animation: pointsFly 0.9s ease forwards;
+    }
+
+    .confetti-piece {
+      position: absolute;
+      width: 10px;
+      height: 18px;
+      border-radius: 3px;
+      pointer-events: none;
+      z-index: 12;
+      animation: confetti 0.9s ease-out forwards;
+    }
+
+    .screen-enter {
+      animation: questionIn 0.48s ease both;
+    }
+
+    .end-screen {
+      display: none;
+      padding: clamp(28px, 6vw, 62px);
+      text-align: center;
+    }
+
+    .end-screen.active {
+      display: block;
+      animation: feedbackIn 0.6s ease both;
+    }
+
+    .trophy {
+      width: 96px;
+      height: 96px;
+      margin: 0 auto 22px;
+      display: grid;
+      place-items: center;
+      border-radius: 30px;
+      font-size: 3.4rem;
+      background: linear-gradient(135deg, #fef3c7, #fde68a);
+      box-shadow: 0 18px 45px rgba(245, 158, 11, 0.25);
+      animation: trophy 1.2s ease-in-out infinite alternate;
+    }
+
+    .end-screen h2 {
+      margin: 0;
+      font-size: clamp(2rem, 5vw, 3.4rem);
+      letter-spacing: -0.045em;
+    }
+
+    .end-screen p {
+      max-width: 600px;
+      margin: 13px auto 0;
+      color: var(--muted);
+      font-size: 1.05rem;
+      line-height: 1.6;
+    }
+
+    .final-score {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 8px;
+      margin: 26px 0;
+      padding: 17px 24px;
+      border-radius: 22px;
+      color: #5b21b6;
+      background: rgba(237, 233, 254, 0.9);
+      border: 1px solid rgba(124, 58, 237, 0.16);
+    }
+
+    .final-score strong {
+      font-size: 2.4rem;
+    }
+
+    .final-score span {
+      font-weight: 800;
+    }
+
+    .restart-btn {
+      border: 0;
+      border-radius: 18px;
+      padding: 15px 24px;
+      color: white;
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      box-shadow: 0 14px 28px rgba(124, 58, 237, 0.25);
+      font-weight: 900;
+      cursor: pointer;
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .restart-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 18px 34px rgba(124, 58, 237, 0.32);
+    }
+
+    .footer-note {
+      margin-top: 16px;
+      color: var(--muted);
+      font-size: 0.78rem;
+      text-align: center;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0) translateX(0); }
+      50% { transform: translateY(-22px) translateX(12px); }
+    }
+
+    @keyframes scoreBump {
+      0% { transform: scale(1); }
+      45% { transform: scale(1.38) rotate(-4deg); color: var(--success); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes correctPulse {
+      0% { transform: scale(1); }
+      45% { transform: scale(1.055); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-10px); }
+      40% { transform: translateX(9px); }
+      60% { transform: translateX(-6px); }
+      80% { transform: translateX(4px); }
+    }
+
+    @keyframes feedbackIn {
+      from { opacity: 0; transform: translateY(12px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    @keyframes pointsFly {
+      0% { opacity: 0; transform: translate(-50%, 20px) scale(0.6); }
+      30% { opacity: 1; transform: translate(-50%, -8px) scale(1.15); }
+      100% { opacity: 0; transform: translate(-50%, -80px) scale(0.9); }
+    }
+
+    @keyframes confetti {
+      0% { opacity: 1; transform: translate(0, 0) rotate(0deg) scale(1); }
+      100% { opacity: 0; transform: translate(var(--x), var(--y)) rotate(var(--r)) scale(0.65); }
+    }
+
+    @keyframes questionIn {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes trophy {
+      from { transform: rotate(-5deg) translateY(0); }
+      to { transform: rotate(5deg) translateY(-7px); }
+    }
+
+    @media (max-width: 650px) {
+      body {
+        padding: 14px;
+        display: block;
+      }
+
+      .app {
+        margin: 0 auto;
+      }
+
+      .topbar {
+        grid-template-columns: 1fr;
+      }
+
+      .score-box {
+        min-width: 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 11px 14px;
+      }
+
+      .score-box strong {
+        margin: 0;
+      }
+
+      .answers {
+        grid-template-columns: 1fr;
+      }
+
+      .answer-btn {
+        min-height: 88px;
+      }
+
+      .question-wrap {
+        min-height: 245px;
+        padding-top: 28px;
+      }
+
+      .feedback {
+        grid-template-columns: auto 1fr;
+      }
+
+      .next-btn {
+        grid-column: 1 / -1;
+        width: 100%;
+        margin-top: 3px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="blob one"></div>
+  <div class="blob two"></div>
+
+  <main class="app">
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">¿?</div>
+        <div class="brand-text">
+          <h1>¿Indicativo o subjuntivo?</h1>
+          <p>Elige el modo correcto y gana 10 puntos.</p>
+        </div>
+      </div>
+
+      <div class="score-box" id="scoreBox" aria-live="polite">
+        <span>Puntuación</span>
+        <strong><span id="score">0</span> pts</strong>
+      </div>
+    </div>
+
+    <section class="card">
+      <div class="game-screen" id="gameScreen">
+        <div class="progress-row">
+          <span id="counter">Pregunta 1 de 15</span>
+          <span id="maxScore">Máximo: 150 pts</span>
+        </div>
+
+        <div class="progress-track" aria-label="Progreso del juego">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <div class="question-wrap" id="questionWrap">
+          <p class="eyebrow">Completa la frase</p>
+          <h2 class="sentence" id="sentence"></h2>
+          <p class="instruction">El verbo aparece en infinitivo. Decide qué modo necesita.</p>
+        </div>
+
+        <div class="answers">
+          <button class="answer-btn indicativo" data-answer="indicativo" type="button">
+            <span class="mode">Indicativo</span>
+            <span class="hint">hecho, información o certeza</span>
+          </button>
+
+          <button class="answer-btn subjuntivo" data-answer="subjuntivo" type="button">
+            <span class="mode">Subjuntivo</span>
+            <span class="hint">deseo, duda, emoción o posibilidad</span>
+          </button>
+        </div>
+
+        <div class="feedback-area" aria-live="polite">
+          <div class="feedback" id="feedback">
+            <div class="feedback-icon" id="feedbackIcon">✓</div>
+            <div>
+              <strong id="feedbackTitle"></strong>
+              <small id="feedbackText"></small>
+            </div>
+            <button class="next-btn" id="nextBtn" type="button">Siguiente →</button>
+          </div>
+        </div>
+
+        <div class="points-pop" id="pointsPop">+10</div>
+      </div>
+
+      <div class="end-screen" id="endScreen">
+        <div class="trophy" aria-hidden="true">🏆</div>
+        <h2 id="endTitle">¡Muy bien!</h2>
+        <p id="endMessage"></p>
+
+        <div class="final-score">
+          <strong id="finalScore">0</strong>
+          <span>/ 150 puntos</span>
+        </div>
+
+        <br />
+        <button class="restart-btn" id="restartBtn" type="button">Jugar otra vez</button>
+      </div>
+    </section>
+
+    <p class="footer-note">Atajos: pulsa 1 para indicativo, 2 para subjuntivo y Enter para continuar.</p>
+  </main>
+
+  <script>
+    const questions = [
+      {
+        sentence: 'Creo que Marta <span class="verb">(tener)</span> razón.',
+        answer: 'indicativo',
+        form: 'tiene',
+        explanation: '“Creo que” expresa una opinión afirmativa.'
+      },
+      {
+        sentence: 'No creo que Marta <span class="verb">(tener)</span> razón.',
+        answer: 'subjuntivo',
+        form: 'tenga',
+        explanation: '“No creo que” expresa duda o negación de una opinión.'
+      },
+      {
+        sentence: 'Es evidente que ellos <span class="verb">(estar)</span> cansados.',
+        answer: 'indicativo',
+        form: 'están',
+        explanation: '“Es evidente que” presenta la información como cierta.'
+      },
+      {
+        sentence: 'Es posible que ellos <span class="verb">(estar)</span> cansados.',
+        answer: 'subjuntivo',
+        form: 'estén',
+        explanation: '“Es posible que” expresa posibilidad, no certeza.'
+      },
+      {
+        sentence: 'Sé que tú <span class="verb">(poder)</span> hacerlo.',
+        answer: 'indicativo',
+        form: 'puedes',
+        explanation: '“Sé que” expresa conocimiento y seguridad.'
+      },
+      {
+        sentence: 'Espero que tú <span class="verb">(poder)</span> hacerlo.',
+        answer: 'subjuntivo',
+        form: 'puedas',
+        explanation: '“Espero que” expresa deseo o expectativa.'
+      },
+      {
+        sentence: 'Mi profesora dice que nosotros <span class="verb">(necesitar)</span> practicar más.',
+        answer: 'indicativo',
+        form: 'necesitamos',
+        explanation: '“Dice que” comunica una información.'
+      },
+      {
+        sentence: 'Mi profesora quiere que nosotros <span class="verb">(practicar)</span> más.',
+        answer: 'subjuntivo',
+        form: 'practiquemos',
+        explanation: '“Quiere que” expresa voluntad sobre otra persona.'
+      },
+      {
+        sentence: 'Está claro que Carlos <span class="verb">(conocer)</span> la respuesta.',
+        answer: 'indicativo',
+        form: 'conoce',
+        explanation: '“Está claro que” expresa certeza.'
+      },
+      {
+        sentence: 'Dudo que Carlos <span class="verb">(conocer)</span> la respuesta.',
+        answer: 'subjuntivo',
+        form: 'conozca',
+        explanation: '“Dudo que” introduce una duda.'
+      },
+      {
+        sentence: 'Busco un piso que <span class="verb">(tener)</span> dos habitaciones y un balcón.',
+        answer: 'subjuntivo',
+        form: 'tenga',
+        explanation: 'El piso buscado todavía no es concreto ni conocido.'
+      },
+      {
+        sentence: 'Vivo en un piso que <span class="verb">(tener)</span> dos habitaciones y un balcón.',
+        answer: 'indicativo',
+        form: 'tiene',
+        explanation: 'Se habla de un piso real y conocido.'
+      },
+      {
+        sentence: 'Cuando <span class="verb">(terminar)</span> las clases mañana, iremos a tomar algo.',
+        answer: 'subjuntivo',
+        form: 'terminen',
+        explanation: '“Cuando” se refiere aquí a una acción futura.'
+      },
+      {
+        sentence: 'Siempre tomamos algo cuando <span class="verb">(terminar)</span> las clases.',
+        answer: 'indicativo',
+        form: 'terminan',
+        explanation: 'Se describe una costumbre habitual.'
+      },
+      {
+        sentence: 'Me alegra que vosotros <span class="verb">(venir)</span> a la fiesta.',
+        answer: 'subjuntivo',
+        form: 'vengáis',
+        explanation: '“Me alegra que” expresa una emoción.'
+      }
+    ];
+
+    let currentIndex = 0;
+    let score = 0;
+    let locked = false;
+
+    const sentenceEl = document.getElementById('sentence');
+    const counterEl = document.getElementById('counter');
+    const scoreEl = document.getElementById('score');
+    const scoreBox = document.getElementById('scoreBox');
+    const progressFill = document.getElementById('progressFill');
+    const questionWrap = document.getElementById('questionWrap');
+    const feedback = document.getElementById('feedback');
+    const feedbackIcon = document.getElementById('feedbackIcon');
+    const feedbackTitle = document.getElementById('feedbackTitle');
+    const feedbackText = document.getElementById('feedbackText');
+    const nextBtn = document.getElementById('nextBtn');
+    const pointsPop = document.getElementById('pointsPop');
+    const gameScreen = document.getElementById('gameScreen');
+    const endScreen = document.getElementById('endScreen');
+    const finalScore = document.getElementById('finalScore');
+    const endTitle = document.getElementById('endTitle');
+    const endMessage = document.getElementById('endMessage');
+    const restartBtn = document.getElementById('restartBtn');
+    const answerButtons = [...document.querySelectorAll('.answer-btn')];
+
+    function renderQuestion() {
+      locked = false;
+      const question = questions[currentIndex];
+
+      sentenceEl.innerHTML = question.sentence;
+      counterEl.textContent = `Pregunta ${currentIndex + 1} de ${questions.length}`;
+      progressFill.style.width = `${(currentIndex / questions.length) * 100}%`;
+
+      feedback.className = 'feedback';
+      feedbackTitle.textContent = '';
+      feedbackText.textContent = '';
+
+      answerButtons.forEach(button => {
+        button.disabled = false;
+        button.classList.remove('correct', 'wrong', 'dimmed');
+      });
+
+      questionWrap.classList.remove('screen-enter');
+      void questionWrap.offsetWidth;
+      questionWrap.classList.add('screen-enter');
+    }
+
+    function handleAnswer(selected, selectedButton) {
+      if (locked) return;
+      locked = true;
+
+      const question = questions[currentIndex];
+      const isCorrect = selected === question.answer;
+      const correctButton = answerButtons.find(
+        button => button.dataset.answer === question.answer
+      );
+
+      answerButtons.forEach(button => {
+        button.disabled = true;
+      });
+
+      correctButton.classList.add('correct');
+
+      if (isCorrect) {
+        score += 10;
+        scoreEl.textContent = score;
+        scoreBox.classList.remove('bump');
+        void scoreBox.offsetWidth;
+        scoreBox.classList.add('bump');
+
+        pointsPop.classList.remove('show');
+        void pointsPop.offsetWidth;
+        pointsPop.classList.add('show');
+
+        createConfetti(selectedButton);
+
+        feedback.className = 'feedback show success';
+        feedbackIcon.textContent = '✓';
+        feedbackTitle.textContent = '¡Correcto! +10 puntos';
+        feedbackText.textContent = `La forma correcta es “${question.form}”. ${question.explanation}`;
+      } else {
+        selectedButton.classList.add('wrong');
+        answerButtons
+          .filter(button => button !== selectedButton && button !== correctButton)
+          .forEach(button => button.classList.add('dimmed'));
+
+        feedback.className = 'feedback show error';
+        feedbackIcon.textContent = '×';
+        feedbackTitle.textContent = `Casi. La respuesta es ${capitalize(question.answer)}.`;
+        feedbackText.textContent = `La forma correcta es “${question.form}”. ${question.explanation}`;
+      }
+
+      nextBtn.textContent =
+        currentIndex === questions.length - 1 ? 'Ver resultado →' : 'Siguiente →';
+      nextBtn.focus({ preventScroll: true });
+    }
+
+    function nextQuestion() {
+      if (!locked) return;
+
+      if (currentIndex < questions.length - 1) {
+        currentIndex++;
+        renderQuestion();
+      } else {
+        showEndScreen();
+      }
+    }
+
+    function showEndScreen() {
+      progressFill.style.width = '100%';
+      gameScreen.style.display = 'none';
+      endScreen.classList.add('active');
+      finalScore.textContent = score;
+
+      const percentage = score / (questions.length * 10);
+
+      if (percentage === 1) {
+        endTitle.textContent = '¡Perfecto!';
+        endMessage.textContent =
+          'Has acertado todas las preguntas. Dominas muy bien la diferencia entre indicativo y subjuntivo.';
+      } else if (percentage >= 0.8) {
+        endTitle.textContent = '¡Excelente trabajo!';
+        endMessage.textContent =
+          'Reconoces muy bien las expresiones que exigen indicativo o subjuntivo. Solo falta pulir algunos detalles.';
+      } else if (percentage >= 0.6) {
+        endTitle.textContent = '¡Buen trabajo!';
+        endMessage.textContent =
+          'Tienes una buena base. Revisa especialmente las expresiones de duda, emoción y las acciones futuras.';
+      } else {
+        endTitle.textContent = '¡Sigue practicando!';
+        endMessage.textContent =
+          'Cada intento cuenta. Fíjate en palabras como “dudo”, “es posible”, “quiero” y “creo”.';
+      }
+
+      launchFinalConfetti();
+    }
+
+    function restartGame() {
+      currentIndex = 0;
+      score = 0;
+      locked = false;
+      scoreEl.textContent = '0';
+      endScreen.classList.remove('active');
+      gameScreen.style.display = 'block';
+      renderQuestion();
+    }
+
+    function createConfetti(button) {
+      const colors = ['#f97316', '#0ea5e9', '#a855f7', '#22c55e', '#facc15'];
+      const rect = button.getBoundingClientRect();
+      const cardRect = document.querySelector('.card').getBoundingClientRect();
+      const originX = rect.left - cardRect.left + rect.width / 2;
+      const originY = rect.top - cardRect.top + rect.height / 2;
+
+      for (let i = 0; i < 18; i++) {
+        const piece = document.createElement('span');
+        piece.className = 'confetti-piece';
+        piece.style.left = `${originX}px`;
+        piece.style.top = `${originY}px`;
+        piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.setProperty('--x', `${(Math.random() - 0.5) * 240}px`);
+        piece.style.setProperty('--y', `${-40 - Math.random() * 150}px`);
+        piece.style.setProperty('--r', `${(Math.random() - 0.5) * 720}deg`);
+        document.querySelector('.card').appendChild(piece);
+        setTimeout(() => piece.remove(), 950);
+      }
+    }
+
+    function launchFinalConfetti() {
+      const colors = ['#f97316', '#0ea5e9', '#a855f7', '#22c55e', '#facc15', '#ec4899'];
+
+      for (let i = 0; i < 42; i++) {
+        const piece = document.createElement('span');
+        piece.className = 'confetti-piece';
+        piece.style.left = `${10 + Math.random() * 80}%`;
+        piece.style.top = `${10 + Math.random() * 20}%`;
+        piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.setProperty('--x', `${(Math.random() - 0.5) * 320}px`);
+        piece.style.setProperty('--y', `${80 + Math.random() * 260}px`);
+        piece.style.setProperty('--r', `${(Math.random() - 0.5) * 900}deg`);
+        document.querySelector('.card').appendChild(piece);
+        setTimeout(() => piece.remove(), 1000);
+      }
+    }
+
+    function capitalize(word) {
+      return word.charAt(0).toUpperCase() + word.slice(1);
+    }
+
+    answerButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        handleAnswer(button.dataset.answer, button);
+      });
+    });
+
+    nextBtn.addEventListener('click', nextQuestion);
+    restartBtn.addEventListener('click', restartGame);
+
+    document.addEventListener('keydown', event => {
+      if (endScreen.classList.contains('active')) {
+        if (event.key === 'Enter') restartGame();
+        return;
+      }
+
+      if (!locked && event.key === '1') {
+        answerButtons[0].click();
+      } else if (!locked && event.key === '2') {
+        answerButtons[1].click();
+      } else if (locked && event.key === 'Enter') {
+        nextQuestion();
+      }
+    });
+
+    renderQuestion();
+  </script>
+</body>
+</html>
