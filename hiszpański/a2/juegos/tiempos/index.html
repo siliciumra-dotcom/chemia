@@ -1,106 +1,170 @@
 <!DOCTYPE html>
+
 <html lang="es">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+```
+<meta
+    name="description"
+    content="Juegos interactivos para practicar los tiempos verbales en español."
+>
+
 <title>Juegos de tiempos</title>
 
 <style>
-body{
-    margin:0;
-    padding:40px 20px;
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-    background:linear-gradient(135deg,#fff7ed,#eef6ff);
-    color:#1f2937;
-}
+    body {
+        margin: 0;
+        padding: 40px 20px;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background: linear-gradient(135deg, #fff7ed, #eef6ff);
+        color: #1f2937;
+    }
 
-.container{
-    max-width:1000px;
-    margin:auto;
-}
+    .container {
+        max-width: 1000px;
+        margin: auto;
+    }
 
-h1{
-    text-align:center;
-    font-size:48px;
-    margin-bottom:10px;
-}
+    h1 {
+        margin-bottom: 10px;
+        text-align: center;
+        font-size: 48px;
+    }
 
-.subtitle{
-    text-align:center;
-    color:#6b7280;
-    margin-bottom:40px;
-}
+    .subtitle {
+        margin-bottom: 40px;
+        text-align: center;
+        color: #6b7280;
+    }
 
-.grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
-    gap:24px;
-}
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 24px;
+    }
 
-.card{
-    display:block;
-    background:white;
-    padding:30px;
-    border-radius:24px;
-    text-decoration:none;
-    color:inherit;
-    box-shadow:0 10px 25px rgba(0,0,0,.08);
-    transition:.2s;
-}
+    .card {
+        display: block;
+        padding: 30px;
+        border-radius: 24px;
+        background: white;
+        color: inherit;
+        text-decoration: none;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+        transition:
+            transform 0.2s ease,
+            box-shadow 0.2s ease;
+    }
 
-.card:hover{
-    transform:translateY(-5px);
-}
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 16px 32px rgba(0, 0, 0, 0.12);
+    }
 
-.icon{
-    font-size:50px;
-    margin-bottom:12px;
-}
+    .card:focus-visible {
+        outline: 4px solid rgba(59, 130, 246, 0.35);
+        outline-offset: 4px;
+    }
 
-.title{
-    font-size:26px;
-    font-weight:700;
-    margin-bottom:10px;
-}
+    .icon {
+        margin-bottom: 12px;
+        font-size: 50px;
+    }
 
-.desc{
-    color:#6b7280;
-}
+    .title {
+        margin-bottom: 10px;
+        font-size: 26px;
+        font-weight: 700;
+    }
 
-.back{
-    text-align:center;
-    margin-top:40px;
-}
+    .desc {
+        color: #6b7280;
+        line-height: 1.6;
+    }
+
+    .back {
+        margin-top: 40px;
+        text-align: center;
+    }
+
+    .back a {
+        color: #374151;
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .back a:hover {
+        text-decoration: underline;
+    }
+
+    @media (max-width: 600px) {
+        body {
+            padding: 25px 14px;
+        }
+
+        h1 {
+            font-size: 36px;
+        }
+
+        .card {
+            padding: 24px;
+        }
+    }
 </style>
+```
+
 </head>
 
 <body>
 
-<div class="container">
+```
+<main class="container">
 
-<h1>⏳ Juegos de tiempos</h1>
+    <h1>⏳ Juegos de tiempos</h1>
 
-<div class="subtitle">
-Nivel A2
-</div>
-
-<div class="grid">
-
-<a class="card" href="historias_locas/">
-    <div class="icon">🎲</div>
-    <div class="title">Historias locas</div>
-    <div class="desc">
-        Crea historias divertidas usando diferentes tiempos verbales.
+    <div class="subtitle">
+        Nivel A2
     </div>
-</a>
 
-</div>
+    <div class="grid">
 
-<div class="back">
-    <a href="../index.html">⬅ Volver a Juegos</a>
-</div>
+        <a class="card" href="historias_locas/">
+            <div class="icon">🎲</div>
 
-</div>
+            <div class="title">
+                Historias locas
+            </div>
+
+            <div class="desc">
+                Crea historias divertidas usando diferentes tiempos verbales.
+            </div>
+        </a>
+
+        <a class="card" href="agencia_cliente/">
+            <div class="icon">✈️</div>
+
+            <div class="title">
+                Agencia de experiencias
+            </div>
+
+            <div class="desc">
+                Practica el pretérito perfecto, indefinido e imperfecto mediante
+                una conversación entre un cliente y una agencia de viajes.
+            </div>
+        </a>
+
+    </div>
+
+    <div class="back">
+        <a href="../index.html">⬅ Volver a Juegos</a>
+    </div>
+
+</main>
+```
 
 </body>
+
 </html>
