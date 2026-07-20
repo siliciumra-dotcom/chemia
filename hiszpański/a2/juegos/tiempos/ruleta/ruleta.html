@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta
+    name="description"
+    content="Ruleta interactiva de temas generales para conversación en español."
+  >
+  <title>Ruleta de conversación</title>
+
+  <style>
+    :root {
+      --bg-start: #fff7ed;
+      --bg-end: #eef6ff;
+      --card: rgba(255, 255, 255, 0.94);
+      --text: #1f2937;
+      --muted: #6b7280;
+      --primary: #5b5bd6;
+      --primary-dark: #4545b3;
+      --accent: #f59e0b;
+      --danger: #dc2626;
+      --success: #15803d;
+      --border: #e5e7eb;
+      --shadow: 0 22px 55px rgba(31, 41, 55, 0.13);
+      --radius-xl: 28px;
+      --radius-lg: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 24px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 8% 8%, rgba(91, 91, 214, 0.15), transparent 28%),
+        radial-gradient(circle at 92% 10%, rgba(245, 158, 11, 0.17), transparent 28%),
+        linear-gradient(135deg, var(--bg-start), var(--bg-end));
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+      border: 0;
+    }
+
+    .app {
+      width: min(1180px, 100%);
+      margin: 0 auto;
+    }
+
+    .hero {
+      padding: 26px 28px;
+      border-radius: var(--radius-xl);
+      color: white;
+      background: linear-gradient(135deg, #4444ad, #6a6ae7);
+      box-shadow: var(--shadow);
+    }
+
+    .hero-badge {
+      display: inline-block;
+      padding: 7px 11px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.16);
+      font-size: 0.8rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 12px 0 8px;
+      font-size: clamp(2.2rem, 6vw, 4rem);
+      line-height: 1;
+      letter-spacing: -0.04em;
+    }
+
+    .hero p {
+      max-width: 780px;
+      margin: 0;
+      color: rgba(255, 255, 255, 0.82);
+      line-height: 1.65;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.25fr) minmax(300px, 0.75fr);
+      gap: 20px;
+      margin-top: 20px;
+      align-items: start;
+    }
+
+    .panel {
+      border: 1px solid rgba(255, 255, 255, 0.86);
+      border-radius: var(--radius-xl);
+      background: var(--card);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+    }
+
+    .wheel-panel {
+      padding: 24px;
+    }
+
+    .wheel-area {
+      position: relative;
+      display: grid;
+      place-items: center;
+      min-height: 580px;
+    }
+
+    .pointer {
+      position: absolute;
+      z-index: 4;
+      top: 8px;
+      left: 50%;
+      width: 0;
+      height: 0;
+      transform: translateX(-50%);
+      border-left: 20px solid transparent;
+      border-right: 20px solid transparent;
+      border-top: 42px solid #111827;
+      filter: drop-shadow(0 6px 8px rgba(0, 0, 0, 0.18));
+    }
+
+    canvas {
+      display: block;
+      width: min(520px, 92vw);
+      height: min(520px, 92vw);
+      max-width: 100%;
+      border-radius: 50%;
+      filter: drop-shadow(0 18px 30px rgba(31, 41, 55, 0.18));
+    }
+
+    .center-button {
+      position: absolute;
+      z-index: 3;
+      width: 126px;
+      height: 126px;
+      border-radius: 50%;
+      color: white;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      box-shadow:
+        0 12px 28px rgba(69, 69, 179, 0.36),
+        inset 0 0 0 8px rgba(255, 255, 255, 0.16);
+      font-size: 1.05rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      transition: transform 0.2s ease;
+    }
+
+    .center-button:hover:not(:disabled) {
+      transform: scale(1.04);
+    }
+
+    .center-button:disabled {
+      cursor: not-allowed;
+      opacity: 0.76;
+    }
+
+    .result {
+      margin-top: 16px;
+      padding: 18px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, #282866, #5b5bd6);
+      color: white;
+      text-align: center;
+    }
+
+    .result-label {
+      margin-bottom: 4px;
+      color: rgba(255, 255, 255, 0.65);
+      font-size: 0.76rem;
+      font-weight: 800;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+    }
+
+    .result-topic {
+      font-size: clamp(1.5rem, 4vw, 2.35rem);
+      font-weight: 900;
+    }
+
+    .question-box {
+      margin-top: 12px;
+      padding: 14px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.13);
+      line-height: 1.55;
+      font-size: 1rem;
+    }
+
+    .result-actions {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .sidebar {
+      display: grid;
+      gap: 20px;
+    }
+
+    .panel-header {
+      padding: 20px 20px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .panel-header h2 {
+      margin: 0;
+      font-size: 1.18rem;
+    }
+
+    .panel-header p {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 0.88rem;
+      line-height: 1.5;
+    }
+
+    .panel-body {
+      padding: 18px 20px 20px;
+    }
+
+    .categories-list {
+      display: grid;
+      gap: 9px;
+      max-height: 440px;
+      overflow-y: auto;
+      padding-right: 3px;
+    }
+
+    .category-row {
+      display: grid;
+      grid-template-columns: 34px minmax(0, 1fr) auto;
+      gap: 8px;
+      align-items: center;
+      padding: 9px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: white;
+    }
+
+    .category-number {
+      display: grid;
+      place-items: center;
+      width: 30px;
+      height: 30px;
+      border-radius: 10px;
+      color: var(--primary-dark);
+      background: #ededff;
+      font-size: 0.8rem;
+      font-weight: 900;
+    }
+
+    .category-row input {
+      width: 100%;
+      padding: 9px 10px;
+      border: 1px solid #d7dbe5;
+      border-radius: 10px;
+      color: var(--text);
+      outline: none;
+    }
+
+    .category-row input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(91, 91, 214, 0.11);
+    }
+
+    .buttons-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .btn {
+      min-height: 40px;
+      padding: 9px 13px;
+      border-radius: 12px;
+      background: white;
+      color: var(--text);
+      font-weight: 800;
+      box-shadow: 0 7px 16px rgba(31, 41, 55, 0.08);
+      transition: 0.18s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn.primary {
+      color: white;
+      background: var(--primary);
+    }
+
+    .btn.accent {
+      color: #734600;
+      background: #fff1d6;
+    }
+
+    .btn.danger {
+      color: #9f1239;
+      background: #ffe7ec;
+    }
+
+    .btn.small {
+      min-height: 34px;
+      padding: 7px 9px;
+      font-size: 0.8rem;
+    }
+
+    .add-box {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+    }
+
+    .add-box input {
+      width: 100%;
+      padding: 11px 12px;
+      border: 1px solid #d7dbe5;
+      border-radius: 12px;
+      outline: none;
+    }
+
+    .add-box input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(91, 91, 214, 0.11);
+    }
+
+    .teacher-tip {
+      padding: 14px;
+      border-radius: 15px;
+      color: #704600;
+      background: #fff6df;
+      line-height: 1.55;
+      font-size: 0.9rem;
+    }
+
+    .history {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 10px;
+    }
+
+    .history-item {
+      padding: 7px 10px;
+      border-radius: 999px;
+      color: var(--primary-dark);
+      background: #ededff;
+      font-size: 0.8rem;
+      font-weight: 800;
+    }
+
+    .confetti {
+      position: fixed;
+      z-index: 100;
+      top: -20px;
+      width: 10px;
+      height: 18px;
+      pointer-events: none;
+      animation: fall 1.7s linear forwards;
+    }
+
+    @keyframes fall {
+      to {
+        transform: translateY(110vh) rotate(720deg);
+        opacity: 0.2;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .wheel-area {
+        min-height: 520px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 10px;
+      }
+
+      .hero,
+      .panel {
+        border-radius: 20px;
+      }
+
+      .hero {
+        padding: 20px;
+      }
+
+      .wheel-panel {
+        padding: 12px;
+      }
+
+      .wheel-area {
+        min-height: 390px;
+      }
+
+      .center-button {
+        width: 96px;
+        height: 96px;
+        font-size: 0.88rem;
+      }
+
+      .pointer {
+        border-left-width: 15px;
+        border-right-width: 15px;
+        border-top-width: 32px;
+      }
+
+      .add-box {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="app">
+    <header class="hero">
+      <span class="hero-badge">Actividad oral</span>
+      <h1>Ruleta de conversación</h1>
+      <p>
+        Gira la ruleta, crea una pregunta relacionada con el tema y utiliza
+        el tiempo verbal indicado por el profesor.
+      </p>
+    </header>
+
+    <div class="layout">
+      <section class="panel wheel-panel">
+        <div class="wheel-area">
+          <div class="pointer" aria-hidden="true"></div>
+          <canvas id="wheel" width="700" height="700" aria-label="Ruleta de temas"></canvas>
+          <button id="spinButton" class="center-button" type="button">Girar</button>
+        </div>
+
+        <div class="result" aria-live="polite">
+          <div class="result-label">Tema seleccionado</div>
+          <div id="resultTopic" class="result-topic">Pulsa «Girar»</div>
+          <div id="questionBox" class="question-box">
+            Después de girar aparecerá una pregunta sugerida.
+          </div>
+          <div class="result-actions">
+            <button id="newQuestionButton" class="btn accent" type="button">
+              🔄 Otra pregunta
+            </button>
+            <button id="hideQuestionButton" class="btn" type="button">
+              🙈 Ocultar pregunta
+            </button>
+          </div>
+        </div>
+
+        <div class="panel-body" style="padding-bottom: 0;">
+          <strong>Últimos resultados</strong>
+          <div id="history" class="history">
+            <span style="color: var(--muted); font-size: .85rem;">Todavía no hay resultados.</span>
+          </div>
+        </div>
+      </section>
+
+      <aside class="sidebar">
+        <section class="panel">
+          <div class="panel-header">
+            <h2>Temas de la ruleta</h2>
+            <p>Puedes modificar los temas directamente, borrarlos o añadir otros nuevos.</p>
+          </div>
+
+          <div class="panel-body">
+            <div id="categoriesList" class="categories-list"></div>
+
+            <div class="add-box" style="margin-top: 13px;">
+              <input
+                id="newCategoryInput"
+                type="text"
+                maxlength="24"
+                placeholder="Nuevo tema..."
+              >
+              <button id="addCategoryButton" class="btn primary" type="button">
+                ＋ Añadir
+              </button>
+            </div>
+
+            <div class="buttons-row">
+              <button id="shuffleButton" class="btn accent" type="button">🔀 Mezclar</button>
+              <button id="resetButton" class="btn" type="button">↺ Restaurar</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <h2>Cómo jugar</h2>
+          </div>
+          <div class="panel-body">
+            <div class="teacher-tip">
+              <strong>Opción 1:</strong> el alumno gira y crea una pregunta para otro compañero.<br><br>
+              <strong>Opción 2:</strong> responde a la pregunta sugerida.<br><br>
+              <strong>Opción 3:</strong> debe usar perfecto, indefinido e imperfecto en una misma respuesta.
+            </div>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </main>
+
+  <script>
+    const defaultCategories = [
+      "Viajes",
+      "Infancia",
+      "Familia",
+      "Amigos",
+      "Estudios",
+      "Trabajo",
+      "Tiempo libre",
+      "Comida",
+      "Experiencias",
+      "Problemas",
+      "Cambios",
+      "Sueños"
+    ];
+
+    const questionBank = {
+      "Viajes": [
+        "¿Cuál ha sido el viaje más interesante que has hecho?",
+        "¿Adónde fuiste en tus últimas vacaciones?",
+        "¿Cómo viajabas cuando eras pequeño/a?"
+      ],
+      "Infancia": [
+        "¿Qué hacías normalmente después de clase?",
+        "¿Cómo era el lugar donde vivías?",
+        "¿Qué recuerdo de tu infancia nunca has olvidado?"
+      ],
+      "Familia": [
+        "¿Qué actividades hacíais juntos antes?",
+        "¿Has celebrado algo especial con tu familia este año?",
+        "¿Qué ocurrió en vuestra última reunión familiar?"
+      ],
+      "Amigos": [
+        "¿Cómo conociste a uno de tus mejores amigos?",
+        "¿Qué hacíais juntos cuando erais más jóvenes?",
+        "¿Has conocido a alguien nuevo recientemente?"
+      ],
+      "Estudios": [
+        "¿Qué asignatura te gustaba más en la escuela?",
+        "¿Qué aprendiste el año pasado?",
+        "¿Has hecho algún curso interesante últimamente?"
+      ],
+      "Trabajo": [
+        "¿Cuál fue tu primer trabajo?",
+        "¿Cómo era un día normal en ese trabajo?",
+        "¿Has aprendido algo nuevo en el trabajo recientemente?"
+      ],
+      "Tiempo libre": [
+        "¿Qué hacías normalmente los fines de semana antes?",
+        "¿Qué actividad nueva has probado este año?",
+        "¿Qué hiciste el fin de semana pasado?"
+      ],
+      "Comida": [
+        "¿Cuál es la comida más extraña que has probado?",
+        "¿Qué comías normalmente cuando eras pequeño/a?",
+        "¿Dónde cenaste la última vez que saliste?"
+      ],
+      "Experiencias": [
+        "¿Qué experiencia nunca has olvidado?",
+        "¿Qué hiciste por primera vez el año pasado?",
+        "¿Hay algo que todavía no has hecho?"
+      ],
+      "Problemas": [
+        "¿Qué problema tuviste recientemente y cómo lo resolviste?",
+        "¿Qué hacías cuando ocurrió el problema?",
+        "¿Has tenido alguna vez un problema durante un viaje?"
+      ],
+      "Cambios": [
+        "¿Qué ha cambiado en tu vida este año?",
+        "¿Cómo era tu rutina antes?",
+        "¿Qué decisión importante tomaste recientemente?"
+      ],
+      "Sueños": [
+        "¿Qué querías ser cuando eras pequeño/a?",
+        "¿Has cumplido alguno de tus sueños?",
+        "¿Qué sueño te gustaría realizar en el futuro?"
+      ]
+    };
+
+    let categories = [...defaultCategories];
+    let currentRotation = 0;
+    let spinning = false;
+    let selectedCategory = "";
+    let history = [];
+    let questionVisible = true;
+
+    const canvas = document.getElementById("wheel");
+    const ctx = canvas.getContext("2d");
+    const spinButton = document.getElementById("spinButton");
+    const resultTopic = document.getElementById("resultTopic");
+    const questionBox = document.getElementById("questionBox");
+    const categoriesList = document.getElementById("categoriesList");
+    const historyBox = document.getElementById("history");
+
+    const colors = [
+      "#5b5bd6",
+      "#f59e0b",
+      "#0f9f79",
+      "#e76f51",
+      "#3b82f6",
+      "#8b5cf6",
+      "#14b8a6",
+      "#ef4444",
+      "#6366f1",
+      "#d97706",
+      "#059669",
+      "#db2777",
+      "#2563eb",
+      "#7c3aed",
+      "#0891b2",
+      "#c2410c"
+    ];
+
+    function drawWheel() {
+      const size = canvas.width;
+      const center = size / 2;
+      const radius = center - 18;
+
+      ctx.clearRect(0, 0, size, size);
+
+      if (!categories.length) {
+        ctx.beginPath();
+        ctx.arc(center, center, radius, 0, Math.PI * 2);
+        ctx.fillStyle = "#e5e7eb";
+        ctx.fill();
+
+        ctx.fillStyle = "#6b7280";
+        ctx.font = "700 30px Arial";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("Añade un tema", center, center);
+        return;
+      }
+
+      const segmentAngle = (Math.PI * 2) / categories.length;
+
+      categories.forEach((category, index) => {
+        const start = currentRotation + index * segmentAngle - Math.PI / 2;
+        const end = start + segmentAngle;
+
+        ctx.beginPath();
+        ctx.moveTo(center, center);
+        ctx.arc(center, center, radius, start, end);
+        ctx.closePath();
+        ctx.fillStyle = colors[index % colors.length];
+        ctx.fill();
+
+        ctx.strokeStyle = "rgba(255,255,255,.85)";
+        ctx.lineWidth = 5;
+        ctx.stroke();
+
+        ctx.save();
+        ctx.translate(center, center);
+        ctx.rotate(start + segmentAngle / 2);
+        ctx.textAlign = "right";
+        ctx.textBaseline = "middle";
+        ctx.fillStyle = "#ffffff";
+        ctx.font = categories.length > 14
+          ? "700 20px Arial"
+          : categories.length > 10
+            ? "700 24px Arial"
+            : "700 28px Arial";
+
+        const maxTextLength = categories.length > 12 ? 15 : 20;
+        const label = category.length > maxTextLength
+          ? category.slice(0, maxTextLength - 1) + "…"
+          : category;
+
+        ctx.fillText(label, radius - 38, 0);
+        ctx.restore();
+      });
+
+      ctx.beginPath();
+      ctx.arc(center, center, 86, 0, Math.PI * 2);
+      ctx.fillStyle = "#ffffff";
+      ctx.fill();
+      ctx.strokeStyle = "rgba(31,41,55,.1)";
+      ctx.lineWidth = 8;
+      ctx.stroke();
+    }
+
+    function renderCategories() {
+      categoriesList.innerHTML = "";
+
+      categories.forEach((category, index) => {
+        const row = document.createElement("div");
+        row.className = "category-row";
+
+        const number = document.createElement("div");
+        number.className = "category-number";
+        number.textContent = index + 1;
+
+        const input = document.createElement("input");
+        input.type = "text";
+        input.maxLength = 24;
+        input.value = category;
+        input.setAttribute("aria-label", `Editar tema ${index + 1}`);
+        input.addEventListener("input", () => {
+          categories[index] = input.value.trim() || "Tema";
+          drawWheel();
+        });
+
+        const deleteButton = document.createElement("button");
+        deleteButton.type = "button";
+        deleteButton.className = "btn small danger";
+        deleteButton.textContent = "✕";
+        deleteButton.title = "Eliminar tema";
+        deleteButton.addEventListener("click", () => {
+          if (categories.length <= 2) {
+            alert("La ruleta necesita al menos dos temas.");
+            return;
+          }
+
+          categories.splice(index, 1);
+          renderCategories();
+          drawWheel();
+        });
+
+        row.append(number, input, deleteButton);
+        categoriesList.appendChild(row);
+      });
+    }
+
+    function getSelectedIndex() {
+      const segmentAngle = (Math.PI * 2) / categories.length;
+      const normalized = (
+        (Math.PI * 2 - (currentRotation % (Math.PI * 2))) %
+        (Math.PI * 2)
+      );
+
+      return Math.floor((normalized + segmentAngle / 2) / segmentAngle) % categories.length;
+    }
+
+    function spin() {
+      if (spinning || categories.length < 2) return;
+
+      spinning = true;
+      spinButton.disabled = true;
+      spinButton.textContent = "Girando";
+
+      const startRotation = currentRotation;
+      const extraTurns = 5 + Math.random() * 4;
+      const randomOffset = Math.random() * Math.PI * 2;
+      const targetRotation = startRotation + extraTurns * Math.PI * 2 + randomOffset;
+      const duration = 4200;
+      const startTime = performance.now();
+
+      function animate(time) {
+        const progress = Math.min((time - startTime) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 4);
+
+        currentRotation = startRotation + (targetRotation - startRotation) * eased;
+        drawWheel();
+
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        } else {
+          currentRotation %= Math.PI * 2;
+          drawWheel();
+          spinning = false;
+          spinButton.disabled = false;
+          spinButton.textContent = "Girar";
+
+          const selectedIndex = getSelectedIndex();
+          selectedCategory = categories[selectedIndex];
+          showResult(selectedCategory);
+          launchConfetti();
+        }
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    function showResult(category) {
+      resultTopic.textContent = category;
+      questionVisible = true;
+      document.getElementById("hideQuestionButton").textContent = "🙈 Ocultar pregunta";
+      showRandomQuestion();
+
+      history.unshift(category);
+      history = history.slice(0, 6);
+      renderHistory();
+    }
+
+    function showRandomQuestion() {
+      if (!selectedCategory) {
+        questionBox.textContent = "Primero gira la ruleta.";
+        return;
+      }
+
+      const questions = questionBank[selectedCategory] || [
+        `Crea una pregunta relacionada con «${selectedCategory}».`,
+        `Cuenta una experiencia relacionada con «${selectedCategory}».`,
+        `¿Qué recuerdo tienes relacionado con «${selectedCategory}»?`
+      ];
+
+      questionBox.textContent = questions[Math.floor(Math.random() * questions.length)];
+      questionBox.style.display = "block";
+      questionVisible = true;
+      document.getElementById("hideQuestionButton").textContent = "🙈 Ocultar pregunta";
+    }
+
+    function renderHistory() {
+      historyBox.innerHTML = "";
+
+      if (!history.length) {
+        historyBox.innerHTML =
+          '<span style="color: var(--muted); font-size: .85rem;">Todavía no hay resultados.</span>';
+        return;
+      }
+
+      history.forEach(item => {
+        const tag = document.createElement("span");
+        tag.className = "history-item";
+        tag.textContent = item;
+        historyBox.appendChild(tag);
+      });
+    }
+
+    function addCategory() {
+      const input = document.getElementById("newCategoryInput");
+      const value = input.value.trim();
+
+      if (!value) {
+        input.focus();
+        return;
+      }
+
+      if (categories.length >= 18) {
+        alert("Para que la ruleta siga siendo legible, puedes usar un máximo de 18 temas.");
+        return;
+      }
+
+      categories.push(value);
+      input.value = "";
+      renderCategories();
+      drawWheel();
+    }
+
+    function shuffleCategories() {
+      for (let i = categories.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [categories[i], categories[j]] = [categories[j], categories[i]];
+      }
+
+      renderCategories();
+      drawWheel();
+    }
+
+    function resetCategories() {
+      categories = [...defaultCategories];
+      selectedCategory = "";
+      history = [];
+      resultTopic.textContent = "Pulsa «Girar»";
+      questionBox.textContent = "Después de girar aparecerá una pregunta sugerida.";
+      renderCategories();
+      renderHistory();
+      drawWheel();
+    }
+
+    function launchConfetti() {
+      const confettiColors = ["#5b5bd6", "#f59e0b", "#0f9f79", "#ef4444", "#3b82f6"];
+
+      for (let i = 0; i < 38; i++) {
+        const piece = document.createElement("div");
+        piece.className = "confetti";
+        piece.style.left = Math.random() * 100 + "vw";
+        piece.style.background = confettiColors[Math.floor(Math.random() * confettiColors.length)];
+        piece.style.animationDelay = Math.random() * 0.35 + "s";
+        piece.style.transform = `rotate(${Math.random() * 360}deg)`;
+        document.body.appendChild(piece);
+
+        setTimeout(() => piece.remove(), 2300);
+      }
+    }
+
+    spinButton.addEventListener("click", spin);
+    document.getElementById("newQuestionButton").addEventListener("click", showRandomQuestion);
+
+    document.getElementById("hideQuestionButton").addEventListener("click", () => {
+      questionVisible = !questionVisible;
+      questionBox.style.display = questionVisible ? "block" : "none";
+      document.getElementById("hideQuestionButton").textContent =
+        questionVisible ? "🙈 Ocultar pregunta" : "👁 Mostrar pregunta";
+    });
+
+    document.getElementById("addCategoryButton").addEventListener("click", addCategory);
+    document.getElementById("newCategoryInput").addEventListener("keydown", event => {
+      if (event.key === "Enter") addCategory();
+    });
+
+    document.getElementById("shuffleButton").addEventListener("click", shuffleCategories);
+    document.getElementById("resetButton").addEventListener("click", resetCategories);
+
+    renderCategories();
+    renderHistory();
+    drawWheel();
+  </script>
+</body>
+</html>
