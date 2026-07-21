@@ -523,12 +523,12 @@
 
       <div class="custom-topic-editor hidden" id="customTopicEditor">
         <div class="field">
-          <input id="customTopicInput" maxlength="70" placeholder="Np. inteligencia artificial">
-          <small>Nazwa tematu po hiszpańsku.</small>
+          <input id="customTopicInput" maxlength="70" placeholder="Escribe un tema o varios conceptos">
+          <small>Wpisz temat po hiszpańsku; możesz połączyć kilka pojęć.</small>
         </div>
         <div class="field">
-          <input id="customKeywordsInput" maxlength="180" placeholder="Opcjonalnie: robot, tecnología, trabajo, futuro">
-          <small>Słowa kluczowe oddzielone przecinkami zwiększą dokładność analizy.</small>
+          <input id="customKeywordsInput" maxlength="180" placeholder="Palabras relacionadas (opcional)">
+          <small>Dodatkowe słowa pomagają dokładniej ocenić odpowiedź.</small>
         </div>
         <button class="btn btn-primary" id="addCustomTopicBtn" type="button">Dodaj i użyj</button>
       </div>
@@ -551,11 +551,11 @@
               </div>
               <div class="meta-item situation">
                 <span class="meta-label">Situación</span>
-                <span class="meta-value" id="situationText">Tu compañero está pensando en sus próximas vacaciones.</span>
+                <span class="meta-value" id="situationText">Hablad sobre el tema y relacionad la conversación con el momento indicado.</span>
               </div>
             </div>
-            <p class="mission-text" id="missionText">Pregúntale adónde viajará, con quién irá y qué hará allí.</p>
-            <p class="context-note" id="contextNote">Najpierw prowadźcie rozmowę. Po jej zakończeniu wpisz jedno główne pytanie w futuro simple.</p>
+            <p class="mission-text" id="missionText">Consigue las informaciones indicadas sin copiar una pregunta modelo.</p>
+            <p class="context-note" id="contextNote">Najpierw porozmawiajcie. Po rozmowie zapisz jedno pełne pytanie odpowiadające całemu poleceniu.</p>
           </div>
 
           <div class="timer-box">
@@ -572,9 +572,9 @@
           <div class="input-section">
             <label for="questionInput">
               Zapisz pytanie po hiszpańsku
-              <span class="input-hint">Wymagany jest futuro simple, np. <em>harás, viajarás, habrá, podremos</em>.</span>
+              <span class="input-hint">Gra analizuje tekst, nie nagranie. Najlepiej wpisz jedno pełne pytanie.</span>
             </label>
-            <textarea id="questionInput" maxlength="280" spellcheck="true" placeholder="Ej.: ¿Cómo viajarás dentro de diez años?"></textarea>
+            <textarea id="questionInput" maxlength="280" spellcheck="true" placeholder="Escribe aquí una pregunta completa en español..."></textarea>
 
             <div class="char-row">
               <div class="accent-buttons" aria-label="Znaki hiszpańskie">
@@ -1127,40 +1127,308 @@
       }
     ];
 
-    const customMissionTemplates = [
-      {
-        type: "predicción",
-        context: "dentro de diez años",
-        situation: topic => `Imagina que «${topic}» tendrá más importancia en la vida cotidiana.`,
-        prompt: topic => `Pregunta qué cambiará dentro de este ámbito.`,
-        intent: ["cambiar", "ser", "haber", "tendr", "pas"],
-        model: topic => `¿Qué cambiará en «${topic}» dentro de diez años?`
-      },
-      {
-        type: "influencia",
-        context: "durante los próximos veinte años",
-        situation: topic => `Piensa en cómo «${topic}» podrá influir en la sociedad.`,
-        prompt: topic => `Pregunta cómo afectará a la vida de las personas.`,
-        intent: ["afectar", "cambiar", "influir", "ayud", "mejor"],
-        model: topic => `¿Cómo afectará «${topic}» a la vida de las personas durante los próximos veinte años?`
-      },
-      {
-        type: "opinión y predicción",
-        context: "en 2040",
-        situation: topic => `Imagina la situación de «${topic}» en el año 2040.`,
-        prompt: topic => `Pregunta si será más importante y qué novedades habrá.`,
-        intent: ["ser", "habr", "tendr", "cambiar", "aparec"],
-        model: topic => `¿Será «${topic}» más importante en 2040?`
-      },
-      {
-        type: "decisión personal",
-        context: "el próximo año",
-        situation: topic => `Tu compañero podrá tomar una decisión relacionada con «${topic}».`,
-        prompt: topic => `Pregúntale qué hará y por qué.`,
-        intent: ["har", "eleg", "decid", "empez", "aprend"],
-        model: topic => `¿Qué harás el próximo año en relación con «${topic}»?`
+    const customDomainLexicons = {
+      place: [
+        "polonia", "españa", "espana", "francia", "italia", "alemania", "portugal", "ucrania",
+        "reino unido", "irlanda", "grecia", "turquia", "turquía", "rusia", "china", "japon", "japón",
+        "corea", "india", "canada", "canadá", "estados unidos", "mexico", "méxico", "argentina",
+        "chile", "brasil", "colombia", "peru", "perú", "croacia", "bosnia", "serbia", "eslovenia",
+        "europa", "asia", "africa", "américa", "america", "madrid", "barcelona", "varsovia", "cracovia",
+        "gdansk", "ciudad", "pais", "país", "region", "región", "pueblo", "estado"
+      ],
+      technology: [
+        "tecnolog", "digital", "internet", "robot", "inteligencia artificial", "ia", "aplicacion",
+        "ordenador", "movil", "smartphone", "automatiz", "innovacion", "datos", "virtual"
+      ],
+      environment: [
+        "clima", "medio ambiente", "ecolog", "contamin", "energia", "recicl", "naturaleza", "agua",
+        "bosque", "residuo", "sostenib", "planeta"
+      ],
+      economy: [
+        "econom", "dinero", "empresa", "mercado", "precio", "salario", "banco", "comercio", "industria",
+        "inversion", "empleo", "negocio"
+      ],
+      society: [
+        "sociedad", "poblacion", "gente", "familia", "relaciones", "igualdad", "demografia", "migracion",
+        "vida cotidiana", "comunidad", "generacion"
+      ],
+      politics: [
+        "politic", "gobierno", "eleccion", "union europea", "ue", "ley", "estado", "presidente",
+        "democracia", "seguridad", "internacional"
+      ],
+      education: [
+        "educacion", "escuela", "universidad", "clase", "profesor", "alumno", "curso", "estudi",
+        "aprendizaje", "idioma", "examen", "formacion"
+      ],
+      work: [
+        "trabaj", "profesion", "empleo", "carrera", "oficina", "empresa", "teletrabajo", "habilidad",
+        "proyecto", "jefe"
+      ],
+      health: [
+        "salud", "medic", "hospital", "enfermedad", "tratamiento", "deporte", "ejercicio", "alimentacion",
+        "bienestar", "psicolog", "vida sana"
+      ],
+      culture: [
+        "cultura", "arte", "musica", "cine", "literatura", "tradicion", "historia", "museo", "lengua",
+        "español", "espanol", "festival"
+      ],
+      travel: [
+        "viaj", "vacacion", "turismo", "destino", "hotel", "avion", "vuelo", "tren", "playa", "montaña",
+        "montana", "visitar", "excursion"
+      ],
+      leisure: [
+        "ocio", "tiempo libre", "aficion", "hobby", "juego", "videojuego", "serie", "pelicula", "leer",
+        "deporte", "musica", "cocina"
+      ],
+      personal: [
+        "mi futuro", "vida", "plan", "sueño", "sueno", "objetivo", "familia", "casa", "pareja", "amigos",
+        "aprender", "comprar", "mudarse"
+      ]
+    };
+
+    const customDomainKeywords = {
+      technology: ["tecnolog", "digital", "robot", "internet", "innovacion", "automatiz"],
+      environment: ["clima", "ecolog", "energia", "contamin", "sostenib", "residuo"],
+      economy: ["econom", "empresa", "mercado", "industria", "empleo", "inversion"],
+      society: ["sociedad", "poblacion", "comunidad", "vida", "familia", "generacion"],
+      politics: ["politic", "gobierno", "ley", "estado", "internacional", "seguridad"],
+      education: ["educacion", "estudi", "aprend", "escuela", "universidad", "clase"],
+      work: ["trabaj", "profesion", "empleo", "carrera", "habilidad", "empresa"],
+      health: ["salud", "medic", "tratamiento", "bienestar", "ejercicio", "alimentacion"],
+      culture: ["cultura", "arte", "musica", "cine", "literatura", "tradicion"],
+      travel: ["viaj", "turismo", "destino", "vacacion", "visit", "transporte"],
+      leisure: ["ocio", "aficion", "juego", "serie", "pelicula", "deporte"],
+      personal: ["plan", "objetivo", "vida", "familia", "casa", "aprend"]
+    };
+
+    const systemicCustomDomains = new Set(["technology", "environment", "economy", "society", "politics", "health", "culture"]);
+    const personalCustomDomains = new Set(["travel", "leisure", "personal", "work", "education"]);
+
+    function splitCustomConcepts(value) {
+      const cleaned = value
+        .replace(/[;/+&|]/g, ",")
+        .replace(/\s+(?:y|e)\s+/gi, ",")
+        .split(",")
+        .map(item => item.trim())
+        .filter(Boolean);
+      return [...new Set(cleaned.length ? cleaned : [value.trim()])];
+    }
+
+    function customConceptLabel(value) {
+      const clean = value.trim();
+      const plain = stripAccents(clean);
+      const isPlace = customDomainLexicons.place.some(item => plain.includes(stripAccents(item)));
+      return isPlace ? clean : `«${clean}»`;
+    }
+
+    function combinedCustomConceptLabel(profile) {
+      const values = profile.concepts || [];
+      if (!values.length) return customConceptLabel(profile.mainConcept || "el tema");
+      if (profile.placeConcept && profile.mainConcept && profile.mode === "personal") {
+        return `«${profile.mainConcept} en ${profile.placeConcept}»`;
       }
-    ];
+      if (values.length === 1) return customConceptLabel(values[0]);
+      return `«${values.join(" y ")}»`;
+    }
+
+    function inferCustomDomains(name, keywords = []) {
+      const source = stripAccents(`${name} ${keywords.join(" ")}`);
+      const scores = Object.entries(customDomainLexicons).map(([domain, lexicon]) => {
+        const score = lexicon.reduce((sum, item) => {
+          const key = stripAccents(item);
+          if (!key) return sum;
+          const found = key.length <= 3
+            ? new RegExp(`(^|[^a-zñ])${key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}([^a-zñ]|$)`, "i").test(source)
+            : source.includes(key);
+          if (found) return sum + (key.includes(" ") ? 3 : 2);
+          return sum;
+        }, 0);
+        return { domain, score };
+      }).filter(item => item.score > 0).sort((a, b) => b.score - a.score);
+      return scores.map(item => item.domain);
+    }
+
+    function buildCustomTopicProfile(name, keywords) {
+      const concepts = splitCustomConcepts(name);
+      const domains = inferCustomDomains(name, keywords);
+      const placeConcept = concepts.find(concept =>
+        customDomainLexicons.place.some(item => stripAccents(concept).includes(stripAccents(item)))
+      ) || "";
+      const nonPlaceConcepts = concepts.filter(item => item !== placeConcept);
+      const mainConcept = nonPlaceConcepts[0] || concepts[0] || name;
+      const secondaryConcept = nonPlaceConcepts[1] || concepts.find(item => item !== mainConcept && item !== placeConcept) || "";
+      const hasSystemicDomain = domains.some(domain => systemicCustomDomains.has(domain));
+      const hasPersonalDomain = domains.some(domain => personalCustomDomains.has(domain));
+
+      let mode = "generic";
+      if (placeConcept && hasSystemicDomain) mode = "placeRelation";
+      else if (hasPersonalDomain && !hasSystemicDomain) mode = "personal";
+      else if (concepts.length >= 2) mode = "relation";
+      else if (hasSystemicDomain) mode = "systemic";
+      else if (hasPersonalDomain) mode = "personal";
+
+      const domainKeywords = domains.flatMap(domain => customDomainKeywords[domain] || []);
+      const enrichedKeywords = [...new Set([...keywords, ...concepts.flatMap(wordsFrom).map(stripAccents), ...domainKeywords])];
+
+      return {
+        concepts,
+        domains,
+        mode,
+        placeConcept,
+        mainConcept,
+        secondaryConcept,
+        keywords: enrichedKeywords
+      };
+    }
+
+    function customLongContexts(profile) {
+      if (profile.domains.includes("technology") || profile.domains.includes("environment") || profile.domains.includes("society")) {
+        return ["en 2040", "durante los próximos quince años", "dentro de veinte años"];
+      }
+      if (profile.domains.includes("economy") || profile.domains.includes("politics") || profile.domains.includes("health")) {
+        return ["dentro de diez años", "en 2040", "durante la próxima década"];
+      }
+      return ["dentro de diez años", "en el futuro", "durante los próximos veinte años"];
+    }
+
+    function customPersonalContexts(profile) {
+      if (profile.domains.includes("travel")) return ["el próximo verano", "el año que viene", "dentro de cinco años"];
+      if (profile.domains.includes("work") || profile.domains.includes("education")) return ["el próximo año", "dentro de cinco años", "al terminar esta etapa"];
+      return ["el próximo año", "dentro de cinco años", "más adelante"];
+    }
+
+    function createCustomMissionPool(topic) {
+      const profile = topic.profile || buildCustomTopicProfile(topic.name, topic.keywords || []);
+      const first = customConceptLabel(profile.mainConcept || topic.name);
+      const second = profile.secondaryConcept ? customConceptLabel(profile.secondaryConcept) : "";
+      const place = profile.placeConcept || "";
+      const combined = combinedCustomConceptLabel(profile);
+      const longContexts = customLongContexts(profile);
+      const personalContexts = customPersonalContexts(profile);
+
+      if (profile.mode === "placeRelation") {
+        const focus = customConceptLabel(profile.mainConcept || profile.secondaryConcept || topic.name);
+        return [
+          {
+            type: "cambio a largo plazo",
+            context: longContexts[0],
+            situation: `Piensa en la relación entre ${place} y ${focus}.`,
+            prompt: `Pregunta cómo cambiará ${place} gracias a ${focus} y qué aspecto mejorará más.`,
+            intent: ["cambiar", "transform", "mejor", "influir"],
+            example: `¿Cómo cambiará ${place} gracias a ${focus} ${longContexts[0]} y qué aspecto mejorará más?`
+          },
+          {
+            type: "papel futuro",
+            context: longContexts[1],
+            situation: `Imagina el desarrollo de ${focus} en ${place}.`,
+            prompt: `Pregunta qué papel tendrá ${focus} en ${place} y qué sector cambiará primero.`,
+            intent: ["tener", "cambiar", "desarroll", "transform"],
+            example: `¿Qué papel tendrá ${focus} en ${place} ${longContexts[1]} y qué sector cambiará primero?`
+          },
+          {
+            type: "ventajas y dificultades",
+            context: longContexts[2],
+            situation: `Considera las consecuencias de ${focus} para ${place}.`,
+            prompt: `Pregunta qué ventaja tendrá ${place} gracias a ${focus} y qué dificultad aparecerá.`,
+            intent: ["tener", "aparec", "benefici", "causar"],
+            example: `¿Qué ventaja tendrá ${place} gracias a ${focus} ${longContexts[2]} y qué dificultad aparecerá?`
+          },
+          {
+            type: "posición futura",
+            context: longContexts[0],
+            situation: `Piensa en la posición futura de ${place} en este ámbito.`,
+            prompt: `Pregunta si ${place} tendrá una posición más fuerte en ${focus} y por qué.`,
+            intent: ["tener", "ser", "crecer", "mejor"],
+            example: `¿Tendrá ${place} una posición más fuerte en ${focus} ${longContexts[0]} y por qué?`
+          }
+        ];
+      }
+
+      if (profile.mode === "relation") {
+        return [
+          {
+            type: "influencia",
+            context: longContexts[0],
+            situation: `Piensa en la relación entre ${first} y ${second}.`,
+            prompt: `Pregunta cómo influirá ${first} en ${second} y qué cambiará como consecuencia.`,
+            intent: ["influir", "afectar", "cambiar", "transform"],
+            example: `¿Cómo influirá ${first} en ${second} ${longContexts[0]} y qué cambiará como consecuencia?`
+          },
+          {
+            type: "evolución conjunta",
+            context: longContexts[1],
+            situation: `Imagina cómo evolucionarán juntos ${first} y ${second}.`,
+            prompt: `Pregunta qué relación tendrán ${first} y ${second} y cuál será el cambio más importante.`,
+            intent: ["tener", "ser", "cambiar", "evolucion"],
+            example: `¿Qué relación tendrán ${first} y ${second} ${longContexts[1]} y cuál será el cambio más importante?`
+          },
+          {
+            type: "consecuencias",
+            context: longContexts[2],
+            situation: `Considera posibles efectos de combinar ${first} y ${second}.`,
+            prompt: `Pregunta qué ventaja producirá esta relación y qué problema podrá aparecer.`,
+            intent: ["produc", "aparec", "causar", "poder"],
+            example: `¿Qué ventaja producirá la relación entre ${first} y ${second} ${longContexts[2]} y qué problema podrá aparecer?`
+          }
+        ];
+      }
+
+      if (profile.mode === "personal") {
+        return [
+          {
+            type: "plan personal",
+            context: personalContexts[0],
+            situation: `Tu compañero puede tomar una decisión relacionada con ${first}.`,
+            prompt: `Pregúntale qué hará en este ámbito y por qué lo elegirá.`,
+            intent: ["hacer", "eleg", "decid", "empez"],
+            example: `¿Qué harás relacionado con ${first} ${personalContexts[0]} y por qué lo elegirás?`
+          },
+          {
+            type: "cambio personal",
+            context: personalContexts[1],
+            situation: `Imagina cómo cambiará la relación de tu compañero con ${first}.`,
+            prompt: `Pregúntale qué cambiará en su vida y qué resultado espera conseguir.`,
+            intent: ["cambiar", "conseguir", "logr", "esper"],
+            example: `¿Qué cambiará en tu vida gracias a ${first} ${personalContexts[1]} y qué resultado conseguirás?`
+          },
+          {
+            type: "decisión futura",
+            context: personalContexts[2],
+            situation: `Tu compañero tendrá varias posibilidades relacionadas con ${first}.`,
+            prompt: `Pregúntale qué opción escogerá y cómo la realizará.`,
+            intent: ["escog", "eleg", "hacer", "realiz"],
+            example: `¿Qué opción escogerás relacionada con ${first} ${personalContexts[2]} y cómo la realizarás?`
+          }
+        ];
+      }
+
+      return [
+        {
+          type: "cambio futuro",
+          context: longContexts[0],
+          situation: `Imagina la evolución futura de ${first}.`,
+          prompt: `Pregunta qué cambiará en este ámbito y qué consecuencia tendrá.`,
+          intent: ["cambiar", "tener", "causar", "produc"],
+          example: `¿Qué cambiará en ${first} ${longContexts[0]} y qué consecuencia tendrá?`
+        },
+        {
+          type: "importancia futura",
+          context: longContexts[1],
+          situation: `Piensa en la importancia futura de ${first}.`,
+          prompt: `Pregunta si será más importante y por qué.`,
+          intent: ["ser", "crecer", "aument", "import"],
+          example: `¿Será ${first} más importante ${longContexts[1]} y por qué?`
+        },
+        {
+          type: "posibilidades",
+          context: longContexts[2],
+          situation: `Considera nuevas posibilidades relacionadas con ${first}.`,
+          prompt: `Pregunta qué novedad aparecerá y cómo cambiará la vida de las personas.`,
+          intent: ["aparec", "cambiar", "afectar", "mejor"],
+          example: `¿Qué novedad aparecerá en ${first} ${longContexts[2]} y cómo cambiará la vida de las personas?`
+        }
+      ];
+    }
 
     const stopWords = new Set(["el","la","los","las","un","una","unos","unas","de","del","y","o","en","con","para","por","sobre","futuro","futura","futuros","futuras"]);
     const futureEndings = ["é","ás","á","emos","éis","án"];
@@ -1351,19 +1619,93 @@
       showToast(`Temat: ${currentTopic.name}`);
     }
 
+    function neutralFutureRequirementLabel(requirement, index) {
+      const clause = stripAccents(requirement.clause || "");
+
+      const directCueLabels = {
+        destination: "el destino",
+        withPerson: "la compañía",
+        forPerson: "la persona destinataria",
+        person: "la persona",
+        origin: "el origen",
+        reason: "el motivo",
+        purpose: "la finalidad",
+        duration: "la duración",
+        quantity: "la cantidad",
+        location: "el lugar",
+        category: "el ámbito o tipo",
+        manner: "la manera o el desarrollo",
+        yesNo: "una confirmación"
+      };
+
+      if (directCueLabels[requirement.cueKey]) return directCueLabels[requirement.cueKey];
+
+      const contentLabels = [
+        [/\b(?:pais|destino)\b/, "el país o destino"],
+        [/\bciudad\b/, "la ciudad"],
+        [/\b(?:viaje|viajes)\b/, "los viajes"],
+        [/\b(?:medio|medios)\s+de\s+transporte\b/, "los medios de transporte"],
+        [/\bdispositivo\b/, "el dispositivo"],
+        [/\btecnologia\b/, "la tecnología"],
+        [/\b(?:tarea|tareas)\b/, "las tareas"],
+        [/\b(?:profesion|profesiones)\b/, "las profesiones"],
+        [/\b(?:habilidad|curso)\b/, "la habilidad o el curso"],
+        [/\b(?:estudiara|estudiar|estudios)\b/, "los estudios"],
+        [/\b(?:clase|clases)\b/, "las clases"],
+        [/\b(?:profesor|profesores)\b/, "el papel de los profesores"],
+        [/\b(?:alumno|alumnos)\b/, "el aprendizaje de los alumnos"],
+        [/\b(?:consecuencia|consecuencias)\b/, "las consecuencias"],
+        [/\b(?:sector|sectores)\b/, "el sector"],
+        [/\b(?:papel)\b/, "el papel"],
+        [/\b(?:ventaja|ventajas)\b/, "las ventajas"],
+        [/\b(?:dificultad|dificultades|problema|problemas)\b/, "las dificultades"],
+        [/\b(?:posicion)\b/, "la posición"],
+        [/\b(?:energia|energias)\b/, "el tipo de energía"],
+        [/\b(?:medida|medidas)\b/, "las medidas"],
+        [/\b(?:edificio|edificios|calle|calles|zona|zonas)\b/, "los elementos de la ciudad"],
+        [/\b(?:casa|casas)\b/, "la vivienda"],
+        [/\b(?:habito|habitos)\b/, "el hábito"],
+        [/\b(?:hospital|hospitales|tratamiento|tratamientos)\b/, "la atención sanitaria"],
+        [/\b(?:enfermedad|enfermedades)\b/, "las enfermedades"],
+        [/\b(?:actividad|actividades)\b/, "la actividad"],
+        [/\b(?:aficion|aficiones)\b/, "la afición"],
+        [/\b(?:amigo|amigos|pareja|parejas)\b/, "las relaciones"],
+        [/\b(?:familia|familias)\b/, "la familia"],
+        [/\b(?:plato|platos|comida)\b/, "la comida o el plato"],
+        [/\b(?:ingrediente|ingredientes)\b/, "los ingredientes"],
+        [/\b(?:producto|productos)\b/, "los productos"],
+        [/\b(?:compra|compras)\b/, "la compra"],
+        [/\b(?:dinero|monedas|billetes)\b/, "el dinero o la forma de pago"],
+        [/\b(?:turismo)\b/, "el turismo"],
+        [/\b(?:cultura|elemento|elementos|aspecto|aspectos)\b/, "los elementos culturales"],
+        [/\b(?:cambio|cambios|cambiara|cambiaran)\b/, "los cambios"],
+        [/\b(?:trabajo|educacion)\b/, "el trabajo o la educación"]
+      ];
+
+      for (const [pattern, label] of contentLabels) {
+        if (pattern.test(clause)) return label;
+      }
+
+      if (requirement.cueKey === "what") return "una información concreta";
+      return `la información ${index + 1}`;
+    }
+
+    function buildStudentMission(mission) {
+      const requirements = deriveMissionRequirements(mission.prompt || "");
+      const goals = requirements.map((requirement, index) =>
+        `<span><strong>${index + 1}.</strong> ${escapeHtml(neutralFutureRequirementLabel(requirement, index))}</span>`
+      );
+
+      if (!goals.length) return "Formula una pregunta relacionada con el tema y el momento indicado.";
+      return `Consigue ${goals.length === 1 ? "esta información" : "estas informaciones"}:<br>${goals.join("<br>")}`;
+    }
+
     function buildMission() {
       let mission;
 
       if (currentTopic.custom) {
-        const template = customMissionTemplates[Math.floor(Math.random() * customMissionTemplates.length)];
-        mission = {
-          type: template.type,
-          context: template.context,
-          situation: template.situation(currentTopic.name),
-          prompt: template.prompt(currentTopic.name),
-          intent: template.intent,
-          example: template.model(currentTopic.name)
-        };
+        const pool = currentTopic.missions?.length ? currentTopic.missions : createCustomMissionPool(currentTopic);
+        mission = pool[Math.floor(Math.random() * pool.length)];
       } else {
         const pool = currentTopic.missions || [];
         mission = pool[Math.floor(Math.random() * pool.length)];
@@ -1378,9 +1720,9 @@
 
       topicText.textContent = currentMission.topic;
       contextText.textContent = currentMission.context;
-      situationText.textContent = currentMission.situation;
-      missionText.textContent = currentMission.prompt;
-      questionInput.placeholder = `Ej.: ${currentMission.example}`;
+      situationText.textContent = `Hablad sobre «${currentMission.topic}» y relacionad la conversación con «${currentMission.context}».`;
+      missionText.innerHTML = buildStudentMission(currentMission);
+      questionInput.placeholder = "Escribe aquí una pregunta completa en español...";
     }
 
     function addCustomTopic() {
@@ -1404,7 +1746,15 @@
         showToast("Ten temat był już w puli — używam go teraz.");
         return;
       }
-      const topic = { name, keywords, custom: true, examples: [] };
+      const profile = buildCustomTopicProfile(name, keywords);
+      const topic = {
+        name,
+        keywords: profile.keywords,
+        custom: true,
+        profile,
+        missions: []
+      };
+      topic.missions = createCustomMissionPool(topic);
       customTopics.push(topic);
       populateTopicSelect(presetTopics.length + customTopics.length - 1);
       currentTopic = topic;
