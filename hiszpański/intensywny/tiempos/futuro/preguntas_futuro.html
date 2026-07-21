@@ -1,0 +1,1428 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Interaktywna gra B1 do tworzenia pytań w futuro simple po hiszpańsku.">
+  <title>El desafío del futuro – futuro simple B1</title>
+  <style>
+    :root {
+      --bg-a: #eef5ff;
+      --bg-b: #fff5eb;
+      --panel: rgba(255,255,255,.92);
+      --card: #fff;
+      --ink: #20263c;
+      --muted: #697289;
+      --primary: #5267df;
+      --primary-dark: #3d4fbd;
+      --primary-soft: #edf0ff;
+      --cyan: #0e91a8;
+      --success: #13805a;
+      --success-soft: #e7f8f0;
+      --warning: #ad6900;
+      --warning-soft: #fff2d8;
+      --danger: #b2394d;
+      --danger-soft: #ffebef;
+      --border: #dde3f0;
+      --shadow: 0 24px 65px rgba(43,53,102,.14);
+      --radius-xl: 27px;
+      --radius-lg: 19px;
+      --radius-md: 13px;
+    }
+
+    * { box-sizing: border-box; }
+    html { min-height: 100%; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 22px;
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 14% 8%, rgba(82,103,223,.22), transparent 28%),
+        radial-gradient(circle at 88% 13%, rgba(14,145,168,.16), transparent 25%),
+        radial-gradient(circle at 72% 88%, rgba(240,139,71,.16), transparent 28%),
+        linear-gradient(135deg, var(--bg-a), var(--bg-b));
+      background-attachment: fixed;
+      overflow-x: hidden;
+    }
+
+    body::before, body::after {
+      content: "";
+      position: fixed;
+      z-index: -1;
+      width: 310px;
+      height: 310px;
+      border-radius: 50%;
+      opacity: .32;
+      pointer-events: none;
+      animation: drift 12s ease-in-out infinite alternate;
+    }
+    body::before {
+      left: -170px;
+      top: 36%;
+      background: radial-gradient(circle, rgba(82,103,223,.36), transparent 68%);
+    }
+    body::after {
+      right: -165px;
+      bottom: -40px;
+      background: radial-gradient(circle, rgba(14,145,168,.29), transparent 68%);
+      animation-delay: -5s;
+    }
+
+    button, input, textarea, select { font: inherit; }
+    button { cursor: pointer; }
+    button:disabled { cursor: wait; opacity: .7; }
+    .hidden { display: none !important; }
+
+    .app { width: min(1190px, 100%); margin: 0 auto; }
+    .topbar {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+    .brand h1 {
+      margin: 0 0 7px;
+      font-size: clamp(1.8rem, 4.6vw, 2.75rem);
+      line-height: 1.05;
+      letter-spacing: -.04em;
+      background: linear-gradient(102deg, var(--primary-dark), #7251d1 50%, var(--cyan));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .brand p { margin: 0; max-width: 750px; line-height: 1.55; color: var(--muted); }
+    .round-pill {
+      flex: 0 0 auto;
+      position: relative;
+      overflow: hidden;
+      padding: 10px 15px;
+      border: 1px solid rgba(255,255,255,.9);
+      border-radius: 999px;
+      color: var(--primary-dark);
+      font-weight: 850;
+      background: linear-gradient(135deg, rgba(255,255,255,.98), rgba(237,240,255,.98));
+      box-shadow: 0 12px 25px rgba(43,53,102,.10);
+    }
+    .round-pill::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      transform: translateX(-130%);
+      background: linear-gradient(110deg, transparent 20%, rgba(255,255,255,.9) 48%, transparent 76%);
+      animation: shine 5s ease-in-out infinite;
+    }
+
+    .topic-dock {
+      margin-bottom: 18px;
+      padding: 13px;
+      display: grid;
+      grid-template-columns: minmax(210px,1fr) auto auto;
+      gap: 10px;
+      align-items: center;
+      border: 1px solid rgba(255,255,255,.85);
+      border-radius: 18px;
+      background: rgba(255,255,255,.75);
+      box-shadow: 0 12px 32px rgba(43,53,102,.08);
+      backdrop-filter: blur(12px);
+    }
+    .topic-select-wrap { display: grid; grid-template-columns: auto minmax(0,1fr); gap: 10px; align-items: center; }
+    .topic-select-wrap label { font-size: .8rem; font-weight: 850; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+    select, input, textarea {
+      width: 100%;
+      color: var(--ink);
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.96);
+      outline: none;
+      transition: border-color .2s, box-shadow .2s, transform .2s;
+    }
+    select, input { min-height: 44px; padding: 10px 12px; border-radius: 12px; }
+    textarea { min-height: 132px; resize: vertical; padding: 15px 16px; border-radius: 16px; line-height: 1.55; }
+    select:focus, input:focus, textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(82,103,223,.12);
+    }
+
+    .custom-topic-editor {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: minmax(170px,.8fr) minmax(240px,1.2fr) auto;
+      gap: 10px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+      animation: reveal .28s ease both;
+    }
+    .field small { display: block; margin: 5px 2px 0; color: var(--muted); font-size: .78rem; }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0,1.08fr) minmax(340px,.92fr);
+      gap: 18px;
+      align-items: start;
+    }
+    .panel {
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.9);
+      border-radius: var(--radius-xl);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+      transition: transform .25s, box-shadow .25s;
+    }
+    .panel:hover { transform: translateY(-2px); box-shadow: 0 28px 72px rgba(43,53,102,.17); }
+    .panel-body { padding: clamp(18px,3vw,30px); }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 13px;
+      color: var(--primary-dark);
+      font-size: .82rem;
+      font-weight: 850;
+      letter-spacing: .075em;
+      text-transform: uppercase;
+    }
+    .eyebrow::before {
+      content: "";
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--primary);
+      box-shadow: 0 0 0 5px var(--primary-soft);
+    }
+
+    .mission-main {
+      position: relative;
+      overflow: hidden;
+      padding: 23px 21px 21px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      background: linear-gradient(145deg,#fff,#f6f8ff);
+    }
+    .mission-main::before {
+      content: "";
+      position: absolute;
+      left: 0; right: 0; top: 0;
+      height: 5px;
+      background: linear-gradient(90deg,var(--primary),#7158d0,var(--cyan));
+    }
+    .mission-main::after {
+      content: "";
+      position: absolute;
+      width: 190px; height: 190px;
+      right: -110px; bottom: -130px;
+      border-radius: 50%;
+      background: radial-gradient(circle,rgba(14,145,168,.16),transparent 70%);
+    }
+    .meta-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 11px; }
+    .meta-item {
+      position: relative;
+      z-index: 1;
+      padding: 13px 14px;
+      border: 1px solid #e4e7f2;
+      border-radius: 13px;
+      background: rgba(255,255,255,.75);
+    }
+    .meta-label { display: block; margin-bottom: 4px; color: var(--muted); font-size: .75rem; font-weight: 850; text-transform: uppercase; letter-spacing: .065em; }
+    .meta-value { display: block; font-weight: 850; }
+    .mission-text { position: relative; z-index: 1; margin: 18px 0 10px; font-size: clamp(1.09rem,2vw,1.28rem); font-weight: 760; line-height: 1.5; }
+    .context-note { position: relative; z-index: 1; margin: 0; color: var(--muted); line-height: 1.5; }
+
+    .timer-box {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 16px;
+      align-items: center;
+      margin-top: 15px;
+      padding: 15px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      background: rgba(255,255,255,.72);
+    }
+    .timer {
+      min-width: 142px;
+      padding: 12px 16px;
+      border-radius: 15px;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+      font-size: clamp(1.8rem,5vw,2.45rem);
+      font-weight: 900;
+      letter-spacing: .045em;
+      color: var(--primary-dark);
+      background: var(--primary-soft);
+      border: 1px solid #dfe3ff;
+      transition: color .2s, background .2s, transform .2s;
+    }
+    .timer.urgent { color: var(--danger); background: var(--danger-soft); animation: pulse 1s ease-in-out infinite; }
+    .timer-actions, .main-actions, .accent-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+    .input-hint { color: var(--muted); font-size: .82rem; line-height: 1.4; }
+
+    .input-section { margin-top: 19px; }
+    .input-section label { display: block; margin-bottom: 9px; font-weight: 850; }
+    .input-section label .input-hint { display: block; margin-top: 4px; font-weight: 450; }
+    .char-row { display: flex; justify-content: space-between; gap: 12px; margin-top: 8px; color: var(--muted); font-size: .83rem; }
+    .accent-button {
+      min-width: 35px;
+      padding: 6px 8px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      color: var(--primary-dark);
+      font-weight: 800;
+      background: #fff;
+    }
+    .accent-button:hover { border-color: var(--primary); background: var(--primary-soft); transform: translateY(-1px); }
+
+    .btn {
+      min-height: 42px;
+      padding: 10px 15px;
+      border: 0;
+      border-radius: 12px;
+      font-weight: 850;
+      transition: transform .18s, box-shadow .18s, filter .18s;
+    }
+    .btn:hover { transform: translateY(-2px); filter: brightness(1.015); }
+    .btn:active { transform: translateY(0); }
+    .btn-primary { color: #fff; background: linear-gradient(135deg,var(--primary),var(--primary-dark)); box-shadow: 0 10px 18px rgba(82,103,223,.22); }
+    .btn-secondary { color: #fff; background: linear-gradient(135deg,var(--cyan),#087588); box-shadow: 0 10px 18px rgba(14,145,168,.18); }
+    .btn-soft { color: var(--primary-dark); background: var(--primary-soft); }
+    .btn-neutral { color: var(--ink); background: #eef1f6; }
+    .btn-danger-soft { color: var(--danger); background: var(--danger-soft); }
+    .main-actions { margin-top: 15px; }
+
+    .results-placeholder {
+      min-height: 575px;
+      padding: 36px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      color: var(--muted);
+    }
+    .results-placeholder.hidden { display: none; }
+    .placeholder-icon {
+      width: 78px; height: 78px;
+      display: grid; place-items: center;
+      margin: 0 auto 16px;
+      border-radius: 50%;
+      color: var(--primary-dark);
+      font-size: 2rem;
+      font-weight: 900;
+      background: var(--primary-soft);
+      box-shadow: inset 0 0 0 8px rgba(255,255,255,.62);
+    }
+    .results-placeholder h2 { margin: 0 0 8px; color: var(--ink); }
+    .results-placeholder p { max-width: 390px; margin: 0; line-height: 1.55; }
+    .results { display: none; }
+    .results.visible { display: block; }
+
+    .evaluation-status {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 13px;
+      align-items: center;
+      margin-bottom: 15px;
+      padding: 13px;
+      border: 1px solid #dce2ff;
+      border-radius: 16px;
+      background: linear-gradient(135deg,#f1f3ff,#f4fbff);
+    }
+    .evaluation-spinner {
+      width: 40px; height: 40px;
+      display: grid; place-items: center;
+      border: 3px solid #d7dcff;
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      color: transparent;
+      animation: spin .8s linear infinite;
+    }
+    .evaluation-status.done .evaluation-spinner {
+      color: #fff;
+      border-color: var(--success);
+      background: var(--success);
+      animation: pop .42s ease both;
+    }
+    .evaluation-status strong, .evaluation-status span { display: block; }
+    .evaluation-status span { margin-top: 2px; color: var(--muted); font-size: .82rem; }
+    .evaluation-progress-track { height: 7px; margin-top: 9px; overflow: hidden; border-radius: 999px; background: rgba(82,103,223,.12); }
+    .evaluation-progress-fill { width: var(--progress,0%); height: 100%; border-radius: inherit; background: linear-gradient(90deg,var(--primary),var(--cyan)); transition: width .35s ease; }
+
+    .detected-box {
+      display: none;
+      margin-bottom: 12px;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 15px;
+      background: #fbfcff;
+      animation: reveal .35s ease both;
+    }
+    .detected-box.visible { display: block; }
+    .detected-box h3 { margin: 0 0 6px; font-size: .88rem; text-transform: uppercase; letter-spacing: .055em; color: var(--muted); }
+    .detected-box p { margin: 0; line-height: 1.5; }
+
+    .feedback-list { display: grid; gap: 10px; }
+    .feedback-item {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 11px;
+      padding: 13px;
+      border-radius: 15px;
+      border: 1px solid;
+      animation: feedback .36s ease both;
+    }
+    .feedback-item.success { color: #0f684a; border-color: #bfe8d6; background: var(--success-soft); }
+    .feedback-item.warning { color: #805000; border-color: #f0d499; background: var(--warning-soft); }
+    .feedback-item.error { color: #8d293b; border-color: #f0bac5; background: var(--danger-soft); }
+    .feedback-icon {
+      width: 28px; height: 28px;
+      display: grid; place-items: center;
+      flex: 0 0 auto;
+      border: 1px solid currentColor;
+      border-radius: 50%;
+      font-weight: 900;
+    }
+    .feedback-item p { margin: 0; line-height: 1.45; }
+    .feedback-item strong { display: block; margin-bottom: 2px; color: inherit; }
+
+    .help-wrap {
+      margin-top: 12px;
+      overflow: hidden;
+      border: 1px solid #ddd9ff;
+      border-radius: 15px;
+      background: #f9f8ff;
+      animation: reveal .34s ease both;
+    }
+    .help-button {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 13px 14px;
+      border: 0;
+      color: var(--primary-dark);
+      font-weight: 850;
+      text-align: left;
+      background: transparent;
+    }
+    .help-content { display: none; padding: 0 15px 15px; color: var(--ink); line-height: 1.55; }
+    .help-content.visible { display: block; animation: reveal .25s ease both; }
+    .help-content p { margin: 8px 0; }
+    .help-content code { padding: 2px 6px; border-radius: 6px; background: #ecebff; color: var(--primary-dark); }
+
+    .result-summary { display: none; margin-top: 16px; animation: summary .5s ease both; }
+    .result-summary.visible { display: block; }
+    .score-hero { display: grid; grid-template-columns: auto 1fr; gap: 17px; align-items: center; }
+    .score-circle {
+      --angle: 0deg;
+      --score-color: var(--primary);
+      width: 124px; height: 124px;
+      position: relative;
+      display: grid; place-items: center;
+      flex: 0 0 auto;
+      border-radius: 50%;
+      background: conic-gradient(var(--score-color) var(--angle), #e8ebf3 0);
+      box-shadow: 0 14px 30px rgba(43,53,102,.15);
+    }
+    .score-circle::before {
+      content: "";
+      position: absolute;
+      inset: 10px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: inset 0 0 0 1px #edf0f5;
+    }
+    .score-circle.celebrate { animation: celebrate .55s ease both; }
+    .score-number { position: relative; z-index: 1; font-size: 2rem; font-weight: 950; color: var(--score-color); }
+    .score-number small { font-size: .85rem; }
+    .score-title { margin: 0 0 6px; font-size: 1.3rem; }
+    .score-subtitle { margin: 0; color: var(--muted); line-height: 1.45; }
+    .score-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; margin-top: 14px; }
+    .score-card { padding: 13px; border: 1px solid var(--border); border-radius: 14px; background: #fbfcff; }
+    .score-card span { display: block; color: var(--muted); font-size: .79rem; }
+    .score-card strong { display: block; margin-top: 4px; font-size: 1.35rem; }
+    details.teacher { margin-top: 13px; border-top: 1px solid var(--border); padding-top: 12px; }
+    details.teacher summary { cursor: pointer; color: var(--primary-dark); font-weight: 850; }
+    details.teacher p { line-height: 1.55; color: var(--muted); }
+
+    .footer-note { margin: 15px 4px 0; text-align: center; color: var(--muted); font-size: .78rem; }
+    .toast {
+      position: fixed;
+      left: 50%; bottom: 22px;
+      z-index: 20;
+      max-width: min(430px,calc(100% - 30px));
+      padding: 11px 15px;
+      border-radius: 999px;
+      color: #fff;
+      font-weight: 800;
+      background: #262d47;
+      box-shadow: 0 14px 35px rgba(0,0,0,.2);
+      opacity: 0;
+      transform: translate(-50%,18px);
+      pointer-events: none;
+      transition: opacity .25s, transform .25s;
+    }
+    .toast.visible { opacity: 1; transform: translate(-50%,0); }
+    .confetti-layer { position: fixed; inset: 0; z-index: 30; pointer-events: none; overflow: hidden; }
+    .confetti { position: absolute; top: -20px; width: 9px; height: 15px; border-radius: 3px; background: var(--c); animation: confetti-fall var(--d) ease-in forwards; }
+
+    @keyframes drift { from { transform: translateY(-12px) scale(.96); } to { transform: translateY(18px) scale(1.05); } }
+    @keyframes shine { 0%,58% { transform: translateX(-130%); } 78%,100% { transform: translateX(130%); } }
+    @keyframes pulse { 50% { transform: scale(1.03); } }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes pop { 0% { transform: scale(.7); } 75% { transform: scale(1.12); } 100% { transform: scale(1); } }
+    @keyframes reveal { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes feedback { from { opacity: 0; transform: translateY(12px) scale(.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    @keyframes summary { from { opacity: 0; transform: translateY(17px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes celebrate { 0% { transform: scale(.88); } 65% { transform: scale(1.07); } 100% { transform: scale(1); } }
+    @keyframes confetti-fall { to { transform: translate3d(var(--x),108vh,0) rotate(var(--r)); opacity: .9; } }
+
+    @media (max-width: 930px) {
+      .layout { grid-template-columns: 1fr; }
+      .results-placeholder { min-height: 280px; }
+    }
+    @media (max-width: 720px) {
+      .topic-dock { grid-template-columns: 1fr 1fr; }
+      .topic-select-wrap { grid-column: 1 / -1; }
+      .custom-topic-editor { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 620px) {
+      body { padding: 12px; }
+      .topbar { flex-direction: column; }
+      .round-pill { align-self: flex-start; }
+      .panel-body { padding: 18px; }
+      .meta-grid, .score-grid, .timer-box, .score-hero { grid-template-columns: 1fr; }
+      .timer { min-width: 0; }
+      .topic-dock { grid-template-columns: 1fr; }
+      .topic-select-wrap { grid-template-columns: 1fr; }
+      .btn { flex: 1 1 135px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *,*::before,*::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="brand">
+        <h1>El desafío del futuro</h1>
+        <p>Porozmawiajcie o przyszłości, a następnie zapisz główne pytanie w <strong>futuro simple</strong>. Gra sprawdzi formę pytania, odmianę czasownika, kontekst oraz słownictwo tematyczne.</p>
+      </div>
+      <div class="round-pill" id="roundLabel">Runda 1</div>
+    </header>
+
+    <section class="topic-dock" aria-label="Ustawienia tematów">
+      <div class="topic-select-wrap">
+        <label for="topicSelect">Temat rundy</label>
+        <select id="topicSelect"></select>
+      </div>
+      <button class="btn btn-secondary" id="useSelectedBtn" type="button">Użyj tematu</button>
+      <button class="btn btn-soft" id="toggleCustomBtn" type="button" aria-expanded="false">＋ Dodaj własny</button>
+
+      <div class="custom-topic-editor hidden" id="customTopicEditor">
+        <div class="field">
+          <input id="customTopicInput" maxlength="70" placeholder="Np. inteligencia artificial">
+          <small>Nazwa tematu po hiszpańsku.</small>
+        </div>
+        <div class="field">
+          <input id="customKeywordsInput" maxlength="180" placeholder="Opcjonalnie: robot, tecnología, trabajo, futuro">
+          <small>Słowa kluczowe oddzielone przecinkami zwiększą dokładność analizy.</small>
+        </div>
+        <button class="btn btn-primary" id="addCustomTopicBtn" type="button">Dodaj i użyj</button>
+      </div>
+    </section>
+
+    <section class="layout">
+      <article class="panel">
+        <div class="panel-body">
+          <div class="eyebrow">Misja konwersacyjna B1</div>
+
+          <div class="mission-main">
+            <div class="meta-grid">
+              <div class="meta-item">
+                <span class="meta-label">Tema</span>
+                <span class="meta-value" id="topicText">Viajes del futuro</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">Contexto temporal</span>
+                <span class="meta-value" id="contextText">dentro de diez años</span>
+              </div>
+            </div>
+            <p class="mission-text" id="missionText">Pregunta cómo viajará tu compañero dentro de diez años.</p>
+            <p class="context-note" id="contextNote">Najpierw prowadźcie rozmowę. Po jej zakończeniu wpisz jedno główne pytanie w futuro simple.</p>
+          </div>
+
+          <div class="timer-box">
+            <div class="timer" id="timerDisplay" aria-live="polite">05:00</div>
+            <div>
+              <div class="timer-actions">
+                <button class="btn btn-primary" id="startPauseBtn" type="button">Rozpocznij</button>
+                <button class="btn btn-neutral" id="resetTimerBtn" type="button">Reset 5:00</button>
+              </div>
+              <p class="input-hint" id="timerHint">Po uruchomieniu macie 5 minut na rozmowę.</p>
+            </div>
+          </div>
+
+          <div class="input-section">
+            <label for="questionInput">
+              Zapisz pytanie po hiszpańsku
+              <span class="input-hint">Wymagany jest futuro simple, np. <em>harás, viajarás, habrá, podremos</em>.</span>
+            </label>
+            <textarea id="questionInput" maxlength="280" spellcheck="true" placeholder="Ej.: ¿Cómo viajarás dentro de diez años?"></textarea>
+
+            <div class="char-row">
+              <div class="accent-buttons" aria-label="Znaki hiszpańskie">
+                <button type="button" class="accent-button" data-char="¿">¿</button>
+                <button type="button" class="accent-button" data-char="?">?</button>
+                <button type="button" class="accent-button" data-char="á">á</button>
+                <button type="button" class="accent-button" data-char="é">é</button>
+                <button type="button" class="accent-button" data-char="í">í</button>
+                <button type="button" class="accent-button" data-char="ó">ó</button>
+                <button type="button" class="accent-button" data-char="ú">ú</button>
+                <button type="button" class="accent-button" data-char="ñ">ñ</button>
+              </div>
+              <span><span id="charCount">0</span>/280</span>
+            </div>
+
+            <div class="main-actions">
+              <button class="btn btn-primary" id="analyzeBtn" type="button">Sprawdź pytanie</button>
+              <button class="btn btn-soft" id="nextBtn" type="button">Następna runda</button>
+              <button class="btn btn-danger-soft" id="clearBtn" type="button">Wyczyść</button>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <aside class="panel" aria-live="polite">
+        <div class="results-placeholder" id="resultsPlaceholder">
+          <div>
+            <div class="placeholder-icon">→</div>
+            <h2>Tu pojawi się analiza</h2>
+            <p>Gra rozpozna futuro simple, sprawdzi końcówki i formy nieregularne, a następnie oceni zgodność z tematem oraz przyszłym kontekstem.</p>
+          </div>
+        </div>
+
+        <div class="results" id="resultsPanel">
+          <div class="panel-body">
+            <div class="evaluation-status" id="evaluationStatus">
+              <div class="evaluation-spinner" id="evaluationSpinner">✓</div>
+              <div>
+                <strong id="evaluationStep">Rozpoczynam sprawdzanie…</strong>
+                <span id="evaluationProgress">Analiza pytania i futuro simple</span>
+                <div class="evaluation-progress-track"><div class="evaluation-progress-fill" id="evaluationProgressFill"></div></div>
+              </div>
+            </div>
+
+            <div class="detected-box" id="detectedBox">
+              <h3>Wykryte konstrukcje</h3>
+              <p id="detectedText">—</p>
+            </div>
+
+            <div class="feedback-list" id="feedbackList"></div>
+
+            <div class="help-wrap hidden" id="futureHelpWrap">
+              <button class="help-button" id="futureHelpButton" type="button" aria-expanded="false">
+                <span>💡 Podpowiedź: futuro simple</span><span>⌄</span>
+              </button>
+              <div class="help-content" id="futureHelpContent">
+                <p><strong>Budowa regularna:</strong> <code>infinitivo + é, ás, á, emos, éis, án</code></p>
+                <p><strong>Przykład:</strong> viajaré, viajarás, viajará, viajaremos, viajaréis, viajarán.</p>
+                <p><strong>Najważniejsze nieregularne:</strong> har-, dir-, podr-, pondr-, querr-, sabr-, saldr-, tendr-, vendr-, habr-.</p>
+                <p><strong>Model pytania:</strong> ¿Qué <em>harás</em> el próximo fin de semana?</p>
+              </div>
+            </div>
+
+            <div class="result-summary" id="resultSummary">
+              <div class="score-hero">
+                <div class="score-circle" id="scoreCircle"><div class="score-number"><span id="scoreNumber">0</span><small>%</small></div></div>
+                <div>
+                  <h2 class="score-title" id="scoreTitle">Ocena gotowa</h2>
+                  <p class="score-subtitle" id="scoreSubtitle"></p>
+                </div>
+              </div>
+              <div class="score-grid">
+                <div class="score-card"><span>A) Zapis i forma pytania</span><strong><span id="writingScore">0</span>/40</strong></div>
+                <div class="score-card"><span>B) Futuro, temat i kontekst</span><strong><span id="contextScore">0</span>/60</strong></div>
+              </div>
+              <details class="teacher">
+                <summary>Informacja dla nauczyciela</summary>
+                <p id="teacherInfo"></p>
+              </details>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <p class="footer-note">Analiza jest heurystyczna. Dobrze ocenia typowe pytania B1, lecz własne bardzo abstrakcyjne tematy mogą wymagać krótkiej weryfikacji nauczyciela.</p>
+  </main>
+
+  <div class="confetti-layer" id="confettiLayer" aria-hidden="true"></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const presetTopics = [
+      {
+        name: "Viajes del futuro",
+        keywords: ["viaj", "vacacion", "avion", "vuelo", "tren", "hotel", "turismo", "destino", "pais", "ciudad", "transporte"],
+        examples: ["¿Cómo viajarás dentro de diez años?", "¿Qué país visitarás el año que viene?"]
+      },
+      {
+        name: "Tecnología",
+        keywords: ["tecnolog", "movil", "telefono", "ordenador", "robot", "internet", "aplicacion", "dispositivo", "inteligencia artificial", "redes"],
+        examples: ["¿Qué tecnología usarás dentro de diez años?", "¿Habrá robots en todas las casas en 2040?"]
+      },
+      {
+        name: "Trabajo y profesión",
+        keywords: ["trabaj", "profesion", "empleo", "empresa", "oficina", "jefe", "carrera", "salario", "teletrabajo", "proyecto"],
+        examples: ["¿En qué trabajarás dentro de cinco años?", "¿Qué profesiones desaparecerán en el futuro?"]
+      },
+      {
+        name: "Educación",
+        keywords: ["educacion", "escuela", "colegio", "universidad", "clase", "profesor", "alumno", "estudi", "examen", "curso"],
+        examples: ["¿Cómo serán las clases en 2040?", "¿Qué estudiarás el próximo año?"]
+      },
+      {
+        name: "Medio ambiente",
+        keywords: ["medio ambiente", "clima", "planeta", "contamin", "recicl", "energia", "agua", "bosque", "naturaleza", "ecologic"],
+        examples: ["¿Qué pasará con el clima dentro de veinte años?", "¿Usaremos más energía renovable en el futuro?"]
+      },
+      {
+        name: "Ciudades del futuro",
+        keywords: ["ciudad", "barrio", "edificio", "casa", "transporte", "calle", "coche", "metro", "trafico", "vivir"],
+        examples: ["¿Cómo serán las ciudades del futuro?", "¿Dónde vivirá la mayoría de la gente en 2050?"]
+      },
+      {
+        name: "Salud",
+        keywords: ["salud", "medic", "hospital", "enfermedad", "tratamiento", "deporte", "ejercicio", "alimentacion", "vivir", "cura"],
+        examples: ["¿Viviremos más años en el futuro?", "¿Qué enfermedades curarán los médicos dentro de treinta años?"]
+      },
+      {
+        name: "Tiempo libre",
+        keywords: ["tiempo libre", "ocio", "deporte", "juego", "pelicula", "serie", "musica", "leer", "salir", "aficion"],
+        examples: ["¿Qué harás el próximo fin de semana?", "¿Cómo pasaremos el tiempo libre dentro de veinte años?"]
+      },
+      {
+        name: "Relaciones y familia",
+        keywords: ["familia", "amig", "pareja", "relacion", "persona", "hijo", "padres", "conocer", "vivir", "comunic"],
+        examples: ["¿Cómo conocerá la gente a sus parejas en el futuro?", "¿Dónde vivirá tu familia dentro de diez años?"]
+      },
+      {
+        name: "Comida del futuro",
+        keywords: ["comida", "comer", "cocin", "restaurante", "plato", "producto", "carne", "verdura", "aliment", "cultivar"],
+        examples: ["¿Qué comeremos dentro de cincuenta años?", "¿Cocinarán los robots para nosotros en el futuro?"]
+      },
+      {
+        name: "Compras y dinero",
+        keywords: ["compr", "dinero", "precio", "tienda", "pagar", "banco", "tarjeta", "producto", "ahorrar", "moneda"],
+        examples: ["¿Cómo pagaremos dentro de veinte años?", "¿Qué comprarás cuando tengas más dinero?"]
+      },
+      {
+        name: "España en el futuro",
+        keywords: ["españa", "español", "madrid", "barcelona", "pais", "turismo", "ciudad", "sociedad", "cultura", "vivir"],
+        examples: ["¿Cómo cambiará España en los próximos veinte años?", "¿Qué ciudades españolas visitarás en el futuro?"]
+      }
+    ];
+
+    const missionTemplates = [
+      {
+        type: "predicción",
+        context: "dentro de diez años",
+        text: topic => `Pregunta qué cambiará dentro de diez años en relación con «${topic}».`,
+        intent: ["cambiar", "ser", "haber", "pas", "ocurr", "mejor", "empeor", "convert"],
+        model: topic => `¿Cómo cambiará ${withArticle(topic)} dentro de diez años?`
+      },
+      {
+        type: "plan personal",
+        context: "el próximo año",
+        text: topic => `Pregunta qué hará tu compañero el próximo año en relación con «${topic}».`,
+        intent: ["har", "ir", "viaj", "estudi", "trabaj", "compr", "empez", "visit", "eleg"],
+        model: topic => `¿Qué harás el próximo año en relación con ${withArticle(topic)}?`
+      },
+      {
+        type: "futuro lejano",
+        context: "en 2050",
+        text: topic => `Pregunta cómo será la situación de «${topic}» en 2050.`,
+        intent: ["ser", "estar", "haber", "tener", "viv", "funcion", "cambiar"],
+        model: topic => `¿Cómo será ${withArticle(topic)} en 2050?`
+      },
+      {
+        type: "decisión futura",
+        context: "algún día",
+        text: topic => `Pregunta qué opción elegirá tu compañero algún día dentro del tema «${topic}».`,
+        intent: ["eleg", "escog", "decid", "prefer", "compr", "estudi", "trabaj", "viv"],
+        model: topic => `¿Qué elegirás algún día en relación con ${withArticle(topic)}?`
+      },
+      {
+        type: "consecuencia",
+        context: "en el futuro",
+        text: topic => `Pregunta qué ocurrirá en el futuro si cambia algo importante relacionado con «${topic}».`,
+        intent: ["pas", "ocurr", "suced", "har", "ser", "tener", "cambiar"],
+        model: topic => `¿Qué pasará en el futuro con ${withArticle(topic)}?`
+      },
+      {
+        type: "próximo paso",
+        context: "la semana que viene",
+        text: topic => `Pregunta qué hará tu compañero la semana que viene en relación con «${topic}».`,
+        intent: ["har", "ir", "prepar", "empez", "termin", "visit", "habl", "busc"],
+        model: topic => `¿Qué harás la semana que viene relacionado con ${withArticle(topic)}?`
+      },
+      {
+        type: "cambio social",
+        context: "durante los próximos veinte años",
+        text: topic => `Pregunta cómo afectará «${topic}» a la vida de las personas durante los próximos veinte años.`,
+        intent: ["afectar", "cambiar", "ayud", "permit", "mejor", "empeor", "influir"],
+        model: topic => `¿Cómo afectará ${withArticle(topic)} a nuestra vida durante los próximos veinte años?`
+      },
+      {
+        type: "posibilidad",
+        context: "mañana o más adelante",
+        text: topic => `Pregunta qué podrá suceder mañana o más adelante en relación con «${topic}».`,
+        intent: ["podr", "pas", "ocurr", "suced", "aparec", "cambiar", "haber"],
+        model: topic => `¿Qué podrá pasar mañana o más adelante con ${withArticle(topic)}?`
+      }
+    ];
+
+    const stopWords = new Set(["el","la","los","las","un","una","unos","unas","de","del","y","o","en","con","para","por","sobre","futuro","futura","futuros","futuras"]);
+    const futureEndings = ["é","ás","á","emos","éis","án"];
+    const irregularStems = ["dir","har","habr","podr","pondr","querr","sabr","saldr","tendr","valdr","vendr","cabr","mantendr","obtendr","propondr","supondr","compondr"];
+    const wrongIrregulars = {
+      "haceré":"haré", "hacerás":"harás", "hacerá":"hará", "haceremos":"haremos", "haceréis":"haréis", "hacerán":"harán",
+      "deciré":"diré", "decirás":"dirás", "decirá":"dirá", "deciremos":"diremos", "deciréis":"diréis", "decirán":"dirán",
+      "poderé":"podré", "poderás":"podrás", "poderá":"podrá", "poderemos":"podremos", "poderéis":"podréis", "poderán":"podrán",
+      "poneré":"pondré", "ponerás":"pondrás", "ponerá":"pondrá", "poneremos":"pondremos", "poneréis":"pondréis", "ponerán":"pondrán",
+      "quereré":"querré", "quererás":"querrás", "quererá":"querrá", "quereremos":"querremos", "quereréis":"querréis", "quererán":"querrán",
+      "saberé":"sabré", "saberás":"sabrás", "saberá":"sabrá", "saberemos":"sabremos", "saberéis":"sabréis", "saberán":"sabrán",
+      "saliré":"saldré", "salirás":"saldrás", "salirá":"saldrá", "saliremos":"saldremos", "saliréis":"saldréis", "salirán":"saldrán",
+      "teneré":"tendré", "tenerás":"tendrás", "tenerá":"tendrá", "teneremos":"tendremos", "teneréis":"tendréis", "tenerán":"tendrán",
+      "veniré":"vendré", "venirás":"vendrás", "venirá":"vendrá", "veniremos":"vendremos", "veniréis":"vendréis", "venirán":"vendrán",
+      "haberé":"habré", "haberás":"habrás", "haberá":"habrá", "haberemos":"habremos", "haberéis":"habréis", "haberán":"habrán"
+    };
+
+    const genericFutureMarkers = [
+      "mañana", "pasado mañana", "el próximo", "la próxima", "los próximos", "las próximas", "que viene",
+      "dentro de", "en el futuro", "algún día", "mas adelante", "más adelante", "pronto", "en 20", "en 19"
+    ];
+
+    const interrogatives = ["qué","cómo","cuándo","dónde","quién","quiénes","cuál","cuáles","cuánto","cuánta","cuántos","cuántas","por qué"];
+    const unaccentedInterrogatives = {"que":"qué","como":"cómo","cuando":"cuándo","donde":"dónde","quien":"quién","quienes":"quiénes","cual":"cuál","cuales":"cuáles","cuanto":"cuánto","cuanta":"cuánta","cuantos":"cuántos","cuantas":"cuántas"};
+
+    let customTopics = [];
+    let currentTopic = presetTopics[0];
+    let currentMission = null;
+    let round = 1;
+    let secondsLeft = 300;
+    let timerId = null;
+    let animationToken = 0;
+    let toastTimer = null;
+
+    const $ = id => document.getElementById(id);
+    const topicSelect = $("topicSelect");
+    const customTopicEditor = $("customTopicEditor");
+    const customTopicInput = $("customTopicInput");
+    const customKeywordsInput = $("customKeywordsInput");
+    const topicText = $("topicText");
+    const contextText = $("contextText");
+    const missionText = $("missionText");
+    const questionInput = $("questionInput");
+    const charCount = $("charCount");
+    const timerDisplay = $("timerDisplay");
+    const timerHint = $("timerHint");
+    const startPauseBtn = $("startPauseBtn");
+    const roundLabel = $("roundLabel");
+    const resultsPlaceholder = $("resultsPlaceholder");
+    const resultsPanel = $("resultsPanel");
+    const evaluationStatus = $("evaluationStatus");
+    const evaluationStep = $("evaluationStep");
+    const evaluationProgress = $("evaluationProgress");
+    const evaluationProgressFill = $("evaluationProgressFill");
+    const detectedBox = $("detectedBox");
+    const detectedText = $("detectedText");
+    const feedbackList = $("feedbackList");
+    const futureHelpWrap = $("futureHelpWrap");
+    const futureHelpButton = $("futureHelpButton");
+    const futureHelpContent = $("futureHelpContent");
+    const resultSummary = $("resultSummary");
+    const scoreCircle = $("scoreCircle");
+    const scoreNumber = $("scoreNumber");
+    const writingScore = $("writingScore");
+    const contextScore = $("contextScore");
+    const scoreTitle = $("scoreTitle");
+    const scoreSubtitle = $("scoreSubtitle");
+    const teacherInfo = $("teacherInfo");
+    const toast = $("toast");
+    const confettiLayer = $("confettiLayer");
+    const analyzeBtn = $("analyzeBtn");
+
+    function stripAccents(value) {
+      return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    }
+
+    function escapeHtml(value) {
+      return String(value).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+    }
+
+    function withArticle(topic) {
+      const lower = topic.toLowerCase();
+      if (/^(el|la|los|las|un|una)\s/.test(lower)) return topic.toLowerCase();
+      return `el tema «${topic}»`;
+    }
+
+    function wordsFrom(value) {
+      return value.toLowerCase().match(/[a-záéíóúüñ]+/g) || [];
+    }
+
+    function extractKeywords(name, extra = "") {
+      const fromName = wordsFrom(name).filter(word => !stopWords.has(stripAccents(word)) && word.length >= 3);
+      const fromExtra = extra.split(",").flatMap(item => wordsFrom(item.trim())).filter(word => word.length >= 3);
+      return [...new Set([...fromName, ...fromExtra].map(stripAccents))];
+    }
+
+    function populateTopicSelect(selectedIndex = 0) {
+      const all = [...presetTopics, ...customTopics];
+      topicSelect.innerHTML = `<option value="random">🎲 Losowy temat z puli</option>` + all.map((topic,index) => `<option value="${index}">${escapeHtml(topic.name)}${topic.custom ? " ★" : ""}</option>`).join("");
+      topicSelect.value = selectedIndex === "random" ? "random" : String(selectedIndex);
+    }
+
+    function chooseTopicFromSelect() {
+      const all = [...presetTopics, ...customTopics];
+      if (topicSelect.value === "random") {
+        currentTopic = all[Math.floor(Math.random() * all.length)];
+      } else {
+        currentTopic = all[Number(topicSelect.value)] || presetTopics[0];
+      }
+      buildMission();
+      resetRoundView(true);
+      showToast(`Temat: ${currentTopic.name}`);
+    }
+
+    function buildMission() {
+      const template = missionTemplates[Math.floor(Math.random() * missionTemplates.length)];
+      const presetExample = currentTopic.examples?.[Math.floor(Math.random() * currentTopic.examples.length)];
+      currentMission = {
+        ...template,
+        topic: currentTopic.name,
+        keywords: currentTopic.keywords,
+        example: presetExample || template.model(currentTopic.name),
+        custom: Boolean(currentTopic.custom)
+      };
+      topicText.textContent = currentMission.topic;
+      contextText.textContent = currentMission.context;
+      missionText.textContent = currentMission.text(currentMission.topic);
+      questionInput.placeholder = `Ej.: ${currentMission.example}`;
+    }
+
+    function addCustomTopic() {
+      const name = customTopicInput.value.trim();
+      if (name.length < 2) {
+        showToast("Wpisz nazwę tematu po hiszpańsku.");
+        customTopicInput.focus();
+        return;
+      }
+      const keywords = extractKeywords(name, customKeywordsInput.value);
+      if (keywords.length === 0) {
+        showToast("Dodaj przynajmniej jedno konkretne słowo kluczowe.");
+        customKeywordsInput.focus();
+        return;
+      }
+      const existing = [...presetTopics,...customTopics].find(topic => stripAccents(topic.name) === stripAccents(name));
+      if (existing) {
+        currentTopic = existing;
+        buildMission();
+        resetRoundView(true);
+        showToast("Ten temat był już w puli — używam go teraz.");
+        return;
+      }
+      const topic = { name, keywords, custom: true, examples: [] };
+      customTopics.push(topic);
+      populateTopicSelect(presetTopics.length + customTopics.length - 1);
+      currentTopic = topic;
+      buildMission();
+      resetRoundView(true);
+      customTopicInput.value = "";
+      customKeywordsInput.value = "";
+      customTopicEditor.classList.add("hidden");
+      $("toggleCustomBtn").setAttribute("aria-expanded","false");
+      showToast(`Dodano temat „${name}” do puli.`);
+    }
+
+    function showToast(message) {
+      clearTimeout(toastTimer);
+      toast.textContent = message;
+      toast.classList.add("visible");
+      toastTimer = setTimeout(() => toast.classList.remove("visible"), 2500);
+    }
+
+    function updateTimer() {
+      const minutes = String(Math.floor(secondsLeft / 60)).padStart(2,"0");
+      const seconds = String(secondsLeft % 60).padStart(2,"0");
+      timerDisplay.textContent = `${minutes}:${seconds}`;
+      timerDisplay.classList.toggle("urgent", secondsLeft <= 60);
+      if (secondsLeft <= 60 && secondsLeft > 0) timerHint.textContent = "¡Último minuto! Zadajcie ostatnie pytanie dodatkowe.";
+      else if (secondsLeft === 0) timerHint.textContent = "¡Se acabó el tiempo! Zapisz teraz główne pytanie.";
+      else timerHint.textContent = "Macie 5 minut na rozmowę i pytania dodatkowe.";
+    }
+
+    function toggleTimer() {
+      if (timerId) {
+        clearInterval(timerId);
+        timerId = null;
+        startPauseBtn.textContent = "Wznów";
+        return;
+      }
+      if (secondsLeft === 0) secondsLeft = 300;
+      startPauseBtn.textContent = "Pauza";
+      timerId = setInterval(() => {
+        secondsLeft -= 1;
+        updateTimer();
+        if (secondsLeft <= 0) {
+          clearInterval(timerId);
+          timerId = null;
+          startPauseBtn.textContent = "Uruchom ponownie";
+        }
+      },1000);
+    }
+
+    function resetTimer() {
+      clearInterval(timerId);
+      timerId = null;
+      secondsLeft = 300;
+      startPauseBtn.textContent = "Rozpocznij";
+      updateTimer();
+    }
+
+    function resetRoundView(clearInput = true) {
+      animationToken += 1;
+      resetTimer();
+      if (clearInput) questionInput.value = "";
+      charCount.textContent = questionInput.value.length;
+      resultsPanel.classList.remove("visible");
+      resultsPlaceholder.classList.remove("hidden");
+      feedbackList.innerHTML = "";
+      resultSummary.classList.remove("visible");
+      futureHelpWrap.classList.add("hidden");
+      futureHelpContent.classList.remove("visible");
+      futureHelpButton.setAttribute("aria-expanded","false");
+      scoreCircle.style.setProperty("--angle","0deg");
+      scoreNumber.textContent = "0";
+    }
+
+    function nextRound() {
+      round += 1;
+      roundLabel.textContent = `Runda ${round}`;
+      if (topicSelect.value === "random") {
+        const all = [...presetTopics,...customTopics];
+        currentTopic = all[Math.floor(Math.random() * all.length)];
+      }
+      buildMission();
+      resetRoundView(true);
+    }
+
+    function tokenIsRegularFuture(token) {
+      return /(?:ar|er|ir)(?:é|ás|á|emos|éis|án)$/.test(token);
+    }
+
+    function tokenIsIrregularFuture(token) {
+      return irregularStems.some(stem => futureEndings.some(ending => token === stem + ending));
+    }
+
+    function analyzeVerbs(raw) {
+      const tokens = wordsFrom(raw);
+      const future = [];
+      const malformedIrregular = [];
+      const missingAccent = [];
+      const irA = [];
+      const conditional = [];
+
+      tokens.forEach(token => {
+        if (wrongIrregulars[token]) {
+          malformedIrregular.push(`${token} → ${wrongIrregulars[token]}`);
+        } else if (tokenIsRegularFuture(token) || tokenIsIrregularFuture(token)) {
+          future.push(token);
+        }
+        if (/(?:ar|er|ir)(?:e|as|a|eis|an)$/.test(token) && !/(?:ar|er|ir)(?:é|ás|á|éis|án)$/.test(token)) missingAccent.push(token);
+        if (/(?:ar|er|ir)(?:ía|ías|íamos|íais|ían)$/.test(token) || irregularStems.some(stem => ["ía","ías","íamos","íais","ían"].some(end => token === stem + end))) conditional.push(token);
+      });
+
+      const normalized = stripAccents(raw);
+      const irARegex = /\b(voy|vas|va|vamos|vais|van)\s+a\s+([a-zñ]+(?:ar|er|ir))\b/g;
+      let match;
+      while ((match = irARegex.exec(normalized))) irA.push(match[0]);
+
+      return {
+        future: [...new Set(future)],
+        malformedIrregular: [...new Set(malformedIrregular)],
+        missingAccent: [...new Set(missingAccent)],
+        irA: [...new Set(irA)],
+        conditional: [...new Set(conditional)]
+      };
+    }
+
+    function hasPhrase(text, phrase) {
+      const escaped = stripAccents(phrase).replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+      return new RegExp(`(^|[^a-zñ])${escaped}([^a-zñ]|$)`,`i`).test(stripAccents(text));
+    }
+
+    function findTopicVocabulary(raw) {
+      const normalized = stripAccents(raw);
+      const matches = [];
+      currentMission.keywords.forEach(keyword => {
+        const key = stripAccents(keyword);
+        if (key.includes(" ")) {
+          if (normalized.includes(key)) matches.push(keyword);
+        } else {
+          const stem = key.length > 5 ? key.slice(0,Math.max(4,key.length - 2)) : key;
+          const pattern = new RegExp(`(^|[^a-zñ])${stem}[a-zñ]*([^a-zñ]|$)`,`i`);
+          if (pattern.test(normalized)) matches.push(keyword);
+        }
+      });
+      return [...new Set(matches)];
+    }
+
+    function analyzePorPara(raw) {
+      const text = stripAccents(raw);
+      if (!/\b(por|para)\b/.test(text)) return { used:false, correct:[], warnings:[], errors:[] };
+      const correct = [], warnings = [], errors = [];
+      if (/\bpor que\b/.test(text)) correct.push("por qué — pytanie o przyczynę");
+      if (/\bpor (la|el) (manana|tarde|noche)\b/.test(text)) correct.push("por + pora dnia");
+      if (/\bpor (internet|telefono|correo|email|tren|avion|coche|autobus)\b/.test(text)) correct.push("por + środek/kanał");
+      if (/\bgracias para\b/.test(text)) errors.push("po «gracias» zwykle używamy «por»");
+      if (/\bpara\s+[a-zñ]+(?:ar|er|ir)\b/.test(text)) correct.push("para + infinitivo — cel");
+      if (/\bpara (mi|ti|el|ella|nosotros|vosotros|ellos|ellas)\b/.test(text)) correct.push("para + odbiorca/opinia");
+      if (/\bpara (manana|el proximo|la proxima|el lunes|el martes|el miercoles|el jueves|el viernes)\b/.test(text)) correct.push("para + termin");
+      const count = (text.match(/\b(por|para)\b/g) || []).length;
+      if (correct.length + errors.length < count) warnings.push("część użyć por/para zależy od zamierzonego znaczenia");
+      return { used:true, correct, warnings, errors };
+    }
+
+    function detectQuestionWord(raw) {
+      const trimmed = raw.trim().toLowerCase().replace(/^¿\s*/,"");
+      return interrogatives.find(word => trimmed.startsWith(word + " ") || trimmed.startsWith(word + "?") || trimmed === word) || null;
+    }
+
+    function findAccentProblems(raw) {
+      const beginning = raw.trim().toLowerCase().replace(/^¿\s*/,"").split(/\s+/)[0]?.replace(/[^a-záéíóúüñ]/g,"") || "";
+      return unaccentedInterrogatives[beginning] ? `${beginning} → ${unaccentedInterrogatives[beginning]}` : null;
+    }
+
+    function containsFutureMarker(raw) {
+      const exact = hasPhrase(raw,currentMission.context);
+      const generic = genericFutureMarkers.some(marker => stripAccents(raw).includes(stripAccents(marker))) || /\ben\s+(20\d{2}|21\d{2})\b/.test(stripAccents(raw));
+      return { exact, generic };
+    }
+
+    function addFeedback(list,type,title,message) { list.push({type,title,message}); }
+
+    function analyzeQuestion() {
+      const raw = questionInput.value.trim();
+      if (!raw) {
+        showToast("Najpierw wpisz pytanie po hiszpańsku.");
+        questionInput.focus();
+        return;
+      }
+
+      const feedback = [];
+      let formScore = 0;
+      let useScore = 0;
+      const verbs = analyzeVerbs(raw);
+      const topicMatches = findTopicVocabulary(raw);
+      const marker = containsFutureMarker(raw);
+      const porPara = analyzePorPara(raw);
+      const tokenCount = wordsFrom(raw).length;
+
+      if (raw.startsWith("¿") && raw.endsWith("?")) {
+        formScore += 10;
+        addFeedback(feedback,"success","Znaki pytania","Pytanie ma poprawne hiszpańskie znaki ¿…?.");
+      } else if (raw.endsWith("?")) {
+        formScore += 6;
+        addFeedback(feedback,"warning","Znaki pytania","Dodaj odwrócony znak «¿» na początku.");
+      } else {
+        addFeedback(feedback,"error","Znaki pytania","Pytanie powinno zaczynać się od «¿» i kończyć znakiem «?». ");
+      }
+
+      const questionWord = detectQuestionWord(raw);
+      if (questionWord) {
+        formScore += 8;
+        addFeedback(feedback,"success","Budowa pytania",`Rozpoznano słowo pytające «${questionWord}».`);
+      } else if (/^¿?\s*(ser|estar|haber|tener|hacer|poder|ir|querer|viajar|trabajar|estudiar)/i.test(raw) || verbs.future.length) {
+        formScore += 6;
+        addFeedback(feedback,"success","Budowa pytania","To może być poprawne pytanie typu tak/nie, bez słowa pytającego.");
+      } else {
+        addFeedback(feedback,"warning","Budowa pytania","Nie rozpoznano wyraźnego słowa pytającego ani dobrze widocznej konstrukcji tak/nie.");
+      }
+
+      const accentProblem = findAccentProblems(raw);
+      if (accentProblem) {
+        formScore += 2;
+        addFeedback(feedback,"warning","Akcent w słowie pytającym",`Prawdopodobna korekta: ${accentProblem}.`);
+      } else {
+        formScore += 6;
+        addFeedback(feedback,"success","Akcenty pytające","Nie wykryto typowego błędu w zapisie qué, cómo, cuándo, dónde itd.");
+      }
+
+      if (tokenCount >= 6) {
+        formScore += 6;
+        addFeedback(feedback,"success","Pełne zdanie",`Pytanie ma ${tokenCount} wyrazów i daje wystarczający kontekst.`);
+      } else if (tokenCount >= 4) {
+        formScore += 4;
+        addFeedback(feedback,"warning","Pełne zdanie","Pytanie jest zrozumiałe, ale można je rozwinąć o konkretny kontekst.");
+      } else {
+        addFeedback(feedback,"error","Pełne zdanie","Pytanie jest zbyt krótkie, aby dobrze sprawdzić użycie czasu i tematu.");
+      }
+
+      if (verbs.malformedIrregular.length) {
+        addFeedback(feedback,"error","Forma nieregularna",`Wykryto formę wymagającą poprawy: ${verbs.malformedIrregular.join(", ")}.`);
+      } else if (verbs.missingAccent.length && !verbs.future.length) {
+        formScore += 2;
+        addFeedback(feedback,"warning","Końcówka futuro",`Możliwy brak akcentu: ${verbs.missingAccent.join(", ")}. Futuro wymaga: -é, -ás, -á, -emos, -éis, -án.`);
+      } else {
+        formScore += 8;
+        addFeedback(feedback,"success","Zapis formy czasownikowej","Nie wykryto typowego błędu w rdzeniu nieregularnym ani końcówce.");
+      }
+
+      if (verbs.future.length) {
+        useScore += 30;
+        addFeedback(feedback,"success","Futuro simple",`Rozpoznano poprawną formę lub formy: ${verbs.future.join(", ")}.`);
+      } else if (verbs.malformedIrregular.length || verbs.missingAccent.length) {
+        useScore += 12;
+        addFeedback(feedback,"warning","Futuro simple","Widać próbę użycia futuro simple, ale forma wymaga poprawy.");
+      } else if (verbs.irA.length) {
+        useScore += 8;
+        addFeedback(feedback,"error","Wymagany czas",`Rozpoznano «ir a + infinitivo» (${verbs.irA.join(", ")}), ale ta gra wymaga futuro simple.`);
+      } else if (verbs.conditional.length) {
+        useScore += 5;
+        addFeedback(feedback,"error","Wymagany czas",`Rozpoznano formę conditional (${verbs.conditional.join(", ")}), a nie futuro simple.`);
+      } else {
+        addFeedback(feedback,"error","Futuro simple","Nie wykryto futuro simple. Użyj bezokolicznika z końcówką -é/-ás/-á/-emos/-éis/-án albo odpowiedniego rdzenia nieregularnego.");
+      }
+
+      if (marker.exact) {
+        useScore += 12;
+        addFeedback(feedback,"success","Kontekst czasowy",`Użyto kontekstu z karty: «${currentMission.context}».`);
+      } else if (marker.generic) {
+        useScore += 9;
+        addFeedback(feedback,"success","Kontekst czasowy","Pytanie zawiera wyraźne odniesienie do przyszłości.");
+      } else {
+        useScore += 3;
+        addFeedback(feedback,"warning","Kontekst czasowy",`Dodaj określenie przyszłości, np. «${currentMission.context}».`);
+      }
+
+      if (topicMatches.length >= 2) {
+        useScore += 13;
+        addFeedback(feedback,"success","Słownictwo tematyczne",`Wyraźnie realizujesz temat «${currentMission.topic}». Rozpoznano: ${topicMatches.slice(0,5).join(", ")}.`);
+      } else if (topicMatches.length === 1) {
+        useScore += 9;
+        addFeedback(feedback,"success","Słownictwo tematyczne",`Rozpoznano słowo związane z tematem: ${topicMatches[0]}.`);
+      } else {
+        useScore += currentMission.custom ? 3 : 0;
+        addFeedback(feedback,currentMission.custom ? "warning" : "error","Słownictwo tematyczne",`Nie znaleziono jednoznacznego słownictwa związanego z tematem «${currentMission.topic}». ${currentMission.custom ? "Przy własnym, abstrakcyjnym temacie nauczyciel może zatwierdzić odpowiedź ręcznie." : "Dodaj konkretny rzeczownik lub czasownik z tego obszaru."}`);
+      }
+
+      const normalized = stripAccents(raw);
+      const intentMatch = currentMission.intent.some(stem => normalized.includes(stripAccents(stem)));
+      if (intentMatch) {
+        useScore += 5;
+        addFeedback(feedback,"success","Realizacja misji","Pytanie odpowiada funkcji wylosowanej karty.");
+      } else {
+        useScore += 2;
+        addFeedback(feedback,"warning","Realizacja misji",`Sprawdź, czy pytasz dokładnie o: ${currentMission.type}.`);
+      }
+
+      if (porPara.used) {
+        if (porPara.errors.length) {
+          formScore = Math.max(0,formScore - Math.min(4,porPara.errors.length * 2));
+          addFeedback(feedback,"error","Por czy para?",`Prawdopodobny błąd: ${porPara.errors.join("; ")}.`);
+        } else if (porPara.warnings.length) {
+          addFeedback(feedback,"warning","Por czy para?",`${porPara.correct.length ? `Poprawnie: ${porPara.correct.join("; ")}. ` : ""}${porPara.warnings.join("; ")}.`);
+        } else {
+          formScore = Math.min(40,formScore + 2);
+          addFeedback(feedback,"success","Por czy para?",`Użycie wygląda poprawnie: ${porPara.correct.join("; ")}.`);
+        }
+      }
+
+      formScore = Math.max(0,Math.min(40,formScore));
+      useScore = Math.max(0,Math.min(60,useScore));
+      renderResults({
+        total: Math.min(100,formScore + useScore), formScore, useScore, feedback, verbs, topicMatches, marker, porPara,
+        needsHelp: verbs.future.length === 0
+      });
+    }
+
+    function createFeedback(item) {
+      const node = document.createElement("div");
+      const icon = item.type === "success" ? "✓" : item.type === "warning" ? "!" : "×";
+      node.className = `feedback-item ${item.type}`;
+      node.innerHTML = `<div class="feedback-icon">${icon}</div><p><strong>${escapeHtml(item.title)}</strong>${escapeHtml(item.message)}</p>`;
+      return node;
+    }
+
+    const wait = ms => new Promise(resolve => setTimeout(resolve,ms));
+    function setProgress(value) { evaluationProgressFill.style.setProperty("--progress",`${Math.max(0,Math.min(100,value))}%`); }
+
+    function animateScore(target,token) {
+      const started = performance.now();
+      const duration = 1050;
+      function frame(now) {
+        if (token !== animationToken) return;
+        const p = Math.min(1,(now - started) / duration);
+        const eased = 1 - Math.pow(1-p,3);
+        const value = Math.round(target * eased);
+        scoreNumber.textContent = value;
+        scoreCircle.style.setProperty("--angle",`${value * 3.6}deg`);
+        if (p < 1) requestAnimationFrame(frame);
+        else scoreCircle.classList.add("celebrate");
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function launchConfetti(score) {
+      if (score < 72 || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      confettiLayer.innerHTML = "";
+      const colors = ["#5267df","#0e91a8","#13805a","#f08b47","#c15591"];
+      const count = score >= 88 ? 38 : 22;
+      for (let i=0;i<count;i+=1) {
+        const piece = document.createElement("span");
+        piece.className = "confetti";
+        piece.style.left = `${3 + Math.random()*94}%`;
+        piece.style.setProperty("--c",colors[i % colors.length]);
+        piece.style.setProperty("--d",`${1.5 + Math.random()*1.2}s`);
+        piece.style.setProperty("--x",`${-90 + Math.random()*180}px`);
+        piece.style.setProperty("--r",`${360 + Math.random()*900}deg`);
+        piece.style.animationDelay = `${Math.random()*.35}s`;
+        confettiLayer.appendChild(piece);
+      }
+      setTimeout(() => confettiLayer.innerHTML = "",3300);
+    }
+
+    async function renderResults(result) {
+      const token = ++animationToken;
+      analyzeBtn.disabled = true;
+      resultsPlaceholder.classList.add("hidden");
+      resultsPanel.classList.add("visible");
+      feedbackList.innerHTML = "";
+      detectedBox.classList.remove("visible");
+      resultSummary.classList.remove("visible");
+      futureHelpWrap.classList.add("hidden");
+      futureHelpContent.classList.remove("visible");
+      futureHelpButton.setAttribute("aria-expanded","false");
+      evaluationStatus.classList.remove("done");
+      scoreCircle.classList.remove("celebrate");
+      scoreCircle.style.setProperty("--angle","0deg");
+      scoreCircle.style.setProperty("--score-color",result.total >= 85 ? "var(--success)" : result.total >= 62 ? "var(--primary)" : result.total >= 42 ? "var(--warning)" : "var(--danger)");
+      scoreNumber.textContent = "0";
+      writingScore.textContent = "0";
+      contextScore.textContent = "0";
+      evaluationStep.textContent = "Czytam pytanie…";
+      evaluationProgress.textContent = "Sprawdzam zapis i budowę";
+      setProgress(8);
+
+      const detected = [];
+      if (result.verbs.future.length) detected.push(`<strong>futuro simple:</strong> ${escapeHtml(result.verbs.future.join(", "))}`);
+      if (result.verbs.irA.length) detected.push(`<strong>ir a + infinitivo:</strong> ${escapeHtml(result.verbs.irA.join(", "))}`);
+      if (result.verbs.conditional.length) detected.push(`<strong>conditional:</strong> ${escapeHtml(result.verbs.conditional.join(", "))}`);
+      if (result.verbs.malformedIrregular.length) detected.push(`<strong>forma do poprawy:</strong> ${escapeHtml(result.verbs.malformedIrregular.join(", "))}`);
+      if (result.verbs.missingAccent.length && !result.verbs.future.length) detected.push(`<strong>możliwy brak akcentu:</strong> ${escapeHtml(result.verbs.missingAccent.join(", "))}`);
+      detectedText.innerHTML = detected.length ? detected.join("<br>") : "Nie wykryto jednoznacznej konstrukcji przyszłej.";
+
+      if (result.total >= 88) {
+        scoreTitle.textContent = "¡Excelente! Przyszłość opanowana";
+        scoreSubtitle.textContent = "Pytanie jest naturalne, poprawne i dobrze realizuje temat rundy.";
+      } else if (result.total >= 72) {
+        scoreTitle.textContent = "¡Muy bien! Dobra odpowiedź";
+        scoreSubtitle.textContent = "Futuro simple działa dobrze; można dopracować pojedynczy element.";
+      } else if (result.total >= 52) {
+        scoreTitle.textContent = "Dobry kierunek";
+        scoreSubtitle.textContent = "Sens jest czytelny, ale forma futuro albo kontekst wymagają korekty.";
+      } else {
+        scoreTitle.textContent = "Spróbuj ponownie";
+        scoreSubtitle.textContent = "Otwórz podpowiedź i przebuduj pytanie, zachowując temat rundy.";
+      }
+
+      teacherInfo.innerHTML = `
+        Wymagany czas: <strong>futuro simple de indicativo</strong>.<br>
+        Funkcja komunikacyjna: <strong>${escapeHtml(currentMission.type)}</strong>.<br>
+        Kontekst: <strong>${escapeHtml(currentMission.context)}</strong>.<br>
+        Przykładowe pytanie: <strong>${escapeHtml(currentMission.example)}</strong><br>
+        Rozpoznane słownictwo: <strong>${escapeHtml(result.topicMatches.join(", ") || "brak jednoznacznego dopasowania")}</strong>.<br>
+        Temat własny: <strong>${currentMission.custom ? "tak — słownik utworzono z nazwy i słów kluczowych" : "nie"}</strong>.<br>
+        Por/para: <strong>${result.porPara.used ? (result.porPara.errors.length ? "prawdopodobny błąd" : result.porPara.warnings.length ? "częściowo niejednoznaczne" : "wygląda poprawnie") : "nie występuje"}</strong>.<br><br>
+        Przy temacie dodanym przez użytkownika dokładność zależy od jakości podanych słów kluczowych. Ostateczna ocena znaczenia należy do nauczyciela.
+      `;
+
+      await wait(340);
+      if (token !== animationToken) return;
+      evaluationStep.textContent = "Rozpoznaję czasowniki…";
+      evaluationProgress.textContent = "Szukam futuro simple i form nieregularnych";
+      setProgress(23);
+      detectedBox.classList.add("visible");
+
+      await wait(450);
+      if (token !== animationToken) return;
+      for (let i=0;i<result.feedback.length;i+=1) {
+        const item = result.feedback[i];
+        evaluationStep.textContent = item.title;
+        evaluationProgress.textContent = `Kryterium ${i+1} z ${result.feedback.length}`;
+        setProgress(27 + Math.round(((i+1)/result.feedback.length)*58));
+        feedbackList.appendChild(createFeedback(item));
+        if (item.title === "Futuro simple" || item.title === "Wymagany czas") {
+          if (result.needsHelp) futureHelpWrap.classList.remove("hidden");
+        }
+        await wait(245);
+        if (token !== animationToken) return;
+      }
+
+      evaluationStatus.classList.add("done");
+      evaluationStep.textContent = "Ocena zakończona!";
+      evaluationProgress.textContent = "Tworzę wynik końcowy";
+      setProgress(100);
+      await wait(390);
+      if (token !== animationToken) return;
+      writingScore.textContent = result.formScore;
+      contextScore.textContent = result.useScore;
+      resultSummary.classList.add("visible");
+      animateScore(result.total,token);
+      launchConfetti(result.total);
+      analyzeBtn.disabled = false;
+    }
+
+    function insertAtCursor(character) {
+      const start = questionInput.selectionStart;
+      const end = questionInput.selectionEnd;
+      questionInput.value = questionInput.value.slice(0,start) + character + questionInput.value.slice(end);
+      const pos = start + character.length;
+      questionInput.setSelectionRange(pos,pos);
+      questionInput.focus();
+      charCount.textContent = questionInput.value.length;
+    }
+
+    $("toggleCustomBtn").addEventListener("click",() => {
+      const opening = customTopicEditor.classList.contains("hidden");
+      customTopicEditor.classList.toggle("hidden",!opening);
+      $("toggleCustomBtn").setAttribute("aria-expanded",String(opening));
+      if (opening) customTopicInput.focus();
+    });
+    $("addCustomTopicBtn").addEventListener("click",addCustomTopic);
+    customTopicInput.addEventListener("keydown",event => { if (event.key === "Enter") addCustomTopic(); });
+    customKeywordsInput.addEventListener("keydown",event => { if (event.key === "Enter") addCustomTopic(); });
+    $("useSelectedBtn").addEventListener("click",chooseTopicFromSelect);
+    $("nextBtn").addEventListener("click",nextRound);
+    $("clearBtn").addEventListener("click",() => { questionInput.value = ""; charCount.textContent = "0"; questionInput.focus(); });
+    $("resetTimerBtn").addEventListener("click",resetTimer);
+    startPauseBtn.addEventListener("click",toggleTimer);
+    analyzeBtn.addEventListener("click",analyzeQuestion);
+    questionInput.addEventListener("input",() => charCount.textContent = questionInput.value.length);
+    questionInput.addEventListener("keydown",event => { if ((event.ctrlKey || event.metaKey) && event.key === "Enter") analyzeQuestion(); });
+    document.querySelectorAll("[data-char]").forEach(button => button.addEventListener("click",() => insertAtCursor(button.dataset.char)));
+    futureHelpButton.addEventListener("click",() => {
+      const open = futureHelpButton.getAttribute("aria-expanded") === "true";
+      futureHelpButton.setAttribute("aria-expanded",String(!open));
+      futureHelpContent.classList.toggle("visible",!open);
+    });
+
+    populateTopicSelect(0);
+    buildMission();
+    updateTimer();
+  </script>
+</body>
+</html>
