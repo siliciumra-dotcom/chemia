@@ -227,6 +227,7 @@
     }
     .meta-label { display: block; margin-bottom: 4px; color: var(--muted); font-size: .75rem; font-weight: 850; text-transform: uppercase; letter-spacing: .065em; }
     .meta-value { display: block; font-weight: 850; }
+    .meta-item.situation { grid-column: 1 / -1; background: linear-gradient(135deg, rgba(237,240,255,.78), rgba(240,251,255,.78)); }
     .mission-text { position: relative; z-index: 1; margin: 18px 0 10px; font-size: clamp(1.09rem,2vw,1.28rem); font-weight: 760; line-height: 1.5; }
     .context-note { position: relative; z-index: 1; margin: 0; color: var(--muted); line-height: 1.5; }
 
@@ -507,7 +508,7 @@
     <header class="topbar">
       <div class="brand">
         <h1>El desafío del futuro</h1>
-        <p>Porozmawiajcie o przyszłości, a następnie zapisz główne pytanie w <strong>futuro simple</strong>. Gra sprawdzi formę pytania, odmianę czasownika, kontekst oraz słownictwo tematyczne.</p>
+        <p>Porozmawiajcie o przyszłości, a następnie zapisz główne pytanie w <strong>futuro simple</strong>. Gra sprawdzi formę pytania, odmianę czasownika, osobę gramatyczną, zaimki, kontekst oraz sens całej wypowiedzi.</p>
       </div>
       <div class="round-pill" id="roundLabel">Runda 1</div>
     </header>
@@ -545,11 +546,15 @@
                 <span class="meta-value" id="topicText">Viajes del futuro</span>
               </div>
               <div class="meta-item">
-                <span class="meta-label">Contexto temporal</span>
-                <span class="meta-value" id="contextText">dentro de diez años</span>
+                <span class="meta-label">Momento</span>
+                <span class="meta-value" id="contextText">el próximo verano</span>
+              </div>
+              <div class="meta-item situation">
+                <span class="meta-label">Situación</span>
+                <span class="meta-value" id="situationText">Tu compañero está pensando en sus próximas vacaciones.</span>
               </div>
             </div>
-            <p class="mission-text" id="missionText">Pregunta cómo viajará tu compañero dentro de diez años.</p>
+            <p class="mission-text" id="missionText">Pregúntale adónde viajará, con quién irá y qué hará allí.</p>
             <p class="context-note" id="contextNote">Najpierw prowadźcie rozmowę. Po jej zakończeniu wpisz jedno główne pytanie w futuro simple.</p>
           </div>
 
@@ -599,7 +604,7 @@
           <div>
             <div class="placeholder-icon">→</div>
             <h2>Tu pojawi się analiza</h2>
-            <p>Gra rozpozna futuro simple, sprawdzi końcówki i formy nieregularne, a następnie oceni zgodność z tematem oraz przyszłym kontekstem.</p>
+            <p>Gra rozpozna futuro simple, osobę gramatyczną, czasowniki zwrotne oraz zaimki dopełnienia, a następnie oceni sens pytania w danej sytuacji.</p>
           </div>
         </div>
 
@@ -630,6 +635,7 @@
                 <p><strong>Przykład:</strong> viajaré, viajarás, viajará, viajaremos, viajaréis, viajarán.</p>
                 <p><strong>Najważniejsze nieregularne:</strong> har-, dir-, podr-, pondr-, querr-, sabr-, saldr-, tendr-, vendr-, habr-.</p>
                 <p><strong>Model pytania:</strong> ¿Qué <em>harás</em> el próximo fin de semana?</p>
+                <p><strong>Zaimki:</strong> przed odmienionym futuro: <code>te prepararás</code>, <code>lo usarás</code>, <code>se lo dirás</code>. Przy bezokoliczniku możliwe jest także: <code>podrás prepararte</code>, <code>podrás usarlo</code>.</p>
               </div>
             </div>
 
@@ -655,7 +661,7 @@
       </aside>
     </section>
 
-    <p class="footer-note">Analiza jest heurystyczna. Dobrze ocenia typowe pytania B1, lecz własne bardzo abstrakcyjne tematy mogą wymagać krótkiej weryfikacji nauczyciela.</p>
+    <p class="footer-note">Analiza jest heurystyczna, ale nie opiera się już wyłącznie na słowach kluczowych: sprawdza również osobę, szyk zaimków, spójność czasu i realizację polecenia.</p>
   </main>
 
   <div class="confetti-layer" id="confettiLayer" aria-hidden="true"></div>
@@ -665,122 +671,494 @@
     const presetTopics = [
       {
         name: "Viajes del futuro",
-        keywords: ["viaj", "vacacion", "avion", "vuelo", "tren", "hotel", "turismo", "destino", "pais", "ciudad", "transporte"],
-        examples: ["¿Cómo viajarás dentro de diez años?", "¿Qué país visitarás el año que viene?"]
+        keywords: ["viaj", "visit", "vacacion", "avion", "vuelo", "tren", "hotel", "turismo", "destino", "pais", "ciudad", "transporte", "alojamiento"],
+        missions: [
+          {
+            type: "plan personal",
+            context: "el próximo verano",
+            situation: "Tu compañero está pensando en sus próximas vacaciones.",
+            prompt: "Pregúntale adónde viajará, con quién irá y qué hará allí.",
+            intent: ["viaj", "ir", "har", "visit", "qued", "aloj"],
+            example: "¿Adónde viajarás el próximo verano, con quién irás y qué harás allí?"
+          },
+          {
+            type: "elección",
+            context: "el año que viene",
+            situation: "Tu compañero podrá conocer un destino nuevo.",
+            prompt: "Pregúntale qué país visitará y por qué lo elegirá.",
+            intent: ["visit", "eleg", "viaj", "conoc"],
+            example: "¿Qué país visitarás el año que viene y por qué lo elegirás?"
+          },
+          {
+            type: "predicción",
+            context: "dentro de veinte años",
+            situation: "Los medios de transporte cambiarán mucho.",
+            prompt: "Pregunta cómo viajará la gente y qué medios de transporte usará.",
+            intent: ["viaj", "usar", "transport", "habr", "ser"],
+            example: "¿Cómo viajará la gente dentro de veinte años y qué medios de transporte usará?"
+          },
+          {
+            type: "predicción",
+            context: "en 2050",
+            situation: "Viajar podría ser más rápido, más barato o más ecológico.",
+            prompt: "Pregunta cómo serán los viajes y qué cambiará.",
+            intent: ["ser", "cambiar", "cost", "dur", "contamin"],
+            example: "¿Cómo serán los viajes en 2050 y qué cambiará?"
+          }
+        ]
       },
       {
         name: "Tecnología",
-        keywords: ["tecnolog", "movil", "telefono", "ordenador", "robot", "internet", "aplicacion", "dispositivo", "inteligencia artificial", "redes"],
-        examples: ["¿Qué tecnología usarás dentro de diez años?", "¿Habrá robots en todas las casas en 2040?"]
+        keywords: ["tecnolog", "movil", "telefono", "ordenador", "robot", "internet", "aplicacion", "dispositivo", "inteligencia artificial", "redes", "programa"],
+        missions: [
+          {
+            type: "uso personal",
+            context: "dentro de diez años",
+            situation: "Imagina tu vida cotidiana con nuevas tecnologías.",
+            prompt: "Pregunta qué dispositivo usará tu compañero y para qué lo utilizará.",
+            intent: ["usar", "utiliz", "servir", "disposit", "tendr"],
+            example: "¿Qué dispositivo usarás dentro de diez años y para qué lo utilizarás?"
+          },
+          {
+            type: "predicción",
+            context: "en 2040",
+            situation: "Los robots podrían formar parte de la vida diaria.",
+            prompt: "Pregunta qué tareas harán los robots en las casas.",
+            intent: ["har", "ayud", "limpi", "cocin", "robot"],
+            example: "¿Qué tareas harán los robots en las casas en 2040?"
+          },
+          {
+            type: "plan personal",
+            context: "el próximo año",
+            situation: "Tu compañero quiere aprender a usar una tecnología nueva.",
+            prompt: "Pregúntale qué aprenderá y cómo lo aplicará.",
+            intent: ["aprend", "usar", "aplic", "estudi"],
+            example: "¿Qué tecnología aprenderás a usar el próximo año y cómo la aplicarás?"
+          },
+          {
+            type: "cambio social",
+            context: "durante los próximos quince años",
+            situation: "La inteligencia artificial cambiará muchos ámbitos de la vida.",
+            prompt: "Pregunta cómo cambiará el trabajo o la educación.",
+            intent: ["cambiar", "afectar", "trabaj", "estudi", "educ"],
+            example: "¿Cómo cambiará la inteligencia artificial el trabajo durante los próximos quince años?"
+          }
+        ]
       },
       {
         name: "Trabajo y profesión",
-        keywords: ["trabaj", "profesion", "empleo", "empresa", "oficina", "jefe", "carrera", "salario", "teletrabajo", "proyecto"],
-        examples: ["¿En qué trabajarás dentro de cinco años?", "¿Qué profesiones desaparecerán en el futuro?"]
+        keywords: ["trabaj", "profesion", "empleo", "empresa", "oficina", "jefe", "carrera", "salario", "teletrabajo", "proyecto", "habilidad"],
+        missions: [
+          {
+            type: "plan personal",
+            context: "dentro de cinco años",
+            situation: "Tu compañero imagina su vida profesional.",
+            prompt: "Pregúntale en qué trabajará y dónde vivirá.",
+            intent: ["trabaj", "viv", "ser", "tendr"],
+            example: "¿En qué trabajarás dentro de cinco años y dónde vivirás?"
+          },
+          {
+            type: "preparación",
+            context: "el próximo año",
+            situation: "Tu compañero quiere mejorar sus oportunidades laborales.",
+            prompt: "Pregúntale qué habilidad aprenderá o qué curso hará.",
+            intent: ["aprend", "har", "estudi", "mejor"],
+            example: "¿Qué habilidad aprenderás el próximo año para mejorar en tu trabajo?"
+          },
+          {
+            type: "predicción",
+            context: "en 2040",
+            situation: "Algunas profesiones desaparecerán y aparecerán otras nuevas.",
+            prompt: "Pregunta qué profesiones tendrán más futuro.",
+            intent: ["profesion", "desaparec", "aparec", "tendr", "habr"],
+            example: "¿Qué profesiones tendrán más futuro en 2040?"
+          },
+          {
+            type: "cambio social",
+            context: "dentro de veinte años",
+            situation: "El teletrabajo podría ser mucho más común.",
+            prompt: "Pregunta cómo trabajará la mayoría de la gente.",
+            intent: ["trabaj", "teletrabaj", "oficina", "ser"],
+            example: "¿Cómo trabajará la mayoría de la gente dentro de veinte años?"
+          }
+        ]
       },
       {
         name: "Educación",
-        keywords: ["educacion", "escuela", "colegio", "universidad", "clase", "profesor", "alumno", "estudi", "examen", "curso"],
-        examples: ["¿Cómo serán las clases en 2040?", "¿Qué estudiarás el próximo año?"]
+        keywords: ["educacion", "escuela", "colegio", "universidad", "clase", "profesor", "alumno", "estudi", "examen", "curso", "aprender"],
+        missions: [
+          {
+            type: "plan personal",
+            context: "el próximo año",
+            situation: "Tu compañero está pensando en sus próximos estudios.",
+            prompt: "Pregúntale qué estudiará o qué curso hará.",
+            intent: ["estudi", "har", "aprend", "curso"],
+            example: "¿Qué estudiarás el próximo año?"
+          },
+          {
+            type: "preparación",
+            context: "el próximo mes",
+            situation: "Tu compañero tendrá un examen importante.",
+            prompt: "Pregúntale cómo se preparará y cuánto tiempo estudiará.",
+            intent: ["prepar", "estudi", "dedic", "organiz"],
+            example: "¿Cómo te prepararás para el examen del próximo mes y cuánto tiempo estudiarás?"
+          },
+          {
+            type: "predicción",
+            context: "en 2040",
+            situation: "Las aulas y las herramientas de aprendizaje serán diferentes.",
+            prompt: "Pregunta cómo serán las clases.",
+            intent: ["ser", "habr", "usar", "aprend"],
+            example: "¿Cómo serán las clases en 2040?"
+          },
+          {
+            type: "cambio social",
+            context: "dentro de diez años",
+            situation: "La función del profesor podría cambiar.",
+            prompt: "Pregunta qué harán los profesores y cómo aprenderán los alumnos.",
+            intent: ["har", "ensen", "aprend", "profesor", "alumn"],
+            example: "¿Qué harán los profesores dentro de diez años y cómo aprenderán los alumnos?"
+          }
+        ]
       },
       {
         name: "Medio ambiente",
-        keywords: ["medio ambiente", "clima", "planeta", "contamin", "recicl", "energia", "agua", "bosque", "naturaleza", "ecologic"],
-        examples: ["¿Qué pasará con el clima dentro de veinte años?", "¿Usaremos más energía renovable en el futuro?"]
+        keywords: ["medio ambiente", "clima", "planeta", "contamin", "recicl", "energia", "agua", "bosque", "naturaleza", "ecologic", "residuo"],
+        missions: [
+          {
+            type: "acción personal",
+            context: "la semana que viene",
+            situation: "Tu compañero quiere producir menos residuos.",
+            prompt: "Pregúntale qué hará para cuidar el medio ambiente.",
+            intent: ["har", "recicl", "reduc", "usar", "evit"],
+            example: "¿Qué harás la semana que viene para producir menos residuos?"
+          },
+          {
+            type: "predicción",
+            context: "durante los próximos veinte años",
+            situation: "El clima seguirá cambiando.",
+            prompt: "Pregunta qué consecuencias tendrá este cambio.",
+            intent: ["tendr", "pas", "cambiar", "afectar"],
+            example: "¿Qué consecuencias tendrá el cambio climático durante los próximos veinte años?"
+          },
+          {
+            type: "predicción",
+            context: "en 2050",
+            situation: "Las energías renovables podrían sustituir a muchas fuentes actuales.",
+            prompt: "Pregunta qué tipo de energía usaremos.",
+            intent: ["usar", "produc", "habr", "energia"],
+            example: "¿Qué tipo de energía usaremos en 2050?"
+          },
+          {
+            type: "solución",
+            context: "dentro de diez años",
+            situation: "Las ciudades necesitarán reducir la contaminación.",
+            prompt: "Pregunta qué medidas tomarán.",
+            intent: ["tomar", "har", "prohib", "reduc", "mejor"],
+            example: "¿Qué medidas tomarán las ciudades para reducir la contaminación dentro de diez años?"
+          }
+        ]
       },
       {
         name: "Ciudades del futuro",
-        keywords: ["ciudad", "barrio", "edificio", "casa", "transporte", "calle", "coche", "metro", "trafico", "vivir"],
-        examples: ["¿Cómo serán las ciudades del futuro?", "¿Dónde vivirá la mayoría de la gente en 2050?"]
+        keywords: ["ciudad", "barrio", "edificio", "casa", "transporte", "calle", "coche", "metro", "trafico", "vivir", "vivienda"],
+        missions: [
+          {
+            type: "descripción",
+            context: "en 2050",
+            situation: "Imagina una gran ciudad del futuro.",
+            prompt: "Pregunta cómo serán sus edificios, calles y zonas verdes.",
+            intent: ["ser", "habr", "tendr", "edific", "calle"],
+            example: "¿Cómo serán sus edificios, calles y zonas verdes en 2050?"
+          },
+          {
+            type: "plan personal",
+            context: "dentro de diez años",
+            situation: "Tu compañero imagina el lugar donde vivirá.",
+            prompt: "Pregúntale en qué tipo de ciudad o barrio vivirá y por qué.",
+            intent: ["viv", "eleg", "prefer", "ser"],
+            example: "¿En qué tipo de ciudad vivirás dentro de diez años y por qué la elegirás?"
+          },
+          {
+            type: "predicción",
+            context: "dentro de veinte años",
+            situation: "El transporte urbano cambiará.",
+            prompt: "Pregunta cómo se moverá la gente por la ciudad.",
+            intent: ["mover", "viaj", "usar", "transport"],
+            example: "¿Cómo se moverá la gente por las ciudades dentro de veinte años?"
+          },
+          {
+            type: "vivienda",
+            context: "en el futuro",
+            situation: "Las viviendas incorporarán nuevas soluciones.",
+            prompt: "Pregunta qué tendrá una casa del futuro.",
+            intent: ["tendr", "habr", "usar", "funcion"],
+            example: "¿Qué tendrá una casa del futuro?"
+          }
+        ]
       },
       {
         name: "Salud",
-        keywords: ["salud", "medic", "hospital", "enfermedad", "tratamiento", "deporte", "ejercicio", "alimentacion", "vivir", "cura"],
-        examples: ["¿Viviremos más años en el futuro?", "¿Qué enfermedades curarán los médicos dentro de treinta años?"]
+        keywords: ["salud", "medic", "hospital", "enfermedad", "tratamiento", "deporte", "ejercicio", "alimentacion", "vivir", "cura", "habito", "sentir", "mejor"],
+        missions: [
+          {
+            type: "plan personal",
+            context: "el próximo año",
+            situation: "Tu compañero quiere mejorar su salud.",
+            prompt: "Pregúntale qué hábito cambiará y cómo lo conseguirá.",
+            intent: ["cambiar", "har", "comer", "dorm", "entren"],
+            example: "¿Qué hábito cambiarás el próximo año y cómo lo conseguirás?"
+          },
+          {
+            type: "plan inmediato",
+            context: "la semana que viene",
+            situation: "Tu compañero quiere descansar y hacer más ejercicio.",
+            prompt: "Pregúntale qué hará para sentirse mejor.",
+            intent: ["har", "descans", "entren", "sentir", "dorm"],
+            example: "¿Qué harás la semana que viene para sentirte mejor?"
+          },
+          {
+            type: "predicción",
+            context: "en 2050",
+            situation: "La medicina contará con tratamientos nuevos.",
+            prompt: "Pregunta cómo serán los hospitales o los tratamientos.",
+            intent: ["ser", "habr", "tratar", "curar", "usar"],
+            example: "¿Cómo serán los tratamientos médicos en 2050?"
+          },
+          {
+            type: "predicción",
+            context: "dentro de treinta años",
+            situation: "Algunas enfermedades podrán curarse.",
+            prompt: "Pregunta qué enfermedades curarán los médicos.",
+            intent: ["curar", "podr", "desaparec", "tratar"],
+            example: "¿Qué enfermedades curarán los médicos dentro de treinta años?"
+          }
+        ]
       },
       {
         name: "Tiempo libre",
-        keywords: ["tiempo libre", "ocio", "deporte", "juego", "pelicula", "serie", "musica", "leer", "salir", "aficion"],
-        examples: ["¿Qué harás el próximo fin de semana?", "¿Cómo pasaremos el tiempo libre dentro de veinte años?"]
+        keywords: ["tiempo libre", "ocio", "deporte", "juego", "pelicula", "serie", "musica", "leer", "salir", "aficion", "fin de semana", "actividad", "vacacion"],
+        missions: [
+          {
+            type: "plan inmediato",
+            context: "el próximo fin de semana",
+            situation: "Tu compañero tendrá tiempo libre.",
+            prompt: "Pregúntale qué hará y con quién pasará el tiempo.",
+            intent: ["har", "sal", "ver", "jug", "pas"],
+            example: "¿Qué harás el próximo fin de semana y con quién pasarás el tiempo?"
+          },
+          {
+            type: "plan personal",
+            context: "durante las próximas vacaciones",
+            situation: "Tu compañero quiere descansar y probar algo nuevo.",
+            prompt: "Pregúntale qué actividad hará.",
+            intent: ["har", "practic", "prob", "viaj", "descans"],
+            example: "¿Qué actividad harás durante las próximas vacaciones?"
+          },
+          {
+            type: "nuevo interés",
+            context: "el próximo año",
+            situation: "Tu compañero quiere empezar una afición nueva.",
+            prompt: "Pregúntale qué afición elegirá y por qué.",
+            intent: ["eleg", "empez", "practic", "aprend"],
+            example: "¿Qué afición elegirás el próximo año y por qué?"
+          },
+          {
+            type: "predicción",
+            context: "dentro de veinte años",
+            situation: "La tecnología cambiará la forma de divertirnos.",
+            prompt: "Pregunta cómo pasará la gente su tiempo libre.",
+            intent: ["pas", "divert", "usar", "jug", "ver"],
+            example: "¿Cómo pasará la gente su tiempo libre dentro de veinte años?"
+          }
+        ]
       },
       {
         name: "Relaciones y familia",
-        keywords: ["familia", "amig", "pareja", "relacion", "persona", "hijo", "padres", "conocer", "vivir", "comunic"],
-        examples: ["¿Cómo conocerá la gente a sus parejas en el futuro?", "¿Dónde vivirá tu familia dentro de diez años?"]
+        keywords: ["familia", "amig", "pareja", "relacion", "persona", "hijo", "padres", "conocer", "vivir", "comunic", "reunir", "ver", "juntos", "fin de semana"],
+        missions: [
+          {
+            type: "plan personal",
+            context: "el próximo fin de semana",
+            situation: "Tu compañero quiere pasar tiempo con personas cercanas.",
+            prompt: "Pregúntale a quién verá y qué harán juntos.",
+            intent: ["ver", "har", "qued", "visit", "reun"],
+            example: "¿A quién verás el próximo fin de semana y qué haréis juntos?"
+          },
+          {
+            type: "futuro personal",
+            context: "dentro de diez años",
+            situation: "Tu compañero imagina su vida familiar.",
+            prompt: "Pregúntale dónde vivirá y con quién compartirá su casa.",
+            intent: ["viv", "compart", "tendr", "estar"],
+            example: "¿Dónde vivirás dentro de diez años y con quién compartirás tu casa?"
+          },
+          {
+            type: "predicción",
+            context: "en 2040",
+            situation: "Las formas de conocer gente podrían cambiar.",
+            prompt: "Pregunta cómo conocerá la gente a nuevos amigos o parejas.",
+            intent: ["conoc", "comunic", "usar", "encontr"],
+            example: "¿Cómo conocerá la gente a nuevos amigos en 2040?"
+          },
+          {
+            type: "cambio social",
+            context: "dentro de veinte años",
+            situation: "Las familias vivirán y se comunicarán de formas distintas.",
+            prompt: "Pregunta cómo mantendrán el contacto.",
+            intent: ["mantendr", "comunic", "habl", "ver"],
+            example: "¿Cómo mantendrán el contacto las familias dentro de veinte años?"
+          }
+        ]
       },
       {
         name: "Comida del futuro",
-        keywords: ["comida", "comer", "cocin", "restaurante", "plato", "producto", "carne", "verdura", "aliment", "cultivar"],
-        examples: ["¿Qué comeremos dentro de cincuenta años?", "¿Cocinarán los robots para nosotros en el futuro?"]
+        keywords: ["comida", "comer", "cocin", "restaurante", "plato", "producto", "carne", "verdura", "aliment", "cultivar", "receta"],
+        missions: [
+          {
+            type: "plan inmediato",
+            context: "mañana",
+            situation: "Tu compañero preparará una comida.",
+            prompt: "Pregúntale qué cocinará y para quién.",
+            intent: ["cocin", "prepar", "comer", "har"],
+            example: "¿Qué cocinarás mañana y para quién?"
+          },
+          {
+            type: "experimento",
+            context: "la semana que viene",
+            situation: "Tu compañero quiere probar una receta nueva.",
+            prompt: "Pregúntale qué preparará y qué ingredientes usará.",
+            intent: ["prepar", "cocin", "usar", "prob"],
+            example: "¿Qué prepararás la semana que viene y qué ingredientes usarás?"
+          },
+          {
+            type: "predicción",
+            context: "en 2050",
+            situation: "La producción de alimentos cambiará.",
+            prompt: "Pregunta qué comeremos y de dónde vendrán los productos.",
+            intent: ["comer", "vendr", "produc", "cultiv"],
+            example: "¿Qué comeremos en 2050 y de dónde vendrán los productos?"
+          },
+          {
+            type: "predicción",
+            context: "dentro de veinte años",
+            situation: "Los robots podrían ayudar en la cocina.",
+            prompt: "Pregunta qué platos cocinarán.",
+            intent: ["cocin", "prepar", "har", "robot"],
+            example: "¿Qué platos cocinarán los robots dentro de veinte años?"
+          }
+        ]
       },
       {
         name: "Compras y dinero",
-        keywords: ["compr", "dinero", "precio", "tienda", "pagar", "banco", "tarjeta", "producto", "ahorrar", "moneda"],
-        examples: ["¿Cómo pagaremos dentro de veinte años?", "¿Qué comprarás cuando tengas más dinero?"]
+        keywords: ["compr", "dinero", "precio", "tienda", "pagar", "banco", "tarjeta", "producto", "ahorrar", "moneda", "efectivo"],
+        missions: [
+          {
+            type: "plan personal",
+            context: "el próximo año",
+            situation: "Tu compañero quiere ahorrar para algo importante.",
+            prompt: "Pregúntale para qué ahorrará y cómo lo conseguirá.",
+            intent: ["ahorr", "compr", "pag", "conseguir"],
+            example: "¿Para qué ahorrarás el próximo año y cómo lo conseguirás?"
+          },
+          {
+            type: "decisión de compra",
+            context: "la próxima vez que vaya de compras",
+            situation: "Tu compañero necesitará comprar algo útil.",
+            prompt: "Pregúntale qué comprará y cuánto gastará.",
+            intent: ["compr", "gast", "pag", "eleg"],
+            example: "¿Qué comprarás la próxima vez que vayas de compras y cuánto gastarás?"
+          },
+          {
+            type: "predicción",
+            context: "dentro de veinte años",
+            situation: "Las formas de pago cambiarán.",
+            prompt: "Pregunta cómo pagaremos nuestras compras.",
+            intent: ["pag", "usar", "compr", "habr"],
+            example: "¿Cómo pagaremos nuestras compras dentro de veinte años?"
+          },
+          {
+            type: "predicción",
+            context: "en el futuro",
+            situation: "El dinero en efectivo podría desaparecer.",
+            prompt: "Pregunta si seguiremos utilizando monedas y billetes.",
+            intent: ["seguir", "usar", "desaparec", "pag"],
+            example: "¿Seguiremos utilizando dinero en efectivo en el futuro?"
+          }
+        ]
       },
       {
         name: "España en el futuro",
-        keywords: ["españa", "español", "madrid", "barcelona", "pais", "turismo", "ciudad", "sociedad", "cultura", "vivir"],
-        examples: ["¿Cómo cambiará España en los próximos veinte años?", "¿Qué ciudades españolas visitarás en el futuro?"]
+        keywords: ["españa", "español", "madrid", "barcelona", "pais", "turismo", "ciudad", "sociedad", "cultura", "vivir", "visitar"],
+        missions: [
+          {
+            type: "plan de viaje",
+            context: "el próximo año",
+            situation: "Tu compañero podrá visitar España.",
+            prompt: "Pregúntale qué ciudad visitará y qué hará allí.",
+            intent: ["visit", "viaj", "har", "conoc"],
+            example: "¿Qué ciudad de España visitarás el próximo año y qué harás allí?"
+          },
+          {
+            type: "predicción",
+            context: "en 2040",
+            situation: "El turismo en España seguirá evolucionando.",
+            prompt: "Pregunta cómo cambiará el turismo.",
+            intent: ["cambiar", "viaj", "visit", "habr"],
+            example: "¿Cómo cambiará el turismo en España en 2040?"
+          },
+          {
+            type: "cambio social",
+            context: "durante los próximos veinte años",
+            situation: "Las ciudades españolas afrontarán nuevos retos.",
+            prompt: "Pregunta qué cambiará en ellas.",
+            intent: ["cambiar", "mejor", "tendr", "habr"],
+            example: "¿Qué cambiará en las ciudades españolas durante los próximos veinte años?"
+          },
+          {
+            type: "cultura",
+            context: "en el futuro",
+            situation: "La cultura española llegará a más personas.",
+            prompt: "Pregunta qué elementos serán más conocidos.",
+            intent: ["ser", "conoc", "difund", "gust"],
+            example: "¿Qué aspectos de la cultura española serán más conocidos en el futuro?"
+          }
+        ]
       }
     ];
 
-    const missionTemplates = [
+    const customMissionTemplates = [
       {
         type: "predicción",
         context: "dentro de diez años",
-        text: topic => `Pregunta qué cambiará dentro de diez años en relación con «${topic}».`,
-        intent: ["cambiar", "ser", "haber", "pas", "ocurr", "mejor", "empeor", "convert"],
-        model: topic => `¿Cómo cambiará ${withArticle(topic)} dentro de diez años?`
+        situation: topic => `Imagina que «${topic}» tendrá más importancia en la vida cotidiana.`,
+        prompt: topic => `Pregunta qué cambiará dentro de este ámbito.`,
+        intent: ["cambiar", "ser", "haber", "tendr", "pas"],
+        model: topic => `¿Qué cambiará en «${topic}» dentro de diez años?`
       },
       {
-        type: "plan personal",
-        context: "el próximo año",
-        text: topic => `Pregunta qué hará tu compañero el próximo año en relación con «${topic}».`,
-        intent: ["har", "ir", "viaj", "estudi", "trabaj", "compr", "empez", "visit", "eleg"],
-        model: topic => `¿Qué harás el próximo año en relación con ${withArticle(topic)}?`
-      },
-      {
-        type: "futuro lejano",
-        context: "en 2050",
-        text: topic => `Pregunta cómo será la situación de «${topic}» en 2050.`,
-        intent: ["ser", "estar", "haber", "tener", "viv", "funcion", "cambiar"],
-        model: topic => `¿Cómo será ${withArticle(topic)} en 2050?`
-      },
-      {
-        type: "decisión futura",
-        context: "algún día",
-        text: topic => `Pregunta qué opción elegirá tu compañero algún día dentro del tema «${topic}».`,
-        intent: ["eleg", "escog", "decid", "prefer", "compr", "estudi", "trabaj", "viv"],
-        model: topic => `¿Qué elegirás algún día en relación con ${withArticle(topic)}?`
-      },
-      {
-        type: "consecuencia",
-        context: "en el futuro",
-        text: topic => `Pregunta qué ocurrirá en el futuro si cambia algo importante relacionado con «${topic}».`,
-        intent: ["pas", "ocurr", "suced", "har", "ser", "tener", "cambiar"],
-        model: topic => `¿Qué pasará en el futuro con ${withArticle(topic)}?`
-      },
-      {
-        type: "próximo paso",
-        context: "la semana que viene",
-        text: topic => `Pregunta qué hará tu compañero la semana que viene en relación con «${topic}».`,
-        intent: ["har", "ir", "prepar", "empez", "termin", "visit", "habl", "busc"],
-        model: topic => `¿Qué harás la semana que viene relacionado con ${withArticle(topic)}?`
-      },
-      {
-        type: "cambio social",
+        type: "influencia",
         context: "durante los próximos veinte años",
-        text: topic => `Pregunta cómo afectará «${topic}» a la vida de las personas durante los próximos veinte años.`,
-        intent: ["afectar", "cambiar", "ayud", "permit", "mejor", "empeor", "influir"],
-        model: topic => `¿Cómo afectará ${withArticle(topic)} a nuestra vida durante los próximos veinte años?`
+        situation: topic => `Piensa en cómo «${topic}» podrá influir en la sociedad.`,
+        prompt: topic => `Pregunta cómo afectará a la vida de las personas.`,
+        intent: ["afectar", "cambiar", "influir", "ayud", "mejor"],
+        model: topic => `¿Cómo afectará «${topic}» a la vida de las personas durante los próximos veinte años?`
       },
       {
-        type: "posibilidad",
-        context: "mañana o más adelante",
-        text: topic => `Pregunta qué podrá suceder mañana o más adelante en relación con «${topic}».`,
-        intent: ["podr", "pas", "ocurr", "suced", "aparec", "cambiar", "haber"],
-        model: topic => `¿Qué podrá pasar mañana o más adelante con ${withArticle(topic)}?`
+        type: "opinión y predicción",
+        context: "en 2040",
+        situation: topic => `Imagina la situación de «${topic}» en el año 2040.`,
+        prompt: topic => `Pregunta si será más importante y qué novedades habrá.`,
+        intent: ["ser", "habr", "tendr", "cambiar", "aparec"],
+        model: topic => `¿Será «${topic}» más importante en 2040?`
+      },
+      {
+        type: "decisión personal",
+        context: "el próximo año",
+        situation: topic => `Tu compañero podrá tomar una decisión relacionada con «${topic}».`,
+        prompt: topic => `Pregúntale qué hará y por qué.`,
+        intent: ["har", "eleg", "decid", "empez", "aprend"],
+        model: topic => `¿Qué harás el próximo año en relación con «${topic}»?`
       }
     ];
 
@@ -802,11 +1180,86 @@
 
     const genericFutureMarkers = [
       "mañana", "pasado mañana", "el próximo", "la próxima", "los próximos", "las próximas", "que viene",
-      "dentro de", "en el futuro", "algún día", "mas adelante", "más adelante", "pronto", "en 20", "en 19"
+      "dentro de", "en el futuro", "del futuro", "algún día", "mas adelante", "más adelante", "pronto", "en 20", "en 19"
     ];
 
     const interrogatives = ["qué","cómo","cuándo","dónde","quién","quiénes","cuál","cuáles","cuánto","cuánta","cuántos","cuántas","por qué"];
     const unaccentedInterrogatives = {"que":"qué","como":"cómo","cuando":"cuándo","donde":"dónde","quien":"quién","quienes":"quiénes","cual":"cuál","cuales":"cuáles","cuanto":"cuánto","cuanta":"cuánta","cuantos":"cuántos","cuantas":"cuántas"};
+
+
+    const personLabels = {
+      "1s": "1. os. l.poj. (yo)",
+      "2s": "2. os. l.poj. (tú)",
+      "3s": "3. os. l.poj. (él/ella/usted)",
+      "1p": "1. os. l.mn. (nosotros/as)",
+      "2p": "2. os. l.mn. (vosotros/as)",
+      "3p": "3. os. l.mn. (ellos/ellas/ustedes)"
+    };
+
+    const subjectPronounPersons = {
+      "yo": "1s", "tú": "2s", "él": "3s", "ella": "3s", "usted": "3s",
+      "nosotros": "1p", "nosotras": "1p", "vosotros": "2p", "vosotras": "2p",
+      "ellos": "3p", "ellas": "3p", "ustedes": "3p"
+    };
+
+    const reflexivePronounPersons = {
+      "me": ["1s"], "te": ["2s"], "se": ["3s", "3p"], "nos": ["1p"], "os": ["2p"]
+    };
+
+    const directObjectPronouns = new Set(["me", "te", "lo", "la", "nos", "os", "los", "las"]);
+    const indirectObjectPronouns = new Set(["me", "te", "le", "nos", "os", "les", "se"]);
+    const allCliticPronouns = new Set(["me", "te", "se", "nos", "os", "lo", "la", "los", "las", "le", "les"]);
+    const prepositionsBeforePronoun = new Set(["a", "de", "para", "por", "con", "sin", "sobre", "entre"]);
+
+    const commonSpellingCorrections = {
+      "nostros": "nosotros", "nosostros": "nosotros", "nosotors": "nosotros",
+      "vosostros": "vosotros", "vosotors": "vosotros", "quando": "cuando",
+      "qeu": "que", "qe": "que", "porqe": "porque", "porq": "porque", "asi": "así"
+    };
+
+    const irregularStemToInfinitive = {
+      "dir": "decir", "har": "hacer", "habr": "haber", "podr": "poder", "pondr": "poner",
+      "querr": "querer", "sabr": "saber", "saldr": "salir", "tendr": "tener", "valdr": "valer",
+      "vendr": "venir", "cabr": "caber", "mantendr": "mantener", "obtendr": "obtener",
+      "propondr": "proponer", "supondr": "suponer", "compondr": "componer"
+    };
+
+    const reflexiveVerbStems = [
+      "prepar", "levant", "acost", "despert", "duch", "vest", "sent", "divert", "aburr",
+      "preocup", "ocup", "reun", "comunic", "organiz", "mud", "qued", "adapt", "relaj",
+      "cuid", "present", "especializ", "matricul", "jubil", "convert", "dedic", "acostumbr"
+    ];
+
+    const gustarLikeStems = ["gust", "encant", "interes", "import", "preocup", "molest", "parec", "apetec"];
+    const antecedentSensitiveVerbStems = ["eleg", "visit", "usar", "utiliz", "compr", "conoc", "prepar", "cocin", "instal", "descarg", "aplic"];
+    const clearlyInanimateLeErrorStems = ["usar", "utiliz", "eleg", "instal", "descarg"];
+
+    const nounFeatures = {
+      "país": ["m", "s"], "pais": ["m", "s"], "destino": ["m", "s"], "viaje": ["m", "s"],
+      "dispositivo": ["m", "s"], "teléfono": ["m", "s"], "telefono": ["m", "s"], "ordenador": ["m", "s"],
+      "robot": ["m", "s"], "curso": ["m", "s"], "examen": ["m", "s"], "trabajo": ["m", "s"],
+      "empleo": ["m", "s"], "proyecto": ["m", "s"], "dinero": ["m", "s"], "producto": ["m", "s"],
+      "coche": ["m", "s"], "hotel": ["m", "s"], "plan": ["m", "s"], "regalo": ["m", "s"],
+      "países": ["m", "p"], "paises": ["m", "p"], "destinos": ["m", "p"], "viajes": ["m", "p"],
+      "dispositivos": ["m", "p"], "robots": ["m", "p"], "cursos": ["m", "p"], "exámenes": ["m", "p"],
+      "examenes": ["m", "p"], "productos": ["m", "p"], "planes": ["m", "p"], "regalos": ["m", "p"],
+      "ciudad": ["f", "s"], "tecnología": ["f", "s"], "tecnologia": ["f", "s"], "aplicación": ["f", "s"],
+      "aplicacion": ["f", "s"], "profesión": ["f", "s"], "profesion": ["f", "s"], "energía": ["f", "s"],
+      "energia": ["f", "s"], "habilidad": ["f", "s"], "casa": ["f", "s"], "familia": ["f", "s"],
+      "cultura": ["f", "s"], "clase": ["f", "s"], "tarea": ["f", "s"], "enfermedad": ["f", "s"],
+      "comida": ["f", "s"], "decisión": ["f", "s"], "decision": ["f", "s"], "moneda": ["f", "s"],
+      "ciudades": ["f", "p"], "tecnologías": ["f", "p"], "tecnologias": ["f", "p"], "aplicaciones": ["f", "p"],
+      "profesiones": ["f", "p"], "energías": ["f", "p"], "energias": ["f", "p"], "habilidades": ["f", "p"],
+      "casas": ["f", "p"], "familias": ["f", "p"], "clases": ["f", "p"], "tareas": ["f", "p"],
+      "enfermedades": ["f", "p"], "monedas": ["f", "p"]
+    };
+
+    const pastTimeMarkers = [
+      "ayer", "anoche", "anteayer", "la semana pasada", "el mes pasado", "el año pasado",
+      "el ano pasado", "el fin de semana pasado", "en 2024", "en 2025", "hace dos años", "hace dos anos"
+    ];
+
+    const futureSubordinateIntroducers = ["cuando", "en cuanto", "hasta que", "después de que", "despues de que", "la próxima vez que", "la proxima vez que"];
 
     let customTopics = [];
     let currentTopic = presetTopics[0];
@@ -824,6 +1277,7 @@
     const customKeywordsInput = $("customKeywordsInput");
     const topicText = $("topicText");
     const contextText = $("contextText");
+    const situationText = $("situationText");
     const missionText = $("missionText");
     const questionInput = $("questionInput");
     const charCount = $("charCount");
@@ -898,18 +1352,34 @@
     }
 
     function buildMission() {
-      const template = missionTemplates[Math.floor(Math.random() * missionTemplates.length)];
-      const presetExample = currentTopic.examples?.[Math.floor(Math.random() * currentTopic.examples.length)];
+      let mission;
+
+      if (currentTopic.custom) {
+        const template = customMissionTemplates[Math.floor(Math.random() * customMissionTemplates.length)];
+        mission = {
+          type: template.type,
+          context: template.context,
+          situation: template.situation(currentTopic.name),
+          prompt: template.prompt(currentTopic.name),
+          intent: template.intent,
+          example: template.model(currentTopic.name)
+        };
+      } else {
+        const pool = currentTopic.missions || [];
+        mission = pool[Math.floor(Math.random() * pool.length)];
+      }
+
       currentMission = {
-        ...template,
+        ...mission,
         topic: currentTopic.name,
         keywords: currentTopic.keywords,
-        example: presetExample || template.model(currentTopic.name),
         custom: Boolean(currentTopic.custom)
       };
+
       topicText.textContent = currentMission.topic;
       contextText.textContent = currentMission.context;
-      missionText.textContent = currentMission.text(currentMission.topic);
+      situationText.textContent = currentMission.situation;
+      missionText.textContent = currentMission.prompt;
       questionInput.placeholder = `Ej.: ${currentMission.example}`;
     }
 
@@ -1027,22 +1497,75 @@
       return irregularStems.some(stem => futureEndings.some(ending => token === stem + ending));
     }
 
+    function inferFuturePersons(token) {
+      if (!tokenIsRegularFuture(token) && !tokenIsIrregularFuture(token)) return [];
+      if (token.endsWith("emos")) return ["1p"];
+      if (token.endsWith("éis")) return ["2p"];
+      if (token.endsWith("án")) return ["3p"];
+      if (token.endsWith("ás")) return ["2s"];
+      if (token.endsWith("á")) return ["3s"];
+      if (token.endsWith("é")) return ["1s"];
+      return [];
+    }
+
+    function futureTokenToInfinitive(token) {
+      const ending = ["emos", "éis", "án", "ás", "á", "é"].find(item => token.endsWith(item));
+      if (!ending) return "";
+      const base = token.slice(0, -ending.length);
+      // Check irregular stems first: otherwise "har" and "dir" look like false infinitives ending in -ar/-ir.
+      const irregularStem = Object.keys(irregularStemToInfinitive)
+        .sort((a,b) => b.length - a.length)
+        .find(stem => base === stem);
+      if (irregularStem) return irregularStemToInfinitive[irregularStem];
+      if (/(?:ar|er|ir)$/.test(base)) return base;
+      return "";
+    }
+
+    function verbStemFromInfinitive(infinitive) {
+      return stripAccents(infinitive).replace(/(?:ar|er|ir)$/, "");
+    }
+
+    function formatPersons(persons) {
+      return persons.map(person => personLabels[person]).join(" lub ");
+    }
+
     function analyzeVerbs(raw) {
       const tokens = wordsFrom(raw);
       const future = [];
+      const detailed = [];
       const malformedIrregular = [];
       const missingAccent = [];
       const irA = [];
       const conditional = [];
+      const attachedInfinitives = [];
 
-      tokens.forEach(token => {
+      tokens.forEach((token,index) => {
         if (wrongIrregulars[token]) {
           malformedIrregular.push(`${token} → ${wrongIrregulars[token]}`);
         } else if (tokenIsRegularFuture(token) || tokenIsIrregularFuture(token)) {
           future.push(token);
+          detailed.push({
+            form: token,
+            token,
+            index,
+            persons: inferFuturePersons(token),
+            infinitive: futureTokenToInfinitive(token),
+            stem: verbStemFromInfinitive(futureTokenToInfinitive(token))
+          });
         }
-        if (/(?:ar|er|ir)(?:e|as|a|eis|an)$/.test(token) && !/(?:ar|er|ir)(?:é|ás|á|éis|án)$/.test(token)) missingAccent.push(token);
-        if (/(?:ar|er|ir)(?:ía|ías|íamos|íais|ían)$/.test(token) || irregularStems.some(stem => ["ía","ías","íamos","íais","ían"].some(end => token === stem + end))) conditional.push(token);
+
+        if (/(?:ar|er|ir)(?:e|as|a|eis|an)$/.test(token) && !/(?:ar|er|ir)(?:é|ás|á|éis|án)$/.test(token)) {
+          missingAccent.push(token);
+        }
+
+        if (/(?:ar|er|ir)(?:ía|ías|íamos|íais|ían)$/.test(token) || irregularStems.some(stem => ["ía","ías","íamos","íais","ían"].some(end => token === stem + end))) {
+          conditional.push(token);
+        }
+
+        const attached = token.match(/^(.+?(?:ar|er|ir|ár|ér|ír))(me|te|se|nos|os|lo|la|los|las|le|les|melo|mela|melos|melas|telo|tela|telos|telas|selo|sela|selos|selas|noslo|nosla|noslos|noslas|oslo|osla|oslos|oslas)$/);
+        if (attached) {
+          attachedInfinitives.push({ form: token, infinitive: attached[1], pronouns: attached[2], index });
+        }
       });
 
       const normalized = stripAccents(raw);
@@ -1051,11 +1574,14 @@
       while ((match = irARegex.exec(normalized))) irA.push(match[0]);
 
       return {
+        tokens,
         future: [...new Set(future)],
+        detailed,
         malformedIrregular: [...new Set(malformedIrregular)],
         missingAccent: [...new Set(missingAccent)],
         irA: [...new Set(irA)],
-        conditional: [...new Set(conditional)]
+        conditional: [...new Set(conditional)],
+        attachedInfinitives
       };
     }
 
@@ -1081,6 +1607,7 @@
     }
 
     function analyzePorPara(raw) {
+      const original = raw.toLowerCase();
       const text = stripAccents(raw);
       if (!/\b(por|para)\b/.test(text)) return { used:false, correct:[], warnings:[], errors:[] };
       const correct = [], warnings = [], errors = [];
@@ -1088,9 +1615,12 @@
       if (/\bpor (la|el) (manana|tarde|noche)\b/.test(text)) correct.push("por + pora dnia");
       if (/\bpor (internet|telefono|correo|email|tren|avion|coche|autobus)\b/.test(text)) correct.push("por + środek/kanał");
       if (/\bgracias para\b/.test(text)) errors.push("po «gracias» zwykle używamy «por»");
-      if (/\bpara\s+[a-zñ]+(?:ar|er|ir)\b/.test(text)) correct.push("para + infinitivo — cel");
-      if (/\bpara (mi|ti|el|ella|nosotros|vosotros|ellos|ellas)\b/.test(text)) correct.push("para + odbiorca/opinia");
-      if (/\bpara (manana|el proximo|la proxima|el lunes|el martes|el miercoles|el jueves|el viernes)\b/.test(text)) correct.push("para + termin");
+      const doubledPreposition = text.match(/\b(con|por|a|de)\s+para\b/);
+      if (doubledPreposition) errors.push(`połączenie «${doubledPreposition[0]}» jest niepoprawne; w tym zdaniu napisz po prostu «el próximo verano» albo użyj samego «para» w innym znaczeniu`);
+      if (/\bpara\s+[a-zñ]+(?:ar|er|ir)(?:me|te|se|nos|os|lo|la|los|las|le|les)?\b/.test(text)) correct.push("para + infinitivo — cel");
+      if (/\bpara\s+(mí|ti|él|ella|nosotros|nosotras|vosotros|vosotras|ellos|ellas)(?=\s*[?.,;:]|$)/.test(original)) correct.push("para + odbiorca/opinia");
+      if (/\bpara (el|la|los|las) (examen|curso|trabajo|viaje|salud|familia|proyecto|futuro)\b/.test(text)) correct.push("para + rzeczownik wskazujący cel lub przeznaczenie");
+      if (!doubledPreposition && /\bpara (manana|el proximo|la proxima|el lunes|el martes|el miercoles|el jueves|el viernes)\b/.test(text)) correct.push("para + termin");
       const count = (text.match(/\b(por|para)\b/g) || []).length;
       if (correct.length + errors.length < count) warnings.push("część użyć por/para zależy od zamierzonego znaczenia");
       return { used:true, correct, warnings, errors };
@@ -1098,11 +1628,22 @@
 
     function detectQuestionWord(raw) {
       const trimmed = raw.trim().toLowerCase().replace(/^¿\s*/,"");
+      const prepositional = ["a quién", "con quién", "para quién", "de quién", "en qué", "con qué", "para qué", "por qué", "a dónde", "adónde"];
+      const compound = prepositional.find(item => trimmed.startsWith(item + " ") || trimmed.startsWith(item + "?") || trimmed === item);
+      if (compound) return compound;
       return interrogatives.find(word => trimmed.startsWith(word + " ") || trimmed.startsWith(word + "?") || trimmed === word) || null;
     }
 
     function findAccentProblems(raw) {
-      const beginning = raw.trim().toLowerCase().replace(/^¿\s*/,"").split(/\s+/)[0]?.replace(/[^a-záéíóúüñ]/g,"") || "";
+      const trimmed = raw.trim().toLowerCase().replace(/^¿\s*/,"");
+      const compoundCorrections = [
+        ["a quien", "a quién"], ["con quien", "con quién"], ["para quien", "para quién"],
+        ["de quien", "de quién"], ["en que", "en qué"], ["con que", "con qué"],
+        ["para que", "para qué"], ["por que", "por qué"], ["a donde", "adónde"]
+      ];
+      const compound = compoundCorrections.find(([plain]) => trimmed.startsWith(plain + " ") || trimmed.startsWith(plain + "?"));
+      if (compound) return `${compound[0]} → ${compound[1]}`;
+      const beginning = trimmed.split(/\s+/)[0]?.replace(/[^a-záéíóúüñ]/g,"") || "";
       return unaccentedInterrogatives[beginning] ? `${beginning} → ${unaccentedInterrogatives[beginning]}` : null;
     }
 
@@ -1110,6 +1651,761 @@
       const exact = hasPhrase(raw,currentMission.context);
       const generic = genericFutureMarkers.some(marker => stripAccents(raw).includes(stripAccents(marker))) || /\ben\s+(20\d{2}|21\d{2})\b/.test(stripAccents(raw));
       return { exact, generic };
+    }
+
+    function missionTargetsPartner(mission) {
+      const source = stripAccents(`${mission.situation} ${mission.prompt}`);
+      const exampleVerbs = analyzeVerbs(mission.example).detailed;
+      return /tu companero|preguntale/.test(source) && exampleVerbs.some(form => form.persons.includes("2s"));
+    }
+
+    function correctedTokens(tokens) {
+      return tokens.map(token => commonSpellingCorrections[token] || token);
+    }
+
+    function findSpellingAndPronounFormIssues(raw, verbs) {
+      const tokens = correctedTokens(verbs.tokens);
+      const originalTokens = verbs.tokens;
+      const issues = [];
+
+      originalTokens.forEach((token,index) => {
+        if (commonSpellingCorrections[token]) {
+          issues.push({
+            type:"error", title:"Pisownia", formPenalty:4, usePenalty:2,
+            critical:["nostros","nosostros","nosotors","vosostros","vosotors"].includes(token),
+            message:`Forma „${token}” wygląda na literówkę. Prawdopodobnie chodzi o „${commonSpellingCorrections[token]}”.`
+          });
+        }
+
+        const nextFuture = verbs.detailed.find(form => form.index === index + 1);
+        if (token === "tu" && nextFuture?.persons.includes("2s")) {
+          issues.push({
+            type:"error", title:"tú czy tu?", formPenalty:5, usePenalty:2, critical:true,
+            message:`Przed formą „${nextFuture.form}” potrzebny jest zaimek podmiotowy „tú” z akcentem. „Tu” oznacza „twój/twoja”.`
+          });
+        }
+        if (token === "mi" && nextFuture?.persons.includes("1s")) {
+          issues.push({
+            type:"warning", title:"mí / mi / yo", formPenalty:3, usePenalty:1, critical:false,
+            message:`„Mi” jest formą dzierżawczą. Jako podmiot użyj „yo”; po przyimku napisz „mí”.`
+          });
+        }
+
+        if ((token === "tu" || token === "mi") && index > 0 && ["a","para"].includes(tokens[index-1])) {
+          const next = tokens[index+1] || "";
+          const looksPossessive = next && !allCliticPronouns.has(next) && !verbs.detailed.some(form => form.index === index + 1);
+          if (!looksPossessive) {
+            issues.push({
+              type:"error", title:"Forma po przyimku", formPenalty:4, usePenalty:1, critical:false,
+              message: token === "tu" ? "Po „a/para” użyj formy „ti”, np. para ti, a ti." : "Po „a/para” użyj formy „mí” z akcentem, np. para mí, a mí."
+            });
+          }
+        }
+
+        if (token === "yo" && tokens[index-1] === "con") {
+          issues.push({ type:"error", title:"Forma z con", formPenalty:4, usePenalty:1, critical:false, message:"Zamiast „con yo” użyj „conmigo”." });
+        }
+        if ((token === "tú" || token === "tu") && tokens[index-1] === "con") {
+          const next = tokens[index+1] || "";
+          const looksPossessive = token === "tu" && next && !verbs.detailed.some(form => form.index === index + 1);
+          if (!looksPossessive) {
+            issues.push({ type:"error", title:"Forma z con", formPenalty:4, usePenalty:1, critical:false, message:"Zamiast „con tú” użyj „contigo”." });
+          }
+        }
+      });
+
+      return issues;
+    }
+
+    function findExplicitSubjects(verbs) {
+      const tokens = correctedTokens(verbs.tokens);
+      const subjects = [];
+      const consumed = new Set();
+
+      for (let i=0;i<tokens.length-2;i+=1) {
+        const pronounPerson = subjectPronounPersons[tokens[i]];
+        const possessives = new Set(["mi","mis","tu","tus","su","sus","nuestro","nuestra","nuestros","nuestras","vuestro","vuestra","vuestros","vuestras"]);
+        const nominalIndex = possessives.has(tokens[i+2]) && tokens[i+3] ? i+3 : i+2;
+        const secondLooksNominal = tokens[i+1] === "y" && tokens[nominalIndex] && !subjectPronounPersons[tokens[nominalIndex]] && !allCliticPronouns.has(tokens[nominalIndex]);
+        if (pronounPerson && secondLooksNominal) {
+          const persons = pronounPerson === "1s" || pronounPerson === "1p" ? ["1p"] :
+            pronounPerson === "2s" || pronounPerson === "2p" ? ["2p","3p"] : ["3p"];
+          const nominalPhrase = nominalIndex === i+3 ? `${tokens[i+2]} ${tokens[i+3]}` : tokens[i+2];
+          subjects.push({ token:`${tokens[i]} y ${nominalPhrase}`, persons, index:i+1, includesPartner:["tú","vosotros","vosotras"].includes(tokens[i]) });
+          consumed.add(i);
+        }
+      }
+
+      for (let i=0;i<tokens.length-2;i+=1) {
+        const first = subjectPronounPersons[tokens[i]];
+        const second = subjectPronounPersons[tokens[i+2]];
+        if (!first || tokens[i+1] !== "y" || !second) continue;
+        let persons;
+        if (first === "1s" || second === "1s" || first === "1p" || second === "1p") persons = ["1p"];
+        else if ([first,second].some(p => p === "2s" || p === "2p")) persons = ["2p","3p"];
+        else persons = ["3p"];
+        subjects.push({ token:`${tokens[i]} y ${tokens[i+2]}`, persons, index:i+1 });
+        consumed.add(i); consumed.add(i+2);
+      }
+
+      tokens.forEach((token,index) => {
+        if (consumed.has(index) || !subjectPronounPersons[token]) return;
+        if (index > 0 && prepositionsBeforePronoun.has(tokens[index-1])) return;
+        subjects.push({ token, persons:[subjectPronounPersons[token]], index });
+      });
+      return subjects;
+    }
+
+    function findSubjectAgreementIssues(raw, verbs) {
+      const issues = [];
+      const subjects = findExplicitSubjects(verbs);
+
+      subjects.forEach(subject => {
+        const candidates = verbs.detailed
+          .filter(form => Math.abs(form.index - subject.index) <= 5)
+          .sort((a,b) => Math.abs(a.index-subject.index) - Math.abs(b.index-subject.index));
+        const nearest = candidates[0];
+        if (!nearest) return;
+        if (!nearest.persons.some(person => subject.persons.includes(person))) {
+          issues.push({
+            type:"error", title:"Zgodność osoby", formPenalty:8, usePenalty:7, critical:true,
+            message:`Podmiot „${subject.token}” wymaga ${formatPersons(subject.persons)}, ale forma „${nearest.form}” wskazuje na ${formatPersons(nearest.persons)}.`
+          });
+        }
+      });
+
+      if (missionTargetsPartner(currentMission)) {
+        const firstMainFuture = verbs.detailed[0];
+        if (firstMainFuture && !firstMainFuture.persons.includes("2s")) {
+          const explicitThirdSubject = subjects.some(subject => subject.index < firstMainFuture.index && subject.persons.some(p => ["3s","3p"].includes(p)));
+          const tokens = correctedTokens(verbs.tokens);
+          const gustarDirectedToPartner = gustarLikeStems.some(stem => firstMainFuture.stem.startsWith(stem)) && tokens.slice(Math.max(0,firstMainFuture.index-3),firstMainFuture.index).includes("te");
+          const partnerInCompoundSubject = subjects.some(subject => subject.includesPartner && subject.persons.some(person => firstMainFuture.persons.includes(person)));
+          if (!explicitThirdSubject && !gustarDirectedToPartner && !partnerInCompoundSubject) {
+            issues.push({
+              type:"error", title:"Osoba rozmówcy", formPenalty:3, usePenalty:9, critical:true,
+              message:`Karta prosi o pytanie skierowane do rozmówcy. Główna forma powinna zwykle być w 2. osobie liczby pojedynczej, np. „harás / usarás / te prepararás”, a wykryto „${firstMainFuture.form}”.`
+            });
+          }
+        }
+      }
+
+      return issues;
+    }
+
+    function isLikelyArticle(tokens,index,verbs) {
+      const token = tokens[index];
+      if (!["lo","la","los","las"].includes(token)) return false;
+      const next = tokens[index+1];
+      if (!next) return false;
+      if (verbs.detailed.some(form => form.index === index+1)) return false;
+      if (allCliticPronouns.has(next)) return false;
+      if (/^(?:ar|er|ir)$/.test(next)) return false;
+      return true;
+    }
+
+    function nearestFutureAfter(index,verbs,maxDistance=3) {
+      return verbs.detailed.find(form => form.index > index && form.index-index <= maxDistance) || null;
+    }
+
+    function findNearestAntecedent(tokens,index) {
+      for (let i=index-1;i>=Math.max(0,index-9);i-=1) {
+        const token = tokens[i];
+        if (nounFeatures[token]) return { token, features:nounFeatures[token], index:i };
+      }
+      return null;
+    }
+
+    function expectedDirectPronoun(features) {
+      const [gender,number] = features;
+      if (gender === "m" && number === "s") return "lo";
+      if (gender === "f" && number === "s") return "la";
+      if (gender === "m" && number === "p") return "los";
+      return "las";
+    }
+
+    function analyzePronouns(raw,verbs) {
+      const tokens = correctedTokens(verbs.tokens);
+      const occurrences = [];
+      const issues = [];
+
+      tokens.forEach((token,index) => {
+        if (!allCliticPronouns.has(token) || isLikelyArticle(tokens,index,verbs)) return;
+        const future = nearestFutureAfter(index,verbs,3);
+        const next = tokens[index+1];
+        let role = "zaimek dopełnienia";
+
+        if (token === "se" && ["lo","la","los","las"].includes(next)) role = "dopełnienie dalsze (se zamiast le/les)";
+        else if (["le","les"].includes(token)) role = "dopełnienie dalsze";
+        else if (["lo","la","los","las"].includes(token)) role = "dopełnienie bliższe";
+        else if (future) {
+          const stem = future.stem;
+          if (gustarLikeStems.some(item => stem.startsWith(item))) role = "dopełnienie dalsze";
+          else if (token === "se" && !reflexiveVerbStems.some(item => stem.startsWith(item)) && future.persons.some(person => ["3s","3p"].includes(person))) role = "se bezosobowe lub strona zwrotna bierna";
+          else if (reflexiveVerbStems.some(item => stem.startsWith(item))) {
+            const matchesPerson = reflexivePronounPersons[token]?.some(person => future.persons.includes(person));
+            role = matchesPerson ? "zaimek zwrotny" : "zwrotny lub osobowy";
+          } else role = "dopełnienie bliższe/dalsze zależnie od czasownika";
+        }
+
+        occurrences.push({ token,index,role,future });
+      });
+
+      // Clitic after a finite future form
+      verbs.detailed.forEach(form => {
+        const next = tokens[form.index+1];
+        if (next && allCliticPronouns.has(next) && !isLikelyArticle(tokens,form.index+1,verbs)) {
+          issues.push({
+            type:"error", title:"Pozycja zaimka", formPenalty:7, usePenalty:5, critical:true,
+            message:`Zaimek „${next}” nie może stać po odmienionym futuro „${form.form}”. Napisz go przed czasownikiem, np. „${next} ${form.form}”, albo dołącz do bezokolicznika: „podrás hacerlo / prepararte”.`
+          });
+        }
+      });
+
+      // Double pronouns and le/les -> se
+      for (let i=0;i<tokens.length-1;i+=1) {
+        const first=tokens[i], second=tokens[i+1];
+        if (["le","les"].includes(first) && ["lo","la","los","las"].includes(second)) {
+          issues.push({
+            type:"error", title:"Podwójne zaimki", formPenalty:7, usePenalty:5, critical:true,
+            message:`Przed lo/la/los/las zaimki le/les zmieniają się w „se”: zamiast „${first} ${second}” napisz „se ${second}”.`
+          });
+        }
+        if (["lo","la","los","las"].includes(first) && ["me","te","se","nos","os","le","les"].includes(second)) {
+          issues.push({
+            type:"error", title:"Kolejność zaimków", formPenalty:7, usePenalty:5, critical:true,
+            message:`Najpierw stawiamy zaimek osoby/odbiorcy, potem lo/la/los/las. Zamiast „${first} ${second}” użyj np. „${second === "le" || second === "les" ? "se" : second} ${first}”.`
+          });
+        }
+      }
+
+      // Reflexive agreement and role-sensitive checks
+      occurrences.forEach(item => {
+        const {token,future,role,index} = item;
+        if (!future) return;
+        const isReflexiveCandidate = role === "zwrotny lub osobowy";
+        if (isReflexiveCandidate && reflexivePronounPersons[token] && !future.persons.some(person => reflexivePronounPersons[token].includes(person))) {
+          // te prepararé can be transitive, so make it critical only in partner-targeted reflexive missions or with se + 2nd person
+          const definitelyWrong = token === "se" && future.persons.some(p => ["1s","2s","1p","2p"].includes(p));
+          const partnerMismatch = missionTargetsPartner(currentMission) && future.stem.startsWith("prepar") && !future.persons.includes("2s");
+          issues.push({
+            type:definitelyWrong || partnerMismatch ? "error" : "warning",
+            title:"Zaimek zwrotny i osoba",
+            formPenalty:definitelyWrong || partnerMismatch ? 7 : 3,
+            usePenalty:definitelyWrong || partnerMismatch ? 6 : 2,
+            critical:definitelyWrong || partnerMismatch,
+            message:`Jeśli „${token} ${future.form}” ma być formą zwrotną, zaimek musi zgadzać się z osobą czasownika. Dla ${formatPersons(future.persons)} właściwy zaimek to ${future.persons.includes("1s") ? "me" : future.persons.includes("2s") ? "te" : future.persons.includes("1p") ? "nos" : future.persons.includes("2p") ? "os" : "se"}.`
+          });
+        }
+
+        if (["le","les"].includes(token) && clearlyInanimateLeErrorStems.some(stem => future.stem.startsWith(stem))) {
+          const antecedent = findNearestAntecedent(tokens,index);
+          if (antecedent) {
+            issues.push({
+              type:"error", title:"Dopełnienie bliższe czy dalsze?", formPenalty:6, usePenalty:5, critical:true,
+              message:`Czasownik „${future.infinitive}” odnosi się tutaj bezpośrednio do rzeczy „${antecedent.token}”. Potrzebny jest zaimek dopełnienia bliższego (${expectedDirectPronoun(antecedent.features)}), a nie „${token}”.`
+            });
+          }
+        }
+
+        if (["lo","la","los","las"].includes(token) && antecedentSensitiveVerbStems.some(stem => future.stem.startsWith(stem))) {
+          const antecedent = findNearestAntecedent(tokens,index);
+          if (antecedent) {
+            const expected = expectedDirectPronoun(antecedent.features);
+            if (token !== expected) {
+              issues.push({
+                type:"error", title:"Zgodność zaimka z rzeczownikiem", formPenalty:6, usePenalty:5, critical:true,
+                message:`Zaimek „${token}” nie zgadza się z rzeczownikiem „${antecedent.token}”. W tym kontekście naturalna forma to „${expected} ${future.form}”.`
+              });
+            }
+          }
+        }
+      });
+
+      // Gustar-like verbs
+      verbs.detailed.forEach(form => {
+        if (!gustarLikeStems.some(stem => form.stem.startsWith(stem))) return;
+        const before = tokens.slice(Math.max(0,form.index-3),form.index);
+        const hasIndirect = before.some(token => ["me","te","le","nos","os","les"].includes(token));
+        const after = tokens.slice(form.index+1,form.index+5);
+        const subjectToken = after.find(token => nounFeatures[token] || /(?:ar|er|ir)$/.test(token));
+        let expectedPerson = "3s";
+        if (subjectToken && nounFeatures[subjectToken]?.[1] === "p") expectedPerson = "3p";
+        if (!form.persons.includes(expectedPerson)) {
+          issues.push({
+            type:"error", title:"Konstrukcja typu gustar", formPenalty:7, usePenalty:6, critical:true,
+            message:`W konstrukcji z „${form.infinitive}” czasownik zgadza się z rzeczą, która podoba się lub interesuje. Tutaj oczekiwana jest ${personLabels[expectedPerson]}, np. „te gustará + rzeczownik l.poj./bezokolicznik” albo „te gustarán + rzeczownik l.mn.”.`
+          });
+        }
+        if (!hasIndirect && missionTargetsPartner(currentMission)) {
+          issues.push({
+            type:"warning", title:"Osoba w konstrukcji gustar", formPenalty:2, usePenalty:2, critical:false,
+            message:`Gdy pytasz rozmówcę, zwykle potrzebujesz zaimka dopełnienia dalszego: „¿Te ${form.form}…?”.`
+          });
+        }
+      });
+
+      verbs.attachedInfinitives.forEach(attached => {
+        const governing = [...verbs.detailed].reverse().find(form => form.index < attached.index && attached.index-form.index <= 3);
+        if (!governing) return;
+        const infinitiveStem = verbStemFromInfinitive(stripAccents(attached.infinitive).replace(/[áéí]/g,letter => ({"á":"a","é":"e","í":"i"}[letter])));
+        const singlePronoun = ["me","te","se","nos","os"].includes(attached.pronouns) ? attached.pronouns : null;
+        if (!singlePronoun || !reflexiveVerbStems.some(stem => infinitiveStem.startsWith(stem))) return;
+        const pronounPersons = reflexivePronounPersons[singlePronoun] || [];
+        const agrees = governing.persons.some(person => pronounPersons.includes(person));
+        if (!agrees && singlePronoun === "se") {
+          issues.push({
+            type:"error", title:"Zaimek przy bezokoliczniku", formPenalty:6, usePenalty:5, critical:true,
+            message:`W konstrukcji „${governing.form} ${attached.form}” zaimek zwrotny nie zgadza się z osobą czasownika nadrzędnego. Jeśli pytasz rozmówcę, napisz np. „${governing.form} ${attached.infinitive.replace(/[áéí]/g,letter => ({"á":"a","é":"e","í":"i"}[letter]))}te”.`
+          });
+        }
+      });
+
+      return { occurrences, issues };
+    }
+
+    function findTemporalSyntaxIssues(raw,verbs) {
+      const plain = stripAccents(raw);
+      const issues = [];
+
+      const pastMarker = pastTimeMarkers.find(marker => hasPhrase(plain,marker));
+      if (pastMarker && verbs.future.length) {
+        issues.push({
+          type:"error", title:"Niespójny kontekst czasowy", formPenalty:1, usePenalty:11, critical:true,
+          message:`Futuro simple połączono z zakończonym markerem przeszłości „${pastMarker}”. Zmień określenie czasu na przyszłe albo zastosuj czas przeszły.`
+        });
+      }
+
+      const futureAlternation = '(?:[a-zñ]+(?:ar|er|ir)(?:e|as|a|emos|eis|an)|(?:dir|har|habr|podr|pondr|querr|sabr|saldr|tendr|valdr|vendr)(?:e|as|a|emos|eis|an))';
+      const siFuture = new RegExp(`\\bsi\\s+[^,?]{0,45}\\b${futureAlternation}\\b`,'i');
+      const indirectSi = /\b(?:sabes|sabe|sabremos|preguntas|pregunta|dime|diras|no se)\s+si\b/.test(plain);
+      if (siFuture.test(plain) && !indirectSi) {
+        issues.push({
+          type:"error", title:"Si + futuro", formPenalty:5, usePenalty:8, critical:true,
+          message:"W realnym warunku po „si” nie używamy futuro simple. Napisz np. „si tienes tiempo, ¿qué harás?” zamiast „si tendrás tiempo…”."
+        });
+      }
+
+      const rawBeginning = raw.trim().toLowerCase();
+      const directCuandoQuestion = /^¿?\s*cuándo\b/.test(rawBeginning);
+      const responseClauses = splitResponseQuestionClauses(raw).map(stripAccents);
+      const subordinate = futureSubordinateIntroducers.find(intro => {
+        if (intro === "cuando" && directCuandoQuestion) return false;
+        return responseClauses.some(clause => {
+          const introIndex = clause.indexOf(intro);
+          if (introIndex < 0) return false;
+          const afterIntro = clause.slice(introIndex + intro.length);
+          return new RegExp(`\b${futureAlternation}\b`, "i").test(afterIntro);
+        });
+      });
+      if (subordinate) {
+        issues.push({
+          type:"error", title:"Przyszłość po spójniku czasowym", formPenalty:5, usePenalty:8, critical:true,
+          message:`Po „${subordinate}” w zdaniu odnoszącym się do przyszłości zwykle używamy presente de subjuntivo: „cuando tengas / la próxima vez que vayas”, a futuro pozostaje w zdaniu głównym.`
+        });
+      }
+
+      return issues;
+    }
+
+    const missionClauseStopWords = new Set([
+      "pregunta", "preguntale", "tu", "compañero", "companero", "la", "el", "los", "las", "un", "una", "unos", "unas",
+      "de", "del", "al", "a", "en", "con", "por", "para", "sin", "sobre", "y", "o", "que", "como", "cuando", "donde",
+      "adonde", "quien", "quienes", "cuanto", "cuanta", "cuantos", "cuantas", "si", "lo", "la", "le", "les", "se",
+      "me", "te", "nos", "os", "yo", "usted", "ustedes", "nosotros", "nosotras", "vosotros", "vosotras", "ellos", "ellas", "su", "sus", "este", "esta", "estos", "estas", "ese", "esa", "esos", "esas", "alli",
+      "ahi", "aqui", "futuro", "futura", "futuros", "futuras", "proximo", "proxima", "proximos", "proximas", "dentro",
+      "años", "anos", "año", "ano", "dia", "dias", "semana", "semanas", "mes", "meses", "gente", "personas", "mayoria",
+      "tipo", "manera", "forma", "actividad", "actividades", "opcion", "opciones", "elemento", "elementos", "aspecto", "aspectos",
+      "tarea", "tareas", "medida", "medidas", "cambio", "cambios", "situacion"
+    ]);
+
+    const semanticVerbFamilies = [
+      ["ir", "viajar", "visitar", "mover", "desplazar"],
+      ["usar", "utilizar", "emplear"],
+      ["elegir", "escoger", "decidir", "preferir"],
+      ["hacer", "realizar", "practicar", "preparar", "cocinar"],
+      ["aprender", "estudiar", "formar", "preparar"],
+      ["trabajar", "ejercer", "dedicar"],
+      ["vivir", "residir", "mudarse"],
+      ["conseguir", "lograr", "alcanzar"],
+      ["conocer", "ver", "visitar", "encontrar"],
+      ["cambiar", "transformar", "modificar", "afectar"],
+      ["ser", "estar", "haber", "tener", "convertir"],
+      ["comer", "cocinar", "preparar", "alimentar"],
+      ["ver", "reunir", "quedar", "pasar", "compartir"],
+      ["pagar", "comprar", "gastar", "ahorrar"]
+    ];
+
+    function splitMissionPromptClauses(prompt) {
+      const start = "(?:adonde|donde|como|cuanto|que|si|(?:con|a|para|de|en)\\s+quien|(?:por|para|en)\\s+que|de\\s+donde)";
+      return stripAccents(prompt)
+        .replace(/^preguntale\s+/, "")
+        .replace(/^pregunta\s+/, "")
+        .replace(/[.]\s*$/, "")
+        .replace(new RegExp(`,\\s*(?=${start}\\b)`, "g"), " || ")
+        .replace(new RegExp(`\\s+y\\s+(?=${start}\\b)`, "g"), " || ")
+        .split("||")
+        .map(item => item.trim())
+        .filter(Boolean);
+    }
+
+    function sameSemanticVerb(expected, actual) {
+      return semanticVerbSimilarity(expected, actual) >= 0.78;
+    }
+
+    function semanticVerbSimilarity(expected, actual, requirement = null, raw = "", responseClause = "") {
+      if (!expected || !actual) return 0;
+      const a = stripAccents(expected).replace(/se$/, "");
+      const b = stripAccents(actual).replace(/se$/, "");
+
+      if (a === b) return 1;
+      if (a.startsWith(b) || b.startsWith(a)) return 0.98;
+      if (semanticVerbFamilies.some(family => family.includes(a) && family.includes(b))) return 0.92;
+
+      const selectionVerbs = new Set(["elegir", "escoger", "decidir", "preferir"]);
+      const movementVerbs = new Set(["ir", "viajar", "visitar", "conocer", "mover", "desplazar"]);
+      const destinationContext = /\b(?:pais|ciudad|destino|lugar|sitio|alli|ahi|adonde|donde|viaj|visit|vacacion)\b/.test(
+        stripAccents(`${raw} ${responseClause} ${requirement?.clause || ""}`)
+      );
+
+      // W naturalnej rozmowie „¿por qué irás allí?” zwykle realizuje ten sam zamiar
+      // komunikacyjny co „¿por qué elegirás ese país?”, jeśli cel podróży został już wskazany.
+      if (
+        requirement?.cueKey === "reason" && destinationContext &&
+        ((selectionVerbs.has(a) && movementVerbs.has(b)) || (movementVerbs.has(a) && selectionVerbs.has(b)))
+      ) return 0.9;
+
+      // Pytanie o powód wyboru może być naturalnie wyrażone przez powód wykonania
+      // konkretnej czynności związanej z tym wyborem.
+      const choiceRealisationVerbs = new Set(["comprar", "usar", "estudiar", "trabajar", "vivir", "comer", "hacer"]);
+      if (
+        requirement?.cueKey === "reason" &&
+        ((selectionVerbs.has(a) && choiceRealisationVerbs.has(b)) || (selectionVerbs.has(b) && choiceRealisationVerbs.has(a)))
+      ) return 0.78;
+
+      if (a === "hacer" && !["ser", "estar", "haber", "tener", "poder"].includes(b)) return 0.9;
+      if (b === "hacer" && !["ser", "estar", "haber", "tener", "poder"].includes(a)) return 0.76;
+
+      const contextualPairs = [
+        [["afectar", "influir"], ["cambiar", "transformar", "mejorar", "empeorar"], 0.9],
+        [["preparar"], ["estudiar", "practicar", "organizar", "entrenar"], 0.86],
+        [["conocer"], ["visitar", "ver", "encontrar"], 0.88],
+        [["usar", "utilizar"], ["tener", "comprar", "necesitar"], 0.68],
+        [["vivir", "residir"], ["mudarse", "quedarse"], 0.8],
+        [["trabajar", "ejercer"], ["dedicarse", "ser"], 0.75]
+      ];
+      for (const [left, right, score] of contextualPairs) {
+        if ((left.includes(a) && right.includes(b)) || (left.includes(b) && right.includes(a))) return score;
+      }
+
+      return 0;
+    }
+
+    function splitResponseQuestionClauses(raw) {
+      const start = String.raw`(?:ad[oó]nde|a\s+d[oó]nde|d[oó]nde|c[oó]mo|cu[aá]nto|qu[eé]|si|(?:con|a|para|de|en)\s+qui[eé]n|(?:por|para|en)\s+qu[eé]|de\s+d[oó]nde)`;
+      return raw.toLowerCase()
+        .replace(/[¿?¡!]/g, "")
+        .replace(/[.;:]\s*/g, " || ")
+        .replace(new RegExp(String.raw`,\s*(?=${start}(?:\s|$))`, "g"), " || ")
+        .replace(new RegExp(String.raw`\s+y\s+(?=${start}(?:\s|$))`, "g"), " || ")
+        .split("||")
+        .map(item => item.trim())
+        .filter(Boolean);
+    }
+
+
+    function getMissionClauseCue(clause) {
+      const definitions = [
+        ["destination", "dokąd / cel podróży", /\badonde\b/, /\b(?:adonde|a donde|donde)\b/],
+        ["withPerson", "z kim", /\bcon quien\b/, /\bcon quien\b/],
+        ["forPerson", "dla kogo", /\bpara quien\b/, /\bpara quien\b/],
+        ["person", "kogo / komu", /\ba quien\b/, /\ba quien\b/],
+        ["origin", "skąd", /\bde donde\b/, /\bde donde\b/],
+        ["reason", "dlaczego", /\bpor que\b/, /\bpor que\b/],
+        ["purpose", "w jakim celu", /\bpara que\b/, /\bpara que\b/],
+        ["duration", "ile czasu", /\bcuanto tiempo\b/, /\bcuanto tiempo\b/],
+        ["quantity", "ile / jak dużo", /\bcuanto\b/, /\bcuanto\b/],
+        ["location", "gdzie", /\bdonde\b/, /\bdonde\b/],
+        ["category", "w czym / jaki rodzaj", /\ben que\b/, /\ben que\b/],
+        ["manner", "jak", /\bcomo\b/, /\bcomo\b/],
+        ["yesNo", "pytanie rozstrzygające", /^si\b/, null],
+        ["what", "co / jaki element", /\bque\b/, /\bque\b/]
+      ];
+      for (const [key, label, clausePattern, answerPattern] of definitions) {
+        if (clausePattern.test(clause)) return { key, label, answerPattern };
+      }
+      return { key: "content", label: "treść polecenia", answerPattern: null };
+    }
+
+    function findResponseClauseForRequirement(requirement, raw, requirementIndex = 0, allRequirements = []) {
+      const clauses = splitResponseQuestionClauses(raw);
+      if (!clauses.length) return raw.toLowerCase();
+      if (!requirement.cuePattern) return clauses[Math.min(requirementIndex, clauses.length - 1)] || clauses[0];
+
+      const matchingClauses = clauses.filter(clause => requirement.cuePattern.test(stripAccents(clause)));
+      const sameCueOrdinal = allRequirements
+        .slice(0, requirementIndex)
+        .filter(item => item.cueKey === requirement.cueKey)
+        .length;
+
+      return matchingClauses[sameCueOrdinal] || matchingClauses[0] || raw.toLowerCase();
+    }
+
+
+    function extractClauseActionInfinitives(clause) {
+      const localVerbs = analyzeVerbs(clause);
+      const explicitInfinitives = wordsFrom(clause)
+        .map(stripAccents)
+        .filter(token => /(?:ar|er|ir)$/.test(token));
+      return {
+        localVerbs,
+        infinitives: [...new Set([
+          ...localVerbs.detailed.map(form => form.infinitive).filter(Boolean),
+          ...explicitInfinitives
+        ])]
+      };
+    }
+
+    function extractMissionClauseAnchors(clause, expectedForms) {
+      const expectedTokens = new Set(expectedForms.flatMap(form => [stripAccents(form.token), stripAccents(form.infinitive)]));
+      return [...new Set(wordsFrom(clause).map(stripAccents).filter(word => {
+        if (word.length < 4 || missionClauseStopWords.has(word) || expectedTokens.has(word)) return false;
+        if (/^(?:hara|haran|sera|seran|ira|iran|tendra|tendran|usara|usaran|vivira|viviran)$/.test(word)) return false;
+        return true;
+      }).map(word => word.length > 6 ? word.slice(0, Math.max(4, word.length - 2)) : word))];
+    }
+
+    function textContainsAnchor(plain, anchor) {
+      const escaped = anchor.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      return new RegExp(`(^|[^a-zñ])${escaped}[a-zñ]*([^a-zñ]|$)`, "i").test(plain);
+    }
+
+    function promptTokenToInfinitive(token) {
+      const plain = stripAccents(token);
+      if (missionClauseStopWords.has(plain) || /(?:ar|er|ir)$/.test(plain)) return "";
+      const ending = ["emos", "an", "as", "a", "e"].find(item => plain.endsWith(item));
+      if (!ending) return "";
+      const base = plain.slice(0, -ending.length);
+      const irregularStem = Object.keys(irregularStemToInfinitive)
+        .sort((a,b) => b.length - a.length)
+        .find(stem => base === stem);
+      if (irregularStem) return irregularStemToInfinitive[irregularStem];
+      if (/(?:ar|er|ir)$/.test(base)) return base;
+      return "";
+    }
+
+    function deriveMissionRequirements(prompt) {
+      return splitMissionPromptClauses(prompt).map((clause, index) => {
+        const cue = getMissionClauseCue(clause);
+        const promptForms = wordsFrom(clause).map(token => ({
+          token,
+          infinitive: promptTokenToInfinitive(token)
+        })).filter(form => form.infinitive);
+        const anchors = extractMissionClauseAnchors(clause, promptForms);
+        return {
+          id: `slot-${index + 1}`,
+          clause,
+          label: cue.label,
+          cueKey: cue.key,
+          cuePattern: cue.answerPattern,
+          expectedInfinitives: [...new Set(promptForms.map(form => form.infinitive).filter(Boolean))],
+          anchors,
+          requiresLocationReference: /\balli\b/.test(clause),
+          requiresPurposePhrase: /\bpara\s+[a-zñ]+(?:ar|er|ir)\b/.test(clause),
+          allowsAlternative: /\bo\b/.test(clause)
+        };
+      });
+    }
+
+    function evaluateMissionRequirement(requirement, raw, verbs, topicMatches, requirementIndex = 0, allRequirements = []) {
+      const responseClause = findResponseClauseForRequirement(requirement, raw, requirementIndex, allRequirements);
+      const clauseData = extractClauseActionInfinitives(responseClause);
+      const responseInfinitives = clauseData.infinitives;
+      const responseClausePlain = stripAccents(responseClause);
+
+      let cueScore = requirement.cuePattern && requirement.cuePattern.test(responseClausePlain) ? 1 : 0;
+      // W mowie potocznej „dónde” jest często używane zamiast „adónde” przy czasowniku ruchu.
+      if (cueScore === 0 && requirement.cueKey === "destination" && /\bdonde\b/.test(responseClausePlain)) {
+        const hasMovement = responseInfinitives.some(actual =>
+          ["ir", "viajar", "visitar", "mover", "desplazar"].some(expected => semanticVerbSimilarity(expected, actual) >= 0.78)
+        );
+        if (hasMovement) cueScore = 0.92;
+      }
+      if (!requirement.cuePattern && clauseData.localVerbs.future.length > 0) cueScore = 0.85;
+
+      let actionScore = requirement.expectedInfinitives.length === 0 ? 1 : 0;
+      let bestExpected = "";
+      let bestActual = "";
+      requirement.expectedInfinitives.forEach(expected => {
+        responseInfinitives.forEach(actual => {
+          const similarity = semanticVerbSimilarity(expected, actual, requirement, raw, responseClause);
+          if (similarity > actionScore) {
+            actionScore = similarity;
+            bestExpected = expected;
+            bestActual = actual;
+          }
+        });
+      });
+
+      const anchorMatches = requirement.anchors.filter(anchor => textContainsAnchor(responseClausePlain, anchor));
+      let anchorScore = requirement.anchors.length === 0 ? 1 : 0;
+      if (anchorMatches.length > 0) anchorScore = 1;
+      else if (requirement.allowsAlternative && actionScore >= 0.72) anchorScore = 0.9;
+      else if (topicMatches.length > 0 && requirement.anchors.some(anchor =>
+        topicMatches.some(match => stripAccents(match).includes(anchor) || anchor.includes(stripAccents(match)))
+      )) anchorScore = 0.78;
+      else if (topicMatches.length > 0 && requirement.cueKey === "reason") anchorScore = 0.68;
+
+      const purposeOk = !requirement.requiresPurposePhrase || /\bpara\s+[a-zñ]+(?:ar|er|ir)\b/.test(responseClausePlain);
+      const purposeScore = requirement.requiresPurposePhrase ? (purposeOk ? 1 : 0) : 1;
+      const locationOk = !requirement.requiresLocationReference || /\b(alli|ahi|en ese lugar|en el destino|en esa ciudad|en ese pais)\b/.test(responseClausePlain);
+      const locationScore = requirement.requiresLocationReference ? (locationOk ? 1 : 0) : 1;
+
+      const components = [{ score: cueScore, weight: 0.38 }];
+      if (requirement.expectedInfinitives.length) components.push({ score: actionScore, weight: 0.42 });
+      if (requirement.anchors.length) components.push({ score: anchorScore, weight: 0.12 });
+      if (requirement.requiresLocationReference) components.push({ score: locationScore, weight: 0.08 });
+      if (requirement.requiresPurposePhrase) components.push({ score: purposeScore, weight: 0.08 });
+      const weightSum = components.reduce((sum, item) => sum + item.weight, 0) || 1;
+      const semanticScore = components.reduce((sum, item) => sum + item.score * item.weight, 0) / weightSum;
+
+      const semanticOk = semanticScore >= 0.72;
+      const partialOk = semanticScore >= 0.45 && !semanticOk;
+      const requiresFutureForm = requirement.expectedInfinitives.length > 0;
+      const tenseOk = !requiresFutureForm || clauseData.localVerbs.future.length > 0;
+      const naturalParaphrase = actionScore >= 0.76 && actionScore < 0.97 && cueScore >= 0.75;
+
+      const missing = [];
+      if (cueScore < 0.45) missing.push(`forma pytająca: ${requirement.label}`);
+      if (actionScore < 0.45) missing.push("odpowiednia czynność lub równoważna parafraza");
+      else if (actionScore < 0.72) missing.push("czynność jest tylko częściowo zbliżona znaczeniowo");
+      if (anchorScore < 0.45) missing.push(`konkretny element: ${requirement.anchors.join(" / ")}`);
+      if (!locationOk) missing.push("odniesienie do miejsca: allí / ahí / en ese lugar");
+      if (!purposeOk) missing.push("konstrukcja celu: para + infinitivo");
+
+      return {
+        ...requirement,
+        ok: semanticOk,
+        partialOk,
+        semanticOk,
+        semanticScore,
+        tenseOk,
+        requiresFutureForm,
+        responseClause,
+        clauseFutureForms: clauseData.localVerbs.future,
+        cueOk: cueScore >= 0.72,
+        cueScore,
+        actionOk: actionScore >= 0.72,
+        actionScore,
+        anchorOk: anchorScore >= 0.72,
+        anchorScore,
+        locationOk,
+        purposeOk,
+        anchorMatches,
+        naturalParaphrase,
+        paraphrasePair: naturalParaphrase ? { expected: bestExpected, actual: bestActual } : null,
+        missing
+      };
+    }
+
+    function analyzeSemanticSpecificity(raw, verbs, topicMatches, requirementResults) {
+      const plain = stripAccents(raw);
+      const vagueWords = (plain.match(/\b(asi|eso|esto|aquello|algo|cosa|cosas)\b/g) || []);
+      const genericInfinitives = new Set(["hacer", "ser", "estar", "tener", "ir", "poder", "haber"]);
+      const onlyGenericVerbs = verbs.detailed.length > 0 && verbs.detailed.every(form => genericInfinitives.has(form.infinitive));
+      const matchedCount = requirementResults.filter(item => item.ok).length;
+      const meaningfulTokens = wordsFrom(raw).map(stripAccents).filter(word =>
+        word.length >= 4 && !missionClauseStopWords.has(word) && !genericFutureMarkers.some(marker => stripAccents(marker).includes(word)) &&
+        !["hacer", "hara", "haras", "hare", "haremos", "haran", "asi", "alli", "algo", "cosa"].includes(word)
+      );
+      const lowSpecificity = topicMatches.length === 0 && matchedCount <= 1 && onlyGenericVerbs && meaningfulTokens.length <= 1;
+      return { vagueWords, onlyGenericVerbs, meaningfulTokens, lowSpecificity };
+    }
+
+    function analyzeMissionFit(raw,verbs,topicMatches) {
+      const plain = stripAccents(raw);
+      const futureStems = verbs.detailed.map(form => form.stem).filter(Boolean);
+      const intentMatches = currentMission.intent.filter(intent => {
+        const clean = stripAccents(intent);
+        return futureStems.some(stem => stem.startsWith(clean) || clean.startsWith(stem)) || plain.includes(clean);
+      });
+
+      const requirements = deriveMissionRequirements(currentMission.prompt);
+      const requirementResults = requirements.map((requirement, index) => evaluateMissionRequirement(requirement, raw, verbs, topicMatches, index, requirements));
+      const matchedRequirements = requirementResults.filter(item => item.semanticScore >= 0.72);
+      const partialRequirements = requirementResults.filter(item => item.semanticScore >= 0.45 && item.semanticScore < 0.72);
+      const missingRequirements = requirementResults.filter(item => item.semanticScore < 0.45);
+      const naturalParaphrases = requirementResults.filter(item => item.naturalParaphrase);
+      const requiredCount = requirementResults.length;
+      const matchedCount = matchedRequirements.length;
+      const coverage = requiredCount
+        ? requirementResults.reduce((sum, item) => sum + item.semanticScore, 0) / requiredCount
+        : 1;
+
+      const semanticallyPresent = requirementResults.filter(item => item.semanticScore >= 0.45);
+      const tenseMatchedRequirements = semanticallyPresent.filter(item => item.tenseOk);
+      const tenseMissingRequirements = semanticallyPresent.filter(item => !item.tenseOk);
+      const semanticWeight = semanticallyPresent.reduce((sum, item) => sum + item.semanticScore, 0);
+      const tenseCoverage = semanticWeight
+        ? semanticallyPresent.reduce((sum, item) => sum + (item.tenseOk ? item.semanticScore : 0), 0) / semanticWeight
+        : 0;
+
+      const partnerTarget = missionTargetsPartner(currentMission);
+      const hasSecondPerson = verbs.detailed.some(form => form.persons.includes("2s"));
+      const tokens = correctedTokens(verbs.tokens);
+      const partnerGustar = verbs.detailed.some(form => gustarLikeStems.some(stem => form.stem.startsWith(stem)) && tokens.slice(Math.max(0,form.index-3),form.index).includes("te"));
+      const subjects = findExplicitSubjects(verbs);
+      const partnerCompound = subjects.some(subject => subject.includesPartner && verbs.detailed.some(form => subject.persons.some(person => form.persons.includes(person))));
+      const perspectiveOk = !partnerTarget || hasSecondPerson || partnerGustar || partnerCompound;
+      const specificity = analyzeSemanticSpecificity(raw, verbs, topicMatches, requirementResults);
+
+      const semanticStrength =
+        (coverage >= 0.85 ? 2 : coverage >= 0.55 ? 1 : 0) +
+        (topicMatches.length > 0 ? 1 : 0) +
+        (perspectiveOk ? 1 : 0);
+
+      return {
+        intentMatches, requirements, requirementResults, matchedRequirements, partialRequirements, missingRequirements,
+        naturalParaphrases, tenseMatchedRequirements, tenseMissingRequirements, tenseCoverage,
+        requiredCount, matchedCount, coverage, partnerTarget, perspectiveOk, semanticStrength, specificity
+      };
+    }
+
+    function analyzeContentCompleteness(raw, verbs) {
+      const normalized = stripAccents(raw)
+        .replace(/[¿?¡!.,;:()\[\]{}"']/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+
+      const bareInterrogativePattern = /^(?:que|como|cuando|donde|adonde|quien|quienes|cual|cuales|cuanto|cuanta|cuantos|cuantas|por que|para que|a quien|con quien|de quien|y tu|y usted|y vosotros|y ustedes)$/;
+      const functionWords = new Set([
+        "que", "como", "cuando", "donde", "adonde", "quien", "quienes", "cual", "cuales",
+        "cuanto", "cuanta", "cuantos", "cuantas", "por", "para", "a", "de", "con", "sin",
+        "sobre", "y", "o", "el", "la", "los", "las", "un", "una", "unos", "unas",
+        "yo", "tu", "usted", "ustedes", "nosotros", "nosotras", "vosotros", "vosotras",
+        "ellos", "ellas", "me", "te", "se", "nos", "os", "lo", "le", "les"
+      ]);
+
+      const normalizedTokens = verbs.tokens.map(stripAccents);
+      const lexicalTokens = normalizedTokens.filter(token => !functionWords.has(token));
+      const hasRecognizedPredicate = Boolean(
+        verbs.future.length ||
+        verbs.irA.length ||
+        verbs.conditional.length ||
+        verbs.malformedIrregular.length ||
+        verbs.missingAccent.length
+      );
+
+      const isBareInterrogative = bareInterrogativePattern.test(normalized);
+      const isVerbLessFragment = !hasRecognizedPredicate && normalizedTokens.length <= 4 && lexicalTokens.length <= 1;
+
+      return {
+        normalized,
+        lexicalTokens,
+        hasRecognizedPredicate,
+        isBareInterrogative,
+        isVerbLessFragment
+      };
     }
 
     function addFeedback(list,type,title,message) { list.push({type,title,message}); }
@@ -1129,46 +2425,122 @@
       const topicMatches = findTopicVocabulary(raw);
       const marker = containsFutureMarker(raw);
       const porPara = analyzePorPara(raw);
-      const tokenCount = wordsFrom(raw).length;
+      const tokenCount = verbs.tokens.length;
+      const spellingIssues = findSpellingAndPronounFormIssues(raw,verbs);
+      const agreementIssues = findSubjectAgreementIssues(raw,verbs);
+      const pronounAnalysis = analyzePronouns(raw,verbs);
+      const temporalIssues = findTemporalSyntaxIssues(raw,verbs);
+      const missionFit = analyzeMissionFit(raw,verbs,topicMatches);
+      const grammarIssues = [...spellingIssues,...agreementIssues,...pronounAnalysis.issues,...temporalIssues];
+      const questionWord = detectQuestionWord(raw);
+      const accentProblem = findAccentProblems(raw);
+      const completeness = analyzeContentCompleteness(raw,verbs);
+
+      if (completeness.isBareInterrogative || completeness.isVerbLessFragment) {
+        const hasFullQuestionMarks = raw.startsWith("¿") && raw.endsWith("?");
+        const hasClosingQuestionMark = raw.endsWith("?");
+        const isBare = completeness.isBareInterrogative;
+
+        if (hasFullQuestionMarks) {
+          formScore += 2;
+          addFeedback(feedback,"success","Znaki pytania","Zapisano poprawne znaki ¿…?. To jednak tylko element formy, nie realizacja zadania.");
+        } else if (hasClosingQuestionMark) {
+          formScore += 1;
+          addFeedback(feedback,"warning","Znaki pytania","Dodaj odwrócony znak «¿» na początku.");
+        } else {
+          addFeedback(feedback,"error","Znaki pytania","Pytanie powinno zaczynać się od «¿» i kończyć znakiem «?». ");
+        }
+
+        if (questionWord) {
+          formScore += 1;
+          addFeedback(feedback,"success","Słowo pytające",`Rozpoznano «${questionWord}», ale samo słowo pytające nie tworzy jeszcze pełnego pytania do tej misji.`);
+        }
+
+        if (questionWord && !accentProblem) {
+          formScore += 1;
+          addFeedback(feedback,"success","Akcent","Słowo pytające zapisano poprawnie. Za poprawny akcent przyznano tylko punkt formalny.");
+        } else if (accentProblem) {
+          addFeedback(feedback,"warning","Akcent w słowie pytającym",`Prawdopodobna korekta: ${accentProblem}.`);
+        }
+
+        if (!isBare && completeness.lexicalTokens.length === 1) {
+          formScore += 1;
+          addFeedback(feedback,"warning","Fragment tematyczny",`Rozpoznano słowo «${completeness.lexicalTokens[0]}», ale brakuje orzeczenia i relacji między elementami zdania.`);
+        }
+
+        addFeedback(
+          feedback,
+          "error",
+          "Brak pełnego zdania",
+          isBare
+            ? "«¿Por qué?» może być naturalną krótką reakcją w rozmowie, ale tutaj nie odpowiada na wylosowaną misję. Brakuje czasownika, osoby, tematu i kontekstu."
+            : "To jest tylko fragment pytania. Dodaj odmieniony czasownik i zbuduj pełną treść zgodną z kartą."
+        );
+        addFeedback(feedback,"error","Futuro simple","Nie wykryto orzeczenia w futuro simple.");
+        addFeedback(feedback,"error","Realizacja misji",`Nie da się ocenić realizacji polecenia «${currentMission.prompt}», ponieważ odpowiedź nie zawiera pełnej informacji.`);
+
+        formScore = Math.min(isBare ? 4 : 5,formScore);
+        useScore = 0;
+        const scoreCap = isBare ? 4 : 6;
+        const total = Math.min(formScore,scoreCap);
+
+        renderResults({
+          total,
+          formScore,
+          useScore,
+          feedback,
+          verbs,
+          topicMatches,
+          marker,
+          porPara,
+          pronounAnalysis,
+          missionFit,
+          grammarIssues,
+          criticalCount: 0,
+          scoreCap,
+          completeness,
+          incompleteFragment: true,
+          needsHelp: true
+        });
+        return;
+      }
 
       if (raw.startsWith("¿") && raw.endsWith("?")) {
-        formScore += 10;
+        formScore += 8;
         addFeedback(feedback,"success","Znaki pytania","Pytanie ma poprawne hiszpańskie znaki ¿…?.");
       } else if (raw.endsWith("?")) {
-        formScore += 6;
+        formScore += 5;
         addFeedback(feedback,"warning","Znaki pytania","Dodaj odwrócony znak «¿» na początku.");
       } else {
         addFeedback(feedback,"error","Znaki pytania","Pytanie powinno zaczynać się od «¿» i kończyć znakiem «?». ");
       }
 
-      const questionWord = detectQuestionWord(raw);
       if (questionWord) {
-        formScore += 8;
+        formScore += 7;
         addFeedback(feedback,"success","Budowa pytania",`Rozpoznano słowo pytające «${questionWord}».`);
-      } else if (/^¿?\s*(ser|estar|haber|tener|hacer|poder|ir|querer|viajar|trabajar|estudiar)/i.test(raw) || verbs.future.length) {
-        formScore += 6;
-        addFeedback(feedback,"success","Budowa pytania","To może być poprawne pytanie typu tak/nie, bez słowa pytającego.");
+      } else if (verbs.future.length) {
+        formScore += 5;
+        addFeedback(feedback,"success","Budowa pytania","Zdanie może być poprawnym pytaniem typu tak/nie bez słowa pytającego.");
       } else {
-        addFeedback(feedback,"warning","Budowa pytania","Nie rozpoznano wyraźnego słowa pytającego ani dobrze widocznej konstrukcji tak/nie.");
+        addFeedback(feedback,"warning","Budowa pytania","Nie rozpoznano wyraźnej konstrukcji pytającej.");
       }
 
-      const accentProblem = findAccentProblems(raw);
       if (accentProblem) {
-        formScore += 2;
+        formScore += 1;
         addFeedback(feedback,"warning","Akcent w słowie pytającym",`Prawdopodobna korekta: ${accentProblem}.`);
       } else {
-        formScore += 6;
+        formScore += 5;
         addFeedback(feedback,"success","Akcenty pytające","Nie wykryto typowego błędu w zapisie qué, cómo, cuándo, dónde itd.");
       }
 
       if (tokenCount >= 6) {
-        formScore += 6;
+        formScore += 5;
         addFeedback(feedback,"success","Pełne zdanie",`Pytanie ma ${tokenCount} wyrazów i daje wystarczający kontekst.`);
       } else if (tokenCount >= 4) {
-        formScore += 4;
-        addFeedback(feedback,"warning","Pełne zdanie","Pytanie jest zrozumiałe, ale można je rozwinąć o konkretny kontekst.");
+        formScore += 3;
+        addFeedback(feedback,"warning","Pełne zdanie","Pytanie jest zrozumiałe, ale można je rozwinąć o szczegół z karty.");
       } else {
-        addFeedback(feedback,"error","Pełne zdanie","Pytanie jest zbyt krótkie, aby dobrze sprawdzić użycie czasu i tematu.");
+        addFeedback(feedback,"error","Pełne zdanie","Pytanie jest zbyt krótkie, aby wiarygodnie ocenić sens i użycie zaimków.");
       }
 
       if (verbs.malformedIrregular.length) {
@@ -1176,75 +2548,170 @@
       } else if (verbs.missingAccent.length && !verbs.future.length) {
         formScore += 2;
         addFeedback(feedback,"warning","Końcówka futuro",`Możliwy brak akcentu: ${verbs.missingAccent.join(", ")}. Futuro wymaga: -é, -ás, -á, -emos, -éis, -án.`);
-      } else {
+      } else if (verbs.future.length) {
         formScore += 8;
-        addFeedback(feedback,"success","Zapis formy czasownikowej","Nie wykryto typowego błędu w rdzeniu nieregularnym ani końcówce.");
+        addFeedback(feedback,"success","Zapis formy czasownikowej","Rozpoznane formy futuro mają poprawną końcówkę lub rdzeń nieregularny.");
+      } else {
+        addFeedback(feedback,"error","Zapis formy czasownikowej","Nie wykryto poprawnej formy futuro simple.");
       }
 
+      // Base reward for pronoun syntax, then subtract concrete problems.
+      if (pronounAnalysis.occurrences.length > 0 && pronounAnalysis.issues.length === 0) {
+        formScore += 7;
+        const summary = pronounAnalysis.occurrences.slice(0,4).map(item => `${item.token} — ${item.role}`).join("; ");
+        addFeedback(feedback,"success","Zaimki",`Rozpoznano poprawny szyk i prawdopodobne funkcje: ${summary}.`);
+      } else if (pronounAnalysis.occurrences.length === 0) {
+        formScore += 4;
+        addFeedback(feedback,"success","Zaimki","Pytanie nie wymaga zaimka dopełnienia ani formy zwrotnej.");
+      }
+
+      grammarIssues.forEach(issue => {
+        formScore = Math.max(0,formScore-(issue.formPenalty || 0));
+        addFeedback(feedback,issue.type,issue.title,issue.message);
+      });
+
       if (verbs.future.length) {
-        useScore += 30;
-        addFeedback(feedback,"success","Futuro simple",`Rozpoznano poprawną formę lub formy: ${verbs.future.join(", ")}.`);
+        useScore += 18;
+        const details = verbs.detailed.map(form => `${form.form} → ${formatPersons(form.persons)}`).join("; ");
+        addFeedback(feedback,"success","Futuro simple",`Rozpoznano: ${details}. Poprawny czas jest podstawą, ale nie zastępuje realizacji treści polecenia.`);
       } else if (verbs.malformedIrregular.length || verbs.missingAccent.length) {
-        useScore += 12;
+        useScore += 7;
         addFeedback(feedback,"warning","Futuro simple","Widać próbę użycia futuro simple, ale forma wymaga poprawy.");
       } else if (verbs.irA.length) {
-        useScore += 8;
+        useScore += 4;
         addFeedback(feedback,"error","Wymagany czas",`Rozpoznano «ir a + infinitivo» (${verbs.irA.join(", ")}), ale ta gra wymaga futuro simple.`);
       } else if (verbs.conditional.length) {
-        useScore += 5;
-        addFeedback(feedback,"error","Wymagany czas",`Rozpoznano formę conditional (${verbs.conditional.join(", ")}), a nie futuro simple.`);
+        useScore += 3;
+        addFeedback(feedback,"error","Wymagany czas",`Rozpoznano conditional (${verbs.conditional.join(", ")}), a nie futuro simple.`);
       } else {
-        addFeedback(feedback,"error","Futuro simple","Nie wykryto futuro simple. Użyj bezokolicznika z końcówką -é/-ás/-á/-emos/-éis/-án albo odpowiedniego rdzenia nieregularnego.");
+        addFeedback(feedback,"error","Futuro simple","Nie wykryto futuro simple. Użyj bezokolicznika z końcówką -é/-ás/-á/-emos/-éis/-án albo rdzenia nieregularnego.");
       }
 
       if (marker.exact) {
-        useScore += 12;
-        addFeedback(feedback,"success","Kontekst czasowy",`Użyto kontekstu z karty: «${currentMission.context}».`);
+        useScore += 7;
+        addFeedback(feedback,"success","Kontekst czasowy",`Użyto dokładnego kontekstu z karty: «${currentMission.context}».`);
       } else if (marker.generic) {
-        useScore += 9;
-        addFeedback(feedback,"success","Kontekst czasowy","Pytanie zawiera wyraźne odniesienie do przyszłości.");
+        useScore += 5;
+        addFeedback(feedback,"success","Kontekst czasowy","Pytanie zawiera jasne odniesienie do przyszłości, choć nie powtarza dokładnie markera z karty.");
       } else {
-        useScore += 3;
+        useScore += 1;
         addFeedback(feedback,"warning","Kontekst czasowy",`Dodaj określenie przyszłości, np. «${currentMission.context}».`);
       }
 
       if (topicMatches.length >= 2) {
-        useScore += 13;
+        useScore += 10;
         addFeedback(feedback,"success","Słownictwo tematyczne",`Wyraźnie realizujesz temat «${currentMission.topic}». Rozpoznano: ${topicMatches.slice(0,5).join(", ")}.`);
       } else if (topicMatches.length === 1) {
-        useScore += 9;
+        useScore += 7;
         addFeedback(feedback,"success","Słownictwo tematyczne",`Rozpoznano słowo związane z tematem: ${topicMatches[0]}.`);
       } else {
-        useScore += currentMission.custom ? 3 : 0;
-        addFeedback(feedback,currentMission.custom ? "warning" : "error","Słownictwo tematyczne",`Nie znaleziono jednoznacznego słownictwa związanego z tematem «${currentMission.topic}». ${currentMission.custom ? "Przy własnym, abstrakcyjnym temacie nauczyciel może zatwierdzić odpowiedź ręcznie." : "Dodaj konkretny rzeczownik lub czasownik z tego obszaru."}`);
+        useScore += currentMission.custom ? 1 : 0;
+        addFeedback(feedback,currentMission.custom ? "warning" : "error","Słownictwo tematyczne",`Nie znaleziono jednoznacznego słownictwa związanego z tematem «${currentMission.topic}». Sama poprawna końcówka futuro nie wystarcza do realizacji misji.`);
       }
 
-      const normalized = stripAccents(raw);
-      const intentMatch = currentMission.intent.some(stem => normalized.includes(stripAccents(stem)));
-      if (intentMatch) {
-        useScore += 5;
-        addFeedback(feedback,"success","Realizacja misji","Pytanie odpowiada funkcji wylosowanej karty.");
+      const matchedLabels = missionFit.matchedRequirements.map(item => item.label);
+      const partialLabels = missionFit.partialRequirements.map(item => `${item.label} (${Math.round(item.semanticScore * 100)}% podobieństwa znaczeniowego)`);
+      const missingLabels = missionFit.missingRequirements.map(item => `${item.label}${item.missing.length ? ` (${item.missing.join(", ")})` : ""}`);
+      const missionPoints = Math.round(25 * missionFit.coverage);
+      useScore += missionPoints;
+
+      if (missionFit.coverage >= 0.9) {
+        addFeedback(feedback,"success","Naturalna realizacja misji",`Pytanie przekazuje sens całego polecenia (${Math.round(missionFit.coverage * 100)}% zgodności znaczeniowej), nawet jeśli nie powtarza dokładnie czasowników z karty.`);
+      } else if (missionFit.coverage >= 0.72) {
+        addFeedback(feedback,"success","Realizacja misji",`Pytanie dobrze realizuje polecenie (${Math.round(missionFit.coverage * 100)}% zgodności). ${partialLabels.length ? `Częściowo rozpoznane: ${partialLabels.join("; ")}.` : ""}`);
+      } else if (missionFit.coverage >= 0.5) {
+        addFeedback(feedback,"warning","Realizacja misji",`Główny sens jest częściowo obecny (${Math.round(missionFit.coverage * 100)}%). ${missingLabels.length ? `Brakuje: ${missingLabels.join("; ")}.` : ""}`);
+      } else if (missionFit.coverage > 0.25) {
+        addFeedback(feedback,"warning","Realizacja misji",`Pytanie nawiązuje do karty, ale przekazuje tylko część wymaganej informacji (${Math.round(missionFit.coverage * 100)}%).`);
       } else {
-        useScore += 2;
-        addFeedback(feedback,"warning","Realizacja misji",`Sprawdź, czy pytasz dokładnie o: ${currentMission.type}.`);
+        addFeedback(feedback,"error","Realizacja misji",`Nie rozpoznano wystarczającego związku znaczeniowego z poleceniem. Trzeba zapytać o: ${missionFit.requirements.map(item => item.label).join("; ")}.`);
+      }
+
+      if (missionFit.naturalParaphrases.length) {
+        const descriptions = missionFit.naturalParaphrases.map(item => {
+          const pair = item.paraphrasePair;
+          return pair?.expected && pair?.actual
+            ? `${item.label}: «${pair.actual}» naturalnie zastępuje tutaj «${pair.expected}»`
+            : item.label;
+        });
+        addFeedback(feedback,"success","Naturalna parafraza",`Zaakceptowano równoważne sformułowanie: ${descriptions.join("; ")}.`);
+      }
+
+      if (missionFit.tenseMissingRequirements.length) {
+        const missingTenseLabels = missionFit.tenseMissingRequirements.map(item => `${item.label}: «${item.responseClause}»`);
+        const tensePenalty = Math.min(8, missionFit.tenseMissingRequirements.length * 4);
+        useScore = Math.max(0, useScore - tensePenalty);
+        addFeedback(
+          feedback,
+          "warning",
+          "Futuro w poszczególnych częściach pytania",
+          `Sens tej części został rozpoznany, ale nie użyto w niej futuro simple: ${missingTenseLabels.join("; ")}.`
+        );
+      } else if (missionFit.coverage >= 0.45) {
+        addFeedback(feedback,"success","Futuro w całym pytaniu","Wszystkie znaczeniowo rozpoznane części misji zawierają futuro simple.");
+      }
+
+      if (missionFit.specificity.vagueWords.length) {
+        addFeedback(feedback,"warning","Zbyt ogólne odniesienie",`Słowo ${missionFit.specificity.vagueWords.map(word => `«${word}»`).join(", ")} nie wyjaśnia, o jaki konkretnie element karty chodzi. Nazwij miejsce, osobę, rzecz lub czynność.`);
       }
 
       if (porPara.used) {
         if (porPara.errors.length) {
-          formScore = Math.max(0,formScore - Math.min(4,porPara.errors.length * 2));
+          formScore = Math.max(0,formScore-Math.min(4,porPara.errors.length*2));
+          useScore = Math.max(0,useScore-Math.min(3,porPara.errors.length*2));
           addFeedback(feedback,"error","Por czy para?",`Prawdopodobny błąd: ${porPara.errors.join("; ")}.`);
         } else if (porPara.warnings.length) {
           addFeedback(feedback,"warning","Por czy para?",`${porPara.correct.length ? `Poprawnie: ${porPara.correct.join("; ")}. ` : ""}${porPara.warnings.join("; ")}.`);
         } else {
-          formScore = Math.min(40,formScore + 2);
+          formScore = Math.min(40,formScore+1);
           addFeedback(feedback,"success","Por czy para?",`Użycie wygląda poprawnie: ${porPara.correct.join("; ")}.`);
         }
       }
 
+      const usePenaltyTotal = grammarIssues.reduce((sum,issue) => sum + (issue.usePenalty || 0),0);
+      useScore = Math.max(0,useScore-usePenaltyTotal);
+      if (usePenaltyTotal > 0) {
+        addFeedback(feedback,"warning","Wpływ błędów na sens",`Od części za kontekst odjęto ${usePenaltyTotal} pkt, ponieważ wykryte problemy wpływają na znaczenie pytania, a nie tylko na zapis.`);
+      }
+
       formScore = Math.max(0,Math.min(40,formScore));
       useScore = Math.max(0,Math.min(60,useScore));
+
+      const criticalCount = grammarIssues.filter(issue => issue.critical).length;
+      let scoreCap = 100;
+      if (criticalCount === 1) scoreCap = 68;
+      if (criticalCount === 2) scoreCap = 54;
+      if (criticalCount >= 3) scoreCap = 44;
+      if (!verbs.future.length) scoreCap = Math.min(scoreCap,60);
+      if (!missionFit.perspectiveOk && missionFit.partnerTarget) scoreCap = Math.min(scoreCap,62);
+      if (missionFit.coverage === 1 && missionFit.tenseCoverage < 1) {
+        if (missionFit.tenseCoverage >= 0.66) scoreCap = Math.min(scoreCap,78);
+        else if (missionFit.tenseCoverage >= 0.33) scoreCap = Math.min(scoreCap,70);
+        else scoreCap = Math.min(scoreCap,56);
+      }
+
+      // Zgodność z misją jest teraz płynna: naturalna parafraza nie uruchamia sztywnej kary.
+      if (missionFit.requiredCount >= 2) {
+        if (missionFit.coverage < 0.18) scoreCap = Math.min(scoreCap,28);
+        else if (missionFit.coverage < 0.35) scoreCap = Math.min(scoreCap,45);
+        else if (missionFit.coverage < 0.55) scoreCap = Math.min(scoreCap,65);
+        else if (missionFit.coverage < 0.72) scoreCap = Math.min(scoreCap,80);
+        else if (missionFit.coverage < 0.88) scoreCap = Math.min(scoreCap,92);
+      } else if (missionFit.coverage < 0.25) {
+        scoreCap = Math.min(scoreCap,42);
+      }
+      if (topicMatches.length === 0 && missionFit.coverage < 0.5) scoreCap = Math.min(scoreCap,34);
+      if (missionFit.specificity.lowSpecificity) scoreCap = Math.min(scoreCap,22);
+
+      const uncappedTotal = Math.min(100,formScore+useScore);
+      const total = Math.min(uncappedTotal,scoreCap);
+      if (total < uncappedTotal) {
+        addFeedback(feedback,"error","Ograniczenie wyniku","Wynik został ograniczony, ponieważ wykryto błąd zmieniający osobę, funkcję zaimka, relację czasową albo sens misji. Nie wystarczy dopasować końcówkę futuro i pojedyncze słowo kluczowe.");
+      }
+
       renderResults({
-        total: Math.min(100,formScore + useScore), formScore, useScore, feedback, verbs, topicMatches, marker, porPara,
+        total, formScore, useScore, feedback, verbs, topicMatches, marker, porPara,
+        pronounAnalysis, missionFit, grammarIssues, criticalCount, scoreCap,
         needsHelp: verbs.future.length === 0
       });
     }
@@ -1318,36 +2785,68 @@
       setProgress(8);
 
       const detected = [];
-      if (result.verbs.future.length) detected.push(`<strong>futuro simple:</strong> ${escapeHtml(result.verbs.future.join(", "))}`);
+      if (result.verbs.detailed.length) {
+        detected.push(`<strong>futuro simple i osoba:</strong> ${escapeHtml(result.verbs.detailed.map(form => `${form.form} → ${formatPersons(form.persons)}`).join("; "))}`);
+      }
+      if (result.pronounAnalysis.occurrences.length) {
+        detected.push(`<strong>zaimki:</strong> ${escapeHtml(result.pronounAnalysis.occurrences.slice(0,6).map(item => `${item.token} → ${item.role}`).join("; "))}`);
+      }
+      if (result.verbs.attachedInfinitives.length) {
+        detected.push(`<strong>zaimki przy bezokoliczniku:</strong> ${escapeHtml(result.verbs.attachedInfinitives.map(item => item.form).join(", "))}`);
+      }
       if (result.verbs.irA.length) detected.push(`<strong>ir a + infinitivo:</strong> ${escapeHtml(result.verbs.irA.join(", "))}`);
       if (result.verbs.conditional.length) detected.push(`<strong>conditional:</strong> ${escapeHtml(result.verbs.conditional.join(", "))}`);
       if (result.verbs.malformedIrregular.length) detected.push(`<strong>forma do poprawy:</strong> ${escapeHtml(result.verbs.malformedIrregular.join(", "))}`);
       if (result.verbs.missingAccent.length && !result.verbs.future.length) detected.push(`<strong>możliwy brak akcentu:</strong> ${escapeHtml(result.verbs.missingAccent.join(", "))}`);
       detectedText.innerHTML = detected.length ? detected.join("<br>") : "Nie wykryto jednoznacznej konstrukcji przyszłej.";
 
-      if (result.total >= 88) {
+      if (result.incompleteFragment) {
+        scoreTitle.textContent = "To jeszcze nie jest pełne pytanie";
+        scoreSubtitle.textContent = "Poprawne «¿Por qué?» może działać w spontanicznej rozmowie, ale w tej grze nie zastępuje pytania w futuro simple zgodnego z kartą.";
+      } else if (result.criticalCount > 0) {
+        scoreTitle.textContent = "Futuro rozpoznane, ale sens wymaga poprawy";
+        scoreSubtitle.textContent = "Gra wykryła konflikt osoby, zaimka, szyku lub kontekstu. Dlatego właściwa końcówka nie wystarczyła do wysokiej oceny.";
+      } else if (result.missionFit.coverage < 0.5) {
+        scoreTitle.textContent = "Poprawny czas, ale nie ta treść";
+        scoreSubtitle.textContent = `Pytanie realizuje tylko ${result.missionFit.matchedCount} z ${result.missionFit.requiredCount} obowiązkowych elementów karty.`;
+      } else if (result.total >= 88) {
         scoreTitle.textContent = "¡Excelente! Przyszłość opanowana";
-        scoreSubtitle.textContent = "Pytanie jest naturalne, poprawne i dobrze realizuje temat rundy.";
+        scoreSubtitle.textContent = "Pytanie jest naturalne, spójne i naprawdę realizuje sytuację z karty.";
       } else if (result.total >= 72) {
         scoreTitle.textContent = "¡Muy bien! Dobra odpowiedź";
-        scoreSubtitle.textContent = "Futuro simple działa dobrze; można dopracować pojedynczy element.";
+        scoreSubtitle.textContent = "Futuro simple, osoba i sens pytania działają dobrze; można dopracować pojedynczy element.";
       } else if (result.total >= 52) {
         scoreTitle.textContent = "Dobry kierunek";
-        scoreSubtitle.textContent = "Sens jest czytelny, ale forma futuro albo kontekst wymagają korekty.";
+        scoreSubtitle.textContent = "Sens jest częściowo czytelny, ale forma futuro, zaimki albo realizacja misji wymagają korekty.";
       } else {
         scoreTitle.textContent = "Spróbuj ponownie";
-        scoreSubtitle.textContent = "Otwórz podpowiedź i przebuduj pytanie, zachowując temat rundy.";
+        scoreSubtitle.textContent = "Przebuduj pytanie, zwracając uwagę nie tylko na końcówkę futuro, lecz także na osobę, zaimki i sytuację.";
       }
+
+      const diagnostics = result.grammarIssues.length
+        ? result.grammarIssues.map(issue => `${issue.title}: ${issue.message}`).join(" | ")
+        : "nie wykryto istotnego konfliktu osoby, zaimków ani kontekstu";
 
       teacherInfo.innerHTML = `
         Wymagany czas: <strong>futuro simple de indicativo</strong>.<br>
         Funkcja komunikacyjna: <strong>${escapeHtml(currentMission.type)}</strong>.<br>
-        Kontekst: <strong>${escapeHtml(currentMission.context)}</strong>.<br>
+        Kontekst czasowy: <strong>${escapeHtml(currentMission.context)}</strong>.<br>
+        Sytuacja: <strong>${escapeHtml(currentMission.situation)}</strong>.<br>
+        Polecenie: <strong>${escapeHtml(currentMission.prompt)}</strong>.<br>
         Przykładowe pytanie: <strong>${escapeHtml(currentMission.example)}</strong><br>
         Rozpoznane słownictwo: <strong>${escapeHtml(result.topicMatches.join(", ") || "brak jednoznacznego dopasowania")}</strong>.<br>
-        Temat własny: <strong>${currentMission.custom ? "tak — słownik utworzono z nazwy i słów kluczowych" : "nie"}</strong>.<br>
+        Rozpoznane osoby: <strong>${escapeHtml(result.verbs.detailed.map(form => `${form.form}: ${formatPersons(form.persons)}`).join("; ") || "brak")}</strong>.<br>
+        Zaimki: <strong>${escapeHtml(result.pronounAnalysis.occurrences.map(item => `${item.token}: ${item.role}`).join("; ") || "nie występują")}</strong>.<br>
+        Zgodność znaczeniowa z misją: <strong>${Math.round(result.missionFit.coverage * 100)}%</strong> (${result.missionFit.matchedCount}/${result.missionFit.requiredCount} elementów rozpoznanych w pełni).<br>
+        Futuro w elementach misji: <strong>${result.missionFit.tenseMatchedRequirements.length}/${result.missionFit.requiredCount} (${Math.round(result.missionFit.tenseCoverage * 100)}%)</strong>.<br>
+        Spełnione elementy: <strong>${escapeHtml(result.missionFit.matchedRequirements.map(item => item.label).join("; ") || "brak")}</strong>.<br>
+        Częściowe parafrazy: <strong>${escapeHtml(result.missionFit.partialRequirements.map(item => `${item.label} (${Math.round(item.semanticScore * 100)}%)`).join("; ") || "brak")}</strong>.<br>
+        Naturalne parafrazy zaakceptowane: <strong>${escapeHtml(result.missionFit.naturalParaphrases.map(item => item.label).join("; ") || "brak")}</strong>.<br>
+        Brakujące elementy: <strong>${escapeHtml(result.missionFit.missingRequirements.map(item => item.label).join("; ") || "brak")}</strong>.<br>
+        Diagnostyka spójności: <strong>${escapeHtml(diagnostics)}</strong>.<br>
+        Maksymalny wynik po błędach krytycznych: <strong>${result.scoreCap}%</strong>.<br>
         Por/para: <strong>${result.porPara.used ? (result.porPara.errors.length ? "prawdopodobny błąd" : result.porPara.warnings.length ? "częściowo niejednoznaczne" : "wygląda poprawnie") : "nie występuje"}</strong>.<br><br>
-        Przy temacie dodanym przez użytkownika dokładność zależy od jakości podanych słów kluczowych. Ostateczna ocena znaczenia należy do nauczyciela.
+        Analiza pozostaje heurystyczna, ale wynik nie jest już oparty wyłącznie na dopasowaniu słów kluczowych.
       `;
 
       await wait(340);
