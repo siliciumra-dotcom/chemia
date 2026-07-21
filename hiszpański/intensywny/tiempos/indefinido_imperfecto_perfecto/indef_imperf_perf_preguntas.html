@@ -735,7 +735,7 @@
       </aside>
     </section>
 
-    <p class="footer-note">Analiza działa heurystycznie: dobrze rozpoznaje typowe pytania B1, ale nie zastępuje pełnej korekty nauczyciela.</p>
+    <p class="footer-note">Analiza sprawdza czas, słownictwo, osobę gramatyczną i typowe konflikty sensu. Nadal jest heurystyczna i nie zastępuje pełnej korekty nauczyciela.</p>
   </main>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -1144,13 +1144,111 @@
     const falseImperfectWords = new Set([
       "día", "dia", "policía", "policia", "geografía", "geografia", "biología", "biologia",
       "tecnología", "tecnologia", "energía", "energia", "fotografía", "fotografia", "familia",
-      "historia", "comida", "vida", "noticia", "experiencia", "vacaciones"
+      "historia", "comida", "vida", "noticia", "experiencia", "vacaciones", "primaria",
+      "secundaria", "materia", "memoria", "farmacia", "iglesia", "ciencia", "distancia",
+      "importancia", "infancia", "estancia", "diferencia", "compañía", "compania", "alegría",
+      "alegria", "cafetería", "cafeteria", "panadería", "panaderia"
     ]);
 
     const falseIndefiniteWords = new Set([
       "qué", "que", "sí", "si", "aquí", "aqui", "allí", "alli", "país", "pais", "día", "dia",
       "café", "cafe", "menú", "menu", "sofá", "sofa", "mamá", "mama", "papá", "papa"
     ]);
+
+
+    const personLabels = {
+      "1s": "1. os. l.poj. (yo)",
+      "2s": "2. os. l.poj. (tú)",
+      "3s": "3. os. l.poj. (él/ella/usted)",
+      "1p": "1. os. l.mn. (nosotros/as)",
+      "2p": "2. os. l.mn. (vosotros/as)",
+      "3p": "3. os. l.mn. (ellos/ellas/ustedes)"
+    };
+
+    const subjectPronounPersons = {
+      "yo": "1s",
+      "tú": "2s",
+      "él": "3s",
+      "ella": "3s",
+      "usted": "3s",
+      "nosotros": "1p",
+      "nosotras": "1p",
+      "vosotros": "2p",
+      "vosotras": "2p",
+      "ellos": "3p",
+      "ellas": "3p",
+      "ustedes": "3p"
+    };
+
+    const prepositionsBeforePronoun = new Set(["a", "de", "para", "por", "con", "sin", "sobre", "entre"]);
+
+    const commonSpellingCorrections = {
+      "nostros": "nosotros",
+      "nosostros": "nosotros",
+      "nosotors": "nosotros",
+      "vosostros": "vosotros",
+      "vosotors": "vosotros",
+      "quando": "cuando",
+      "qeu": "que",
+      "qe": "que",
+      "porqe": "porque",
+      "porq": "porque"
+    };
+
+    const perfectAuxPersons = {
+      "he": ["1s"],
+      "has": ["2s"],
+      "ha": ["3s"],
+      "hemos": ["1p"],
+      "habéis": ["2p"],
+      "habeis": ["2p"],
+      "han": ["3p"]
+    };
+
+    const irregularIndefinitePersons = new Map();
+    const irregularImperfectPersons = new Map();
+    const personOrder = ["1s", "2s", "3s", "1p", "2p", "3p"];
+
+    function registerVerbPersons(map, forms) {
+      forms.forEach((form, index) => map.set(form, [personOrder[index]]));
+    }
+
+    [
+      ["fui", "fuiste", "fue", "fuimos", "fuisteis", "fueron"],
+      ["tuve", "tuviste", "tuvo", "tuvimos", "tuvisteis", "tuvieron"],
+      ["estuve", "estuviste", "estuvo", "estuvimos", "estuvisteis", "estuvieron"],
+      ["hice", "hiciste", "hizo", "hicimos", "hicisteis", "hicieron"],
+      ["pude", "pudiste", "pudo", "pudimos", "pudisteis", "pudieron"],
+      ["puse", "pusiste", "puso", "pusimos", "pusisteis", "pusieron"],
+      ["supe", "supiste", "supo", "supimos", "supisteis", "supieron"],
+      ["quise", "quisiste", "quiso", "quisimos", "quisisteis", "quisieron"],
+      ["vine", "viniste", "vino", "vinimos", "vinisteis", "vinieron"],
+      ["dije", "dijiste", "dijo", "dijimos", "dijisteis", "dijeron"],
+      ["traje", "trajiste", "trajo", "trajimos", "trajisteis", "trajeron"],
+      ["anduve", "anduviste", "anduvo", "anduvimos", "anduvisteis", "anduvieron"],
+      ["di", "diste", "dio", "dimos", "disteis", "dieron"],
+      ["vi", "viste", "vio", "vimos", "visteis", "vieron"],
+      ["leí", "leíste", "leyó", "leímos", "leísteis", "leyeron"],
+      ["lei", "leiste", "leyo", "leimos", "leisteis", "leyeron"],
+      ["oí", "oíste", "oyó", "oímos", "oísteis", "oyeron"],
+      ["oi", "oiste", "oyo", "oimos", "oisteis", "oyeron"]
+    ].forEach(forms => registerVerbPersons(irregularIndefinitePersons, forms));
+
+    [
+      ["era", "eras", "era", "éramos", "erais", "eran"],
+      ["era", "eras", "era", "eramos", "erais", "eran"],
+      ["iba", "ibas", "iba", "íbamos", "ibais", "iban"],
+      ["iba", "ibas", "iba", "ibamos", "ibais", "iban"],
+      ["veía", "veías", "veía", "veíamos", "veíais", "veían"],
+      ["veia", "veias", "veia", "veiamos", "veiais", "veian"]
+    ].forEach(forms => {
+      forms.forEach((form, index) => {
+        const existing = irregularImperfectPersons.get(form) || [];
+        const person = personOrder[index];
+        if (!existing.includes(person)) existing.push(person);
+        irregularImperfectPersons.set(form, existing);
+      });
+    });
 
     let currentMission = null;
     let lastMissionIndex = -1;
@@ -1352,7 +1450,7 @@
 
     function detectIndefinido(tokens) {
       const detections = [];
-      const strongPattern = /(?:aste|iste|ó|io|ió|aron|ieron|asteis|isteis)$/;
+      const strongPattern = /(?:aste|iste|ó|ió|aron|ieron|asteis|isteis)$/;
       const firstPersonPattern = /(?:é|í)$/;
 
       tokens.forEach(token => {
@@ -1381,6 +1479,70 @@
       return [...new Set(infinitives)];
     }
 
+    function inferImperfectPersons(token) {
+      if (irregularImperfectPersons.has(token)) return irregularImperfectPersons.get(token);
+      const plain = removeAccents(token);
+      if (/(?:abamos|iamos)$/.test(plain)) return ["1p"];
+      if (/(?:abais|iais)$/.test(plain)) return ["2p"];
+      if (/(?:abas|ias)$/.test(plain)) return ["2s"];
+      if (/(?:aban|ian)$/.test(plain)) return ["3p"];
+      if (/(?:aba|ia)$/.test(plain)) return ["1s", "3s"];
+      return [];
+    }
+
+    function inferIndefinitePersons(token) {
+      if (irregularIndefinitePersons.has(token)) return irregularIndefinitePersons.get(token);
+      const plain = removeAccents(token);
+      if (/(?:asteis|isteis)$/.test(plain)) return ["2p"];
+      if (/(?:aste|iste)$/.test(plain)) return ["2s"];
+      if (/(?:aron|ieron)$/.test(plain)) return ["3p"];
+      if (/(?:ó|ió)$/.test(token)) return ["3s"];
+      if (/[éí]$/.test(token)) return ["1s"];
+      return [];
+    }
+
+    function detectDetailedVerbForms(text) {
+      const tokens = tokenize(text);
+      const forms = [];
+      const perfectAuxiliaries = new Set(Object.keys(perfectAuxPersons));
+
+      for (let index = 0; index < tokens.length; index += 1) {
+        const token = tokens[index];
+
+        if (perfectAuxiliaries.has(token)) {
+          const nextTokens = tokens.slice(index + 1, index + 5);
+          const participle = nextTokens.find(item => /(?:ado|ido)$/.test(item) || irregularParticiples.includes(item));
+          if (participle) {
+            forms.push({
+              form: `${token} ${participle}`,
+              token,
+              tense: "perfecto",
+              persons: perfectAuxPersons[token],
+              index
+            });
+          }
+        }
+
+        if (!falseImperfectWords.has(token)) {
+          const persons = inferImperfectPersons(token);
+          if (persons.length > 0) {
+            forms.push({ form: token, token, tense: "imperfecto", persons, index });
+          }
+        }
+
+        if (!falseIndefiniteWords.has(token)) {
+          const persons = inferIndefinitePersons(token);
+          if (persons.length > 0) {
+            forms.push({ form: token, token, tense: "indefinido", persons, index });
+          }
+        }
+      }
+
+      return forms.filter((form, index, array) =>
+        array.findIndex(item => item.form === form.form && item.tense === form.tense && item.index === form.index) === index
+      );
+    }
+
     function detectTenses(text) {
       const tokens = tokenize(text);
       return {
@@ -1388,7 +1550,8 @@
         perfecto: detectPerfect(tokens),
         indefinido: detectIndefinido(tokens),
         imperfecto: detectImperfect(tokens),
-        infinitives: findPotentialInfinitives(tokens)
+        infinitives: findPotentialInfinitives(tokens),
+        detailed: detectDetailedVerbForms(text)
       };
     }
 
@@ -1467,6 +1630,191 @@
       return found ? found[1] : null;
     }
 
+
+    function formatPersons(persons) {
+      return persons.map(person => personLabels[person]).join(" lub ");
+    }
+
+    function findSpellingIssues(text) {
+      const tokens = tokenize(text);
+      const issues = [];
+
+      tokens.forEach((token, index) => {
+        if (commonSpellingCorrections[token]) {
+          issues.push({
+            type: "danger",
+            title: "Pisownia",
+            message: `Forma „${token}” wygląda na literówkę. Prawdopodobnie chodzi o „${commonSpellingCorrections[token]}”.`,
+            formPenalty: 4,
+            critical: token === "nostros" || token === "nosostros" || token === "nosotors"
+          });
+        }
+
+        if (token === "anos") {
+          const nearby = tokens.slice(Math.max(0, index - 4), index + 1);
+          const ageContext = nearby.some(item => /^\d{1,2}$/.test(item)) ||
+            nearby.some(item => ["tener", "tenia", "tenias", "teniamos", "tuve", "tuviste", "tuvo", "tuvimos", "edad"].includes(removeAccents(item)));
+          if (ageContext) {
+            issues.push({
+              type: "danger",
+              title: "Litera ñ",
+              message: "W wyrażeniu wieku trzeba napisać „años”. Forma „anos” ma inne znaczenie i nie może zastępować „años”.",
+              formPenalty: 5,
+              critical: true
+            });
+          }
+        }
+      });
+
+      return issues;
+    }
+
+    function findAgreementIssues(analysis) {
+      const correctedTokens = analysis.tokens.map(token => commonSpellingCorrections[token] || token);
+      const subjects = [];
+
+      correctedTokens.forEach((token, index) => {
+        if (!subjectPronounPersons[token]) return;
+        if (index > 0 && prepositionsBeforePronoun.has(correctedTokens[index - 1])) return;
+        subjects.push({ token, person: subjectPronounPersons[token], index });
+      });
+
+      const issues = [];
+      subjects.forEach(subject => {
+        const candidates = analysis.detailed
+          .filter(form => Math.abs(form.index - subject.index) <= 4)
+          .sort((a, b) => Math.abs(a.index - subject.index) - Math.abs(b.index - subject.index));
+        const nearest = candidates[0];
+        if (!nearest || nearest.persons.length === 0) return;
+
+        if (!nearest.persons.includes(subject.person)) {
+          issues.push({
+            type: "danger",
+            title: "Zgodność osoby",
+            message: `Zaimek „${subject.token}” oznacza ${personLabels[subject.person]}, ale forma „${nearest.form}” wskazuje na ${formatPersons(nearest.persons)}. Te elementy nie mogą odnosić się do tego samego podmiotu.`,
+            formPenalty: 8,
+            usePenalty: 6,
+            critical: true,
+            subject,
+            verb: nearest
+          });
+        }
+      });
+
+      return issues.filter((issue, index, array) =>
+        array.findIndex(item => item.subject.index === issue.subject.index && item.verb.index === issue.verb.index) === index
+      );
+    }
+
+    function findTemporalCoherenceIssues(text, mission, analysis) {
+      const plain = removeAccents(normalizeText(text));
+      const issues = [];
+      const ageForms = {
+        "tuve": "tenía",
+        "tuviste": "tenías",
+        "tuvo": "tenía",
+        "tuvimos": "teníamos",
+        "tuvisteis": "teníais",
+        "tuvieron": "tenían"
+      };
+      const ageWords = "(?:\\d{1,2}|diez|once|doce|trece|catorce|quince|dieciseis|diecisiete|dieciocho|diecinueve|veinte)";
+      const ageRegex = new RegExp(`\\bcuando\\s+(?:(?:yo|tu|el|ella|usted|nosotros|nosotras|vosotros|vosotras|ellos|ellas|ustedes)\\s+)?(tuve|tuviste|tuvo|tuvimos|tuvisteis|tuvieron)\\s+${ageWords}\\s+anos\\b`, "i");
+      const ageMatch = plain.match(ageRegex);
+
+      if (ageMatch) {
+        const wrong = ageMatch[1].toLowerCase();
+        issues.push({
+          type: "danger",
+          title: "Wiek jako tło",
+          message: `Przy podawaniu wieku w tle przeszłości używamy imperfecto: „cuando ${ageForms[wrong]} … años”, a nie „cuando ${wrong} … años”.`,
+          usePenalty: 12,
+          critical: true
+        });
+      }
+
+      const closedMarkers = ["ayer", "anoche", "la semana pasada", "el ano pasado", "en 2024", "en 2025", "el fin de semana pasado"];
+      const openMarkers = ["hoy", "esta semana", "este mes", "ultimamente", "recientemente", "hasta ahora", "desde que"];
+      const habitualMarkers = ["normalmente", "siempre", "cada dia", "todos los dias", "todos los veranos", "de pequeno", "en aquella epoca"];
+
+      const hasClosed = closedMarkers.some(marker => plain.includes(marker));
+      const hasOpen = openMarkers.some(marker => plain.includes(marker));
+      const hasHabitual = habitualMarkers.some(marker => plain.includes(marker));
+
+      if (mission.expected === "perfecto" && hasClosed && analysis.perfecto.length > 0) {
+        issues.push({
+          type: "danger",
+          title: "Okres zakończony",
+          message: "W pytaniu połączono pretérito perfecto z wyraźnie zakończonym okresem, np. ayer lub el año pasado. W takim kontekście zwykle potrzebny jest indefinido.",
+          usePenalty: 10,
+          critical: true
+        });
+      }
+
+      if (mission.expected === "indefinido" && hasOpen && analysis.indefinido.length > 0) {
+        issues.push({
+          type: "warning",
+          title: "Okres trwający",
+          message: "Określenie czasu łączy przeszłość z teraźniejszością. Sprawdź, czy zamiast indefinido nie powinno pojawić się pretérito perfecto.",
+          usePenalty: 5,
+          critical: false
+        });
+      }
+
+      if (mission.expected === "imperfecto" && hasHabitual && analysis.indefinido.length > 0 && !ageMatch) {
+        issues.push({
+          type: "warning",
+          title: "Zwyczaj a pojedyncze wydarzenie",
+          message: `W zdaniu pojawia się marker zwyczaju oraz forma indefinido (${analysis.indefinido.join(", ")}). To może być poprawne tylko wtedy, gdy indefinido opisuje osobne, jednorazowe wydarzenie, a nie sam zwyczaj.`,
+          usePenalty: 5,
+          critical: false
+        });
+      }
+
+      if (/\bcuando\b.+\banos\b.+\bnormalmente\s*$/.test(plain.replace(/[?¿]/g, "").trim())) {
+        issues.push({
+          type: "warning",
+          title: "Pozycja „normalmente”",
+          message: "Umieszczone na końcu „normalmente” może wyglądać tak, jakby opisywało sam wiek. Naturalniej: „¿Qué hacías normalmente cuando tenías 10 años?”.",
+          usePenalty: 3,
+          critical: false
+        });
+      }
+
+      return issues;
+    }
+
+    function findAddresseeIssues(analysis, mission) {
+      const correctedTokens = analysis.tokens.map(token => commonSpellingCorrections[token] || token);
+      const hasWePronoun = correctedTokens.some(token => token === "nosotros" || token === "nosotras");
+      if (!hasWePronoun || !mission.mission.toLowerCase().includes("tu compañero")) return [];
+
+      return [{
+        type: "warning",
+        title: "Osoba, o którą pytasz",
+        message: "Karta prosi o doświadczenie rozmówcy, natomiast „nosotros/nosotras” zmienia sens na wspólne „my”. Może to być celowe, ale sprawdź, czy rzeczywiście odpowiada misji.",
+        usePenalty: 4,
+        critical: false
+      }];
+    }
+
+    function buildCorrectionHint(agreementIssues, temporalIssues, spellingIssues) {
+      const hints = [];
+      if (agreementIssues.length > 0) {
+        const issue = agreementIssues[0];
+        hints.push(`Ujednolić osobę: „${issue.subject.token}” wymaga formy w ${personLabels[issue.subject.person]}.`);
+        if (issue.subject.person === "1p" && issue.verb.persons.includes("2s")) {
+          hints.push("Jeśli pytasz rozmówcę, usuń „nosotros” i zachowaj 2. osobę: „hacías / tenías”. Jeśli naprawdę chodzi o wspólne „my”, użyj 1. osoby liczby mnogiej: „hacíamos / teníamos”.");
+        }
+      }
+      if (temporalIssues.some(issue => issue.title === "Wiek jako tło")) {
+        hints.push("Przy wieku zastosuj imperfecto: cuando tenía/tenías/teníamos … años.");
+      }
+      if (spellingIssues.some(issue => issue.message.includes("años"))) {
+        hints.push("Popraw „anos” na „años”.");
+      }
+      return hints;
+    }
+
     function addFeedback(items, type, title, message) {
       items.push({ type, title, message });
     }
@@ -1486,6 +1834,12 @@
       let formScore = 0;
       let useScore = 0;
 
+      const spellingIssues = findSpellingIssues(raw);
+      const agreementIssues = findAgreementIssues(analysis);
+      const temporalIssues = findTemporalCoherenceIssues(raw, currentMission, analysis);
+      const addresseeIssues = findAddresseeIssues(analysis, currentMission);
+      const grammarIssues = [...spellingIssues, ...agreementIssues, ...temporalIssues, ...addresseeIssues];
+
       const hasOpeningMark = normalized.startsWith("¿");
       const hasClosingMark = normalized.endsWith("?");
       const hasAnyQuestionMark = normalized.includes("?");
@@ -1504,7 +1858,7 @@
 
       if (wordCount >= 5) {
         formScore += 8;
-        addFeedback(feedback, "success", "Pełne zdanie", `Pytanie ma ${wordCount} słów i wygląda na rozwiniętą wypowiedź.`);
+        addFeedback(feedback, "success", "Pełne zdanie", `Pytanie ma ${wordCount} słów i jest wystarczająco rozwinięte do analizy.`);
       } else if (wordCount >= 3) {
         formScore += 5;
         addFeedback(feedback, "warning", "Długość pytania", "Pytanie jest bardzo krótkie. Może być poprawne, ale warto dodać kontekst lub szczegół.");
@@ -1548,6 +1902,17 @@
         formScore += 2;
       }
 
+      spellingIssues.forEach(issue => {
+        formScore = Math.max(0, formScore - issue.formPenalty);
+        addFeedback(feedback, issue.type, issue.title, issue.message);
+      });
+
+      agreementIssues.forEach(issue => {
+        formScore = Math.max(0, formScore - issue.formPenalty);
+        useScore = Math.max(0, useScore - issue.usePenalty);
+        addFeedback(feedback, issue.type, issue.title, issue.message);
+      });
+
       formScore = Math.min(40, formScore);
 
       const expectedForms = analysis[currentMission.expected];
@@ -1575,20 +1940,30 @@
         );
       }
 
-      if (otherTenses.length === 0) {
+      if (otherTenses.length === 0 && agreementIssues.length === 0 && temporalIssues.length === 0) {
         useScore += 8;
-        addFeedback(feedback, "success", "Spójność gramatyczna", "Nie wykryto konkurencyjnego czasu przeszłego, który zmieniałby główny sens pytania.");
-      } else if (expectedForms.length > 0) {
-        useScore += 4;
+        addFeedback(feedback, "success", "Spójność gramatyczna", "Nie wykryto konkurencyjnego czasu ani konfliktu osoby gramatycznej.");
+      } else if (otherTenses.length > 0 && expectedForms.length > 0) {
+        useScore += 3;
         addFeedback(
           feedback,
           "warning",
           "Więcej niż jeden czas",
-          `W pytaniu pojawia się też ${otherTenses.map(key => tenseLabels[key]).join(" i ")}. To może być poprawne, ale sprawdź, czy czas głównego pytania nadal odpowiada misji.`
+          `W pytaniu pojawia się też ${otherTenses.map(key => tenseLabels[key]).join(" i ")}. Samo użycie dwóch czasów może być poprawne, ale ich role muszą pasować do sensu całego zdania.`
         );
-      } else {
+      } else if (expectedForms.length === 0) {
         addFeedback(feedback, "danger", "Spójność gramatyczna", "Wykryty czas nie odpowiada czasowi oczekiwanemu w tej misji.");
       }
+
+      temporalIssues.forEach(issue => {
+        useScore = Math.max(0, useScore - issue.usePenalty);
+        addFeedback(feedback, issue.type, issue.title, issue.message);
+      });
+
+      addresseeIssues.forEach(issue => {
+        useScore = Math.max(0, useScore - issue.usePenalty);
+        addFeedback(feedback, issue.type, issue.title, issue.message);
+      });
 
       const topicVocabulary = findTopicVocabulary(raw, currentMission);
       if (topicVocabulary.rich) {
@@ -1597,7 +1972,7 @@
           feedback,
           "success",
           "Zgodność z tematem",
-          `Pytanie wyraźnie realizuje temat „${currentMission.topic}”. Rozpoznane słownictwo: ${topicVocabulary.matches.slice(0, 4).join(", ")}.`
+          `Pytanie zawiera wyraźne słownictwo z tematu „${currentMission.topic}”: ${topicVocabulary.matches.slice(0, 4).join(", ")}. Punkty za temat nie anulują jednak błędów w osobie lub sensie zdania.`
         );
       } else if (topicVocabulary.strong) {
         useScore += 8;
@@ -1616,7 +1991,7 @@
           `Rozpoznano jedynie ogólne słowo („${topicVocabulary.weakMatches.join(", ")}”). Dodaj bardziej charakterystyczne słownictwo dla tematu „${currentMission.topic}”.`
         );
       } else if (wordCount >= 7) {
-        useScore += 4;
+        useScore += 3;
         addFeedback(feedback, "warning", "Zgodność z tematem", "Pytanie jest rozwinięte, ale używa mniej oczywistego słownictwa niż przewiduje karta. Sens warto potwierdzić ręcznie.");
       } else {
         addFeedback(feedback, "warning", "Zgodność z tematem", `Nie znaleziono jednoznacznego słownictwa związanego z tematem „${currentMission.topic}”. Dodaj konkretny rzeczownik lub czasownik z tego obszaru.`);
@@ -1625,7 +2000,7 @@
       const markerMatch = containsAny(raw, currentMission.timeMarkers);
       if (markerMatch) {
         useScore += 8;
-        addFeedback(feedback, "success", "Kontekst czasowy", "Pytanie wyraźnie zawiera określenie czasu pasujące do karty.");
+        addFeedback(feedback, "success", "Kontekst czasowy", "Pytanie zawiera określenie czasu pasujące do karty.");
       } else if (expectedForms.length > 0) {
         useScore += 5;
         addFeedback(feedback, "warning", "Kontekst czasowy", "Czas gramatyczny pasuje, ale warto dodać określenie czasu, aby pytanie było bardziej jednoznaczne.");
@@ -1645,8 +2020,32 @@
         addFeedback(feedback, "danger", "Połączenie form", "Po haber powinien wystąpić participio, np. has hecho, a nie forma indefinido.");
       }
 
+      const correctionHints = buildCorrectionHint(agreementIssues, temporalIssues, spellingIssues);
+      if (correctionHints.length > 0) {
+        addFeedback(feedback, "warning", "Jak poprawić zdanie", correctionHints.join(" "));
+      }
+
       useScore = Math.max(0, Math.min(60, useScore));
-      const totalScore = Math.min(100, formScore + useScore);
+      formScore = Math.max(0, Math.min(40, formScore));
+
+      const criticalCount = grammarIssues.filter(issue => issue.critical).length;
+      let scoreCap = 100;
+      if (criticalCount === 1) scoreCap = 68;
+      if (criticalCount >= 2) scoreCap = 52;
+      if (criticalCount >= 2 && spellingIssues.length >= 2) scoreCap = 48;
+      if (expectedForms.length === 0) scoreCap = Math.min(scoreCap, 62);
+
+      const uncappedTotal = Math.min(100, formScore + useScore);
+      const totalScore = Math.min(uncappedTotal, scoreCap);
+
+      if (totalScore < uncappedTotal) {
+        addFeedback(
+          feedback,
+          "danger",
+          "Ograniczenie wyniku",
+          "Mimo obecności właściwego czasu i słów kluczowych wynik został ograniczony, ponieważ wykryto błąd, który zmienia osobę lub sens zdania. Nie wystarczy „wpisać się w klucz”."
+        );
+      }
 
       renderResults({
         totalScore,
@@ -1655,7 +2054,10 @@
         analysis,
         feedback,
         raw,
-        topicVocabulary
+        topicVocabulary,
+        grammarIssues,
+        criticalCount,
+        scoreCap
       });
     }
 
@@ -1722,27 +2124,43 @@
       if (result.analysis.infinitives.length > 0) {
         groups.push(`<strong>bezokoliczniki:</strong> ${escapeHtml(result.analysis.infinitives.join(", "))}`);
       }
+      const personDetections = result.analysis.detailed
+        .filter(item => item.persons.length > 0)
+        .slice(0, 6)
+        .map(item => `${item.form} → ${formatPersons(item.persons)}`);
+      if (personDetections.length > 0) {
+        groups.push(`<strong>osoba gramatyczna:</strong> ${escapeHtml(personDetections.join("; "))}`);
+      }
       detectedText.innerHTML = groups.length ? groups.join("<br>") : "Nie wykryto jednoznacznej formy badanego czasu.";
 
-      if (result.totalScore >= 85) {
+      if (result.criticalCount > 0) {
+        scoreTitle.textContent = "Czas rozpoznany, ale sens wymaga poprawy";
+        scoreSubtitle.textContent = "Gra wykryła konflikt osoby, pisowni lub relacji czasowej. Dlatego same słowa kluczowe nie wystarczyły do wysokiej oceny.";
+      } else if (result.totalScore >= 85) {
         scoreTitle.textContent = "¡Excelente! Bardzo dobre pytanie";
-        scoreSubtitle.textContent = "Forma, słownictwo i dobór czasu bardzo dobrze pasują do misji.";
+        scoreSubtitle.textContent = "Forma, słownictwo, osoba gramatyczna i dobór czasu dobrze pasują do misji.";
       } else if (result.totalScore >= 70) {
         scoreTitle.textContent = "¡Muy bien! Dobra odpowiedź";
         scoreSubtitle.textContent = "Pytanie jest komunikatywne, choć jeden lub dwa elementy można dopracować.";
       } else if (result.totalScore >= 50) {
         scoreTitle.textContent = "Dobry kierunek";
-        scoreSubtitle.textContent = "Sens jest widoczny, lecz forma pytania albo użyty czas wymagają korekty.";
+        scoreSubtitle.textContent = "Sens jest widoczny, lecz forma pytania, osoba lub użyty czas wymagają korekty.";
       } else {
         scoreTitle.textContent = "Spróbuj jeszcze raz";
-        scoreSubtitle.textContent = "Przeczytaj kontekst i przebuduj pytanie, zwracając uwagę na czasownik i słownictwo.";
+        scoreSubtitle.textContent = "Przeczytaj kontekst i przebuduj pytanie, zwracając uwagę na osobę, czasownik i sens całego zdania.";
       }
+
+      const diagnosticSummary = result.grammarIssues.length
+        ? result.grammarIssues.map(issue => `${issue.title}: ${issue.message}`).join(" | ")
+        : "nie wykryto istotnego konfliktu osoby ani kontekstu";
 
       teacherInfo.innerHTML = `
         Oczekiwany czas: <strong>${tenseLabels[currentMission.expected]}</strong>.<br>
         Uzasadnienie: ${escapeHtml(currentMission.reason)}<br>
         Przykładowe poprawne pytanie: <strong>${escapeHtml(currentMission.example)}</strong><br>
-        Rozpoznane słownictwo tematyczne: <strong>${escapeHtml(result.topicVocabulary.matches.join(", ") || "brak jednoznacznego dopasowania")}</strong>.<br><br>
+        Rozpoznane słownictwo tematyczne: <strong>${escapeHtml(result.topicVocabulary.matches.join(", ") || "brak jednoznacznego dopasowania")}</strong>.<br>
+        Diagnostyka spójności: <strong>${escapeHtml(diagnosticSummary)}</strong>.<br>
+        Maksymalny wynik po uwzględnieniu błędów krytycznych: <strong>${result.scoreCap}%</strong>.<br><br>
         Ocena jest heurystyczna. Pytanie złożone może poprawnie zawierać więcej niż jeden czas, dlatego ostateczna decyzja należy do nauczyciela.
       `;
 
