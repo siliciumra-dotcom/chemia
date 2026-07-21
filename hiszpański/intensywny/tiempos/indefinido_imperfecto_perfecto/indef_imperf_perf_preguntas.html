@@ -602,6 +602,77 @@
       .timer { min-width: 0; }
       .timer-actions .btn, .main-actions .btn { flex: 1 1 135px; }
     }
+
+
+    .situation-box {
+      position: relative;
+      z-index: 1;
+      margin-top: 13px;
+      padding: 13px 15px;
+      border-left: 4px solid var(--primary);
+      border-radius: 12px;
+      background: rgba(98,87,217,.07);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    .situation-box strong {
+      display: block;
+      margin-bottom: 3px;
+      color: var(--primary-dark);
+      font-size: .78rem;
+      letter-spacing: .055em;
+      text-transform: uppercase;
+    }
+
+    .evaluation-progress-track {
+      height: 7px;
+      margin-top: 9px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: rgba(98,87,217,.12);
+    }
+
+    .evaluation-progress-fill {
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg,var(--primary),#0e91a8);
+      transition: width .35s ease;
+    }
+
+    .help-wrap {
+      margin-top: 12px;
+      overflow: hidden;
+      border: 1px solid #ddd9ff;
+      border-radius: 15px;
+      background: #f9f8ff;
+      animation: feedback-arrive .34s ease both;
+    }
+
+    .help-button {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 13px 14px;
+      border: 0;
+      color: var(--primary-dark);
+      font-weight: 800;
+      text-align: left;
+      background: transparent;
+    }
+
+    .help-content { display: none; padding: 0 15px 15px; color: var(--text); line-height: 1.55; }
+    .help-content.visible { display: block; animation: feedback-arrive .25s ease both; }
+    .help-content p { margin: 8px 0; }
+    .help-content code { padding: 2px 6px; border-radius: 6px; background: #ecebff; color: var(--primary-dark); }
+
+    .confetti-layer { position: fixed; inset: 0; z-index: 30; pointer-events: none; overflow: hidden; }
+    .confetti { position: absolute; top: -20px; width: 9px; height: 15px; border-radius: 3px; background: var(--c); animation: confetti-fall var(--d) ease-in forwards; }
+    @keyframes confetti-fall { to { transform: translate3d(var(--x),108vh,0) rotate(var(--r)); opacity: .9; } }
+
   </style>
 </head>
 <body>
@@ -631,8 +702,9 @@
                   <span class="meta-value" id="contextText">esta semana</span>
                 </div>
               </div>
-              <p class="mission-text" id="missionText">Pregunta a tu compañero por una experiencia reciente relacionada con un viaje.</p>
-              <p class="context-note" id="contextNote">Najpierw porozmawiajcie. Po rozmowie zapisz tutaj główne pytanie, które zostało zadane.</p>
+              <div class="situation-box"><strong>Situación</strong><span id="situationText">Tu compañero ha hecho algo relacionado con viajes durante una semana que todavía no ha terminado.</span></div>
+              <p class="mission-text" id="missionText">Pregúntale qué viaje o excursión ha hecho y qué lugar ha visitado.</p>
+              <p class="context-note" id="contextNote">Najpierw porozmawiajcie. Po rozmowie zapisz jedno główne pytanie odpowiadające całemu poleceniu.</p>
             </div>
 
             <div class="timer-box">
@@ -692,7 +764,8 @@
               <div class="evaluation-spinner" id="evaluationSpinner">✓</div>
               <div>
                 <strong id="evaluationStep">Rozpoczynam sprawdzanie…</strong>
-                <span id="evaluationProgress">Analiza zapisu, czasu i słownictwa</span>
+                <span id="evaluationProgress">Analiza zapisu, czasu, zaimków i znaczenia</span>
+                <div class="evaluation-progress-track"><div class="evaluation-progress-fill" id="evaluationProgressFill"></div></div>
               </div>
             </div>
 
@@ -702,6 +775,13 @@
             </div>
 
             <div class="feedback-list" id="feedbackList"></div>
+
+            <div class="help-wrap hidden" id="tenseHelpWrap">
+              <button class="help-button" id="tenseHelpButton" type="button" aria-expanded="false">
+                <span>💡 Podpowiedź: wymagany czas</span><span>⌄</span>
+              </button>
+              <div class="help-content" id="tenseHelpContent"></div>
+            </div>
 
             <div class="result-summary" id="resultSummary">
               <div class="score-hero">
@@ -735,1518 +815,2556 @@
       </aside>
     </section>
 
-    <p class="footer-note">Analiza sprawdza czas, słownictwo, osobę gramatyczną i typowe konflikty sensu. Nadal jest heurystyczna i nie zastępuje pełnej korekty nauczyciela.</p>
+    <p class="footer-note">Analiza jest heurystyczna, ale nie opiera się wyłącznie na słowach kluczowych: sprawdza także sens całego pytania, naturalne parafrazy, osobę, zaimki i rolę każdego czasu.</p>
   </main>
 
+  <div class="confetti-layer" id="confettiLayer" aria-hidden="true"></div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script>
-    const missions = [
+const missions = [
+  {
+    "topic": "Viajes",
+    "context": "esta semana",
+    "situation": "Tu compañero ha hecho algo relacionado con viajes durante una semana que todavía no ha terminado.",
+    "prompt": "Pregúntale qué viaje o excursión ha hecho y qué lugar ha visitado.",
+    "expected": "perfecto",
+    "reason": "«Esta semana» es un periodo que todavía está conectado con el presente, por eso encaja el pretérito perfecto.",
+    "topicKeywords": [
+      "viaj",
+      "excursion",
+      "vacacion",
+      "visit",
+      "lugar",
+      "ciudad",
+      "pais",
+      "destino",
+      "hotel",
+      "vuelo"
+    ],
+    "timeMarkers": [
+      "esta semana",
+      "estos dias",
+      "ultimamente",
+      "hoy"
+    ],
+    "example": "¿Qué viaje o excursión has hecho esta semana y qué lugar has visitado?",
+    "requirements": [
       {
-        topic: "Viajes",
-        context: "esta semana",
-        mission: "Pregunta a tu compañero por una experiencia reciente relacionada con un viaje.",
-        expected: "perfecto",
-        reason: "Okres «esta semana» nadal trwa, dlatego naturalnie pasuje pretérito perfecto.",
-        topicKeywords: ["viaj", "vacacion", "hotel", "avion", "vuelo", "tren", "lugar", "ciudad", "pais", "maleta"],
-        timeMarkers: ["esta semana", "estos dias", "ultimamente", "hoy"],
-        example: "¿Has hecho algún viaje o alguna excursión interesante esta semana?"
+        "label": "qué viaje o excursión ha hecho",
+        "cue": "what",
+        "verbs": [
+          "hacer",
+          "viajar",
+          "ir"
+        ],
+        "anchors": [
+          "viaje",
+          "excursion"
+        ]
       },
       {
-        topic: "Tecnología",
-        context: "últimamente",
-        mission: "Pregunta por una aplicación, página o dispositivo que tu compañero ha descubierto recientemente.",
-        expected: "perfecto",
-        reason: "«Últimamente» łączy niedawną przeszłość z teraźniejszością.",
-        topicKeywords: ["aplic", "pagina", "web", "movil", "telefono", "ordenador", "tecnolog", "dispositivo", "programa", "internet"],
-        timeMarkers: ["ultimamente", "recientemente", "estos dias"],
-        example: "¿Has descubierto últimamente alguna aplicación útil?"
-      },
-      {
-        topic: "Comida",
-        context: "hoy",
-        mission: "Pregunta qué ha comido o preparado hoy tu compañero.",
-        expected: "perfecto",
-        reason: "«Hoy» jest okresem niezakończonym w chwili mówienia.",
-        topicKeywords: ["com", "prepar", "cocin", "desayun", "almorz", "cen", "plato", "comida"],
-        timeMarkers: ["hoy", "esta mañana", "esta tarde"],
-        example: "¿Qué has comido hoy?"
-      },
-      {
-        topic: "Cine y series",
-        context: "este mes",
-        mission: "Pregunta por una película o serie que tu compañero ha visto este mes.",
-        expected: "perfecto",
-        reason: "«Este mes» jeszcze się nie zakończył.",
-        topicKeywords: ["pelicul", "serie", "cine", "capitulo", "temporada", "ver", "visto"],
-        timeMarkers: ["este mes", "estas semanas", "ultimamente"],
-        example: "¿Has visto alguna serie buena este mes?"
-      },
-      {
-        topic: "Aprendizaje",
-        context: "desde que empezó el curso",
-        mission: "Pregunta qué ha aprendido o mejorado tu compañero desde el inicio del curso.",
-        expected: "perfecto",
-        reason: "«Desde que...» wskazuje okres trwający aż do chwili obecnej.",
-        topicKeywords: ["aprend", "mejor", "curso", "clase", "idioma", "estudi", "espanol"],
-        timeMarkers: ["desde", "hasta ahora", "este curso"],
-        example: "¿Qué has aprendido desde que empezó el curso?"
-      },
-      {
-        topic: "Experiencias",
-        context: "alguna vez en tu vida",
-        mission: "Pregunta por una experiencia poco habitual que tu compañero haya vivido.",
-        expected: "perfecto",
-        reason: "Doświadczenia życiowe bez zamkniętego momentu zwykle wyraża się w pretérito perfecto.",
-        topicKeywords: ["vez", "experien", "viv", "hacer", "hecho", "probar", "estado"],
-        timeMarkers: ["alguna vez", "nunca", "en tu vida", "ya"],
-        example: "¿Has vivido alguna vez una experiencia realmente extraña?"
-      },
-      {
-        topic: "Salud y hábitos",
-        context: "en los últimos días",
-        mission: "Pregunta si tu compañero ha cambiado algún hábito relacionado con su salud.",
-        expected: "perfecto",
-        reason: "«En los últimos días» odnosi się do niedawnego okresu związanego z teraźniejszością.",
-        topicKeywords: ["salud", "habit", "dorm", "ejercicio", "deporte", "comer", "cambi"],
-        timeMarkers: ["ultimos dias", "ultimamente", "recientemente"],
-        example: "¿Has cambiado algún hábito saludable en los últimos días?"
-      },
-      {
-        topic: "Redes sociales",
-        context: "esta semana",
-        mission: "Pregunta por algo interesante o sorprendente que tu compañero ha visto en redes sociales.",
-        expected: "perfecto",
-        reason: "Tydzień jeszcze trwa, więc pasuje pretérito perfecto.",
-        topicKeywords: ["red", "instagram", "tiktok", "video", "publicacion", "internet", "visto"],
-        timeMarkers: ["esta semana", "estos dias", "hoy"],
-        example: "¿Has visto algo sorprendente en las redes sociales esta semana?"
-      },
-
-      {
-        topic: "Fin de semana",
-        context: "el fin de semana pasado",
-        mission: "Pregunta qué hizo tu compañero durante el fin de semana pasado.",
-        expected: "indefinido",
-        reason: "«El fin de semana pasado» jest zamkniętym okresem w przeszłości.",
-        topicKeywords: ["fin de semana", "sabado", "domingo", "hacer", "hic", "sal", "visit"],
-        timeMarkers: ["fin de semana pasado", "sabado", "domingo"],
-        example: "¿Qué hiciste el fin de semana pasado?"
-      },
-      {
-        topic: "Viajes",
-        context: "las últimas vacaciones",
-        mission: "Pregunta por un problema inesperado que ocurrió durante las últimas vacaciones.",
-        expected: "indefinido",
-        reason: "Ostatnie wakacje są zakończonym wydarzeniem.",
-        topicKeywords: ["vacacion", "viaj", "problema", "pas", "ocurr", "hotel", "vuelo", "maleta"],
-        timeMarkers: ["ultimas vacaciones", "el verano pasado", "durante el viaje"],
-        example: "¿Tuviste algún problema durante tus últimas vacaciones?"
-      },
-      {
-        topic: "Un día especial",
-        context: "ayer",
-        mission: "Pregunta por el momento más interesante o difícil del día de ayer.",
-        expected: "indefinido",
-        reason: "«Ayer» to zakończony moment przeszłości.",
-        topicKeywords: ["ayer", "momento", "pas", "ocurr", "dia", "difícil", "interesante"],
-        timeMarkers: ["ayer", "anoche"],
-        example: "¿Qué fue lo más interesante que te pasó ayer?"
-      },
-      {
-        topic: "Educación",
-        context: "el último examen",
-        mission: "Pregunta cómo fue el último examen o una prueba importante.",
-        expected: "indefinido",
-        reason: "Mowa o konkretnym, zakończonym egzaminie.",
-        topicKeywords: ["examen", "prueba", "nota", "pregunta", "aprobar", "suspender", "fue"],
-        timeMarkers: ["ultimo examen", "la semana pasada", "ayer"],
-        example: "¿Cómo fue tu último examen?"
-      },
-      {
-        topic: "Compras",
-        context: "la última vez que fuiste de compras",
-        mission: "Pregunta qué compró tu compañero y por qué lo eligió.",
-        expected: "indefinido",
-        reason: "«La última vez» wyznacza konkretne zakończone zdarzenie.",
-        topicKeywords: ["compr", "tienda", "precio", "eleg", "ropa", "producto"],
-        timeMarkers: ["ultima vez", "ayer", "semana pasada"],
-        example: "¿Qué compraste la última vez que fuiste de compras?"
-      },
-      {
-        topic: "Celebraciones",
-        context: "tu último cumpleaños",
-        mission: "Pregunta cómo celebró tu compañero su último cumpleaños.",
-        expected: "indefinido",
-        reason: "Ostatnie urodziny są konkretnym, zakończonym wydarzeniem.",
-        topicKeywords: ["cumple", "celebr", "fiesta", "regalo", "invit", "familia", "amigos"],
-        timeMarkers: ["ultimo cumpleaños", "el año pasado"],
-        example: "¿Cómo celebraste tu último cumpleaños?"
-      },
-      {
-        topic: "Una decisión",
-        context: "el año pasado",
-        mission: "Pregunta por una decisión importante que tomó tu compañero el año pasado.",
-        expected: "indefinido",
-        reason: "«El año pasado» jest zamkniętym okresem.",
-        topicKeywords: ["decision", "decid", "cambi", "eleg", "trabajo", "estudio"],
-        timeMarkers: ["año pasado", "en 2025", "entonces"],
-        example: "¿Tomaste alguna decisión importante el año pasado?"
-      },
-      {
-        topic: "Una sorpresa",
-        context: "la última vez",
-        mission: "Pregunta por la última situación que sorprendió mucho a tu compañero.",
-        expected: "indefinido",
-        reason: "Pytanie dotyczy jednego konkretnego zdarzenia.",
-        topicKeywords: ["sorpr", "pas", "ocurr", "noticia", "situacion", "vez"],
-        timeMarkers: ["ultima vez", "cuando", "ayer"],
-        example: "¿Qué ocurrió la última vez que te sorprendiste mucho?"
-      },
-
-      {
-        topic: "Infancia",
-        context: "cuando eras niño/a",
-        mission: "Pregunta por una costumbre o actividad habitual de la infancia.",
-        expected: "imperfecto",
-        reason: "Zwyczaje i powtarzające się czynności w przeszłości opisuje imperfecto.",
-        topicKeywords: ["niñ", "infancia", "jug", "sol", "costumbre", "hacer", "gust"],
-        timeMarkers: ["cuando eras", "de pequeño", "en tu infancia", "normalmente"],
-        example: "¿Qué hacías normalmente cuando eras niño?"
-      },
-      {
-        topic: "Escuela",
-        context: "cuando ibas a primaria",
-        mission: "Pregunta cómo era la escuela o qué asignaturas le gustaban a tu compañero.",
-        expected: "imperfecto",
-        reason: "Opis tła, miejsca i dawnych upodobań wymaga imperfecto.",
-        topicKeywords: ["escuela", "colegio", "primaria", "asignatura", "profesor", "gust", "era", "ibas"],
-        timeMarkers: ["cuando ibas", "en primaria", "de pequeño"],
-        example: "¿Qué asignatura te gustaba más cuando ibas a primaria?"
-      },
-      {
-        topic: "Vacaciones de antes",
-        context: "todos los veranos",
-        mission: "Pregunta qué hacía normalmente tu compañero durante los veranos de su infancia.",
-        expected: "imperfecto",
-        reason: "«Todos los veranos» wskazuje powtarzalność.",
-        topicKeywords: ["verano", "vacacion", "playa", "pueblo", "viaj", "sol", "iba", "hacia"],
-        timeMarkers: ["todos los veranos", "cada verano", "normalmente"],
-        example: "¿Qué hacías todos los veranos cuando eras pequeño?"
-      },
-      {
-        topic: "Casa de la infancia",
-        context: "cuando vivías con tu familia",
-        mission: "Pide una descripción de la casa, el barrio o la habitación de tu compañero.",
-        expected: "imperfecto",
-        reason: "Opisy miejsc i tła w przeszłości tworzymy w imperfecto.",
-        topicKeywords: ["casa", "habitacion", "barrio", "viv", "era", "tenia", "familia"],
-        timeMarkers: ["cuando vivias", "antes", "en aquella epoca"],
-        example: "¿Cómo era la casa donde vivías con tu familia?"
-      },
-      {
-        topic: "Tecnología de antes",
-        context: "antes de tener un smartphone",
-        mission: "Pregunta cómo se comunicaba o entretenía tu compañero antes de usar un smartphone.",
-        expected: "imperfecto",
-        reason: "Dawne zwyczaje i sposoby działania wymagają imperfecto.",
-        topicKeywords: ["smartphone", "movil", "telefono", "comunic", "entreten", "internet", "usab"],
-        timeMarkers: ["antes", "cuando no tenias", "en aquella epoca"],
-        example: "¿Cómo te comunicabas antes de tener un smartphone?"
-      },
-      {
-        topic: "Amistades",
-        context: "cuando tenías 12 años",
-        mission: "Pregunta cómo era el mejor amigo o la mejor amiga de tu compañero.",
-        expected: "imperfecto",
-        reason: "Opis osoby i relacji w przeszłości wyrażamy w imperfecto.",
-        topicKeywords: ["amig", "persona", "caracter", "era", "tenia", "conoc"],
-        timeMarkers: ["cuando tenias", "a los 12 años", "de pequeño"],
-        example: "¿Cómo era tu mejor amigo cuando tenías doce años?"
-      },
-      {
-        topic: "Rutina",
-        context: "en aquella época",
-        mission: "Pregunta cómo era un día normal de tu compañero en una etapa anterior de su vida.",
-        expected: "imperfecto",
-        reason: "Rutynę i powtarzalność w przeszłości opisuje imperfecto.",
-        topicKeywords: ["dia", "rutina", "normal", "levant", "trabaj", "estudi", "solia"],
-        timeMarkers: ["en aquella epoca", "normalmente", "cada dia", "antes"],
-        example: "¿Cómo era un día normal para ti en aquella época?"
-      },
-      {
-        topic: "Profesores",
-        context: "cuando estudiabas en el instituto",
-        mission: "Pregunta cómo eran las clases o los profesores de tu compañero.",
-        expected: "imperfecto",
-        reason: "Opis ludzi, zajęć i regularnych doświadczeń w przeszłości wymaga imperfecto.",
-        topicKeywords: ["profesor", "clase", "instituto", "estudi", "era", "explic", "asignatura"],
-        timeMarkers: ["cuando estudiabas", "en el instituto", "antes"],
-        example: "¿Cómo eran tus profesores cuando estudiabas en el instituto?"
+        "label": "qué lugar ha visitado",
+        "cue": "what",
+        "verbs": [
+          "visitar",
+          "conocer",
+          "ver",
+          "ir"
+        ],
+        "anchors": [
+          "lugar",
+          "ciudad",
+          "pais",
+          "destino"
+        ]
       }
-    ];
-
-    const topicLexicons = {
-      "Viajes": {
-        phrases: ["medio de transporte", "hacer una excursión", "hacer turismo", "ir de viaje"],
-        stems: ["viaj", "excursion", "vacacion", "turis", "visit", "hotel", "hostal", "aloj", "avion", "vuelo", "aeropuert", "tren", "autobus", "malet", "equipaj", "destin", "playa", "montan", "ciudad", "pais"]
+    ]
+  },
+  {
+    "topic": "Tecnología",
+    "context": "últimamente",
+    "situation": "Tu compañero ha probado o descubierto recientemente alguna herramienta tecnológica.",
+    "prompt": "Pregúntale qué aplicación o dispositivo ha descubierto y para qué lo ha usado.",
+    "expected": "perfecto",
+    "reason": "«Últimamente» conecta una experiencia reciente con el presente.",
+    "topicKeywords": [
+      "aplic",
+      "disposit",
+      "tecnolog",
+      "movil",
+      "telefono",
+      "ordenador",
+      "program",
+      "web",
+      "internet",
+      "usar"
+    ],
+    "timeMarkers": [
+      "ultimamente",
+      "recientemente",
+      "estos dias"
+    ],
+    "example": "¿Qué aplicación has descubierto últimamente y para qué la has usado?",
+    "requirements": [
+      {
+        "label": "qué aplicación o dispositivo ha descubierto",
+        "cue": "what",
+        "verbs": [
+          "descubrir",
+          "encontrar",
+          "probar",
+          "conocer"
+        ],
+        "anchors": [
+          "aplicacion",
+          "dispositivo",
+          "programa",
+          "pagina",
+          "web"
+        ]
       },
-      "Tecnología": {
-        phrases: ["red social", "página web", "inteligencia artificial"],
-        stems: ["tecnolog", "aplic", "program", "web", "internet", "movil", "telefono", "smartphone", "ordenador", "portatil", "tablet", "disposit", "descarg", "instal", "descubr", "usar", "util"]
-      },
-      "Comida": {
-        phrases: ["comida rápida", "plato típico"],
-        stems: ["com", "beb", "cocin", "prepar", "desayun", "almorz", "cen", "merend", "recet", "plato", "aliment", "restaur", "ingred", "sab", "prob"]
-      },
-      "Cine y series": {
-        phrases: ["película de terror", "serie de televisión"],
-        stems: ["pelicul", "serie", "cine", "capitul", "temporad", "actor", "actriz", "director", "personaj", "trama", "episod", "documental", "ver", "visto"]
-      },
-      "Aprendizaje": {
-        phrases: ["aprender español", "curso de idiomas"],
-        stems: ["aprend", "mejor", "estudi", "curso", "clase", "idiom", "espanol", "vocabular", "gramatic", "pronunci", "habilid", "conocim", "practic"]
-      },
-      "Experiencias": {
-        phrases: ["alguna vez", "experiencia extraña", "por primera vez"],
-        stems: ["experien", "viv", "prob", "conoc", "visit", "particip", "aventur", "arriesg", "inolvid", "extrano", "sorprend", "hecho", "estado"]
-      },
-      "Salud y hábitos": {
-        phrases: ["hacer ejercicio", "vida sana", "dormir bien", "comer sano"],
-        stems: ["salud", "habit", "ejerc", "deport", "entren", "dorm", "descans", "aliment", "diet", "cambi", "caminar", "correr", "medic", "estres", "san"]
-      },
-      "Redes sociales": {
-        phrases: ["redes sociales", "vídeo viral"],
-        stems: ["red", "instagram", "tiktok", "facebook", "youtube", "video", "public", "foto", "perfil", "seguidor", "coment", "viral", "internet", "visto"]
-      },
-      "Fin de semana": {
-        phrases: ["fin de semana"],
-        stems: ["sabad", "doming", "descans", "sal", "qued", "visit", "pase", "fiesta", "amig", "famil", "plan", "hic"]
-      },
-      "Un día especial": {
-        phrases: ["lo más interesante", "lo más difícil"],
-        stems: ["ayer", "anoche", "dia", "moment", "pas", "ocurr", "interes", "dific", "mejor", "peor", "especial", "record"]
-      },
-      "Educación": {
-        phrases: ["hacer un examen", "sacar una nota"],
-        stems: ["examen", "prueb", "not", "pregunt", "ejerc", "aproba", "suspend", "estudi", "profesor", "asignatur", "resultado"]
-      },
-      "Compras": {
-        phrases: ["ir de compras", "centro comercial"],
-        stems: ["compr", "tiend", "precio", "cost", "eleg", "ropa", "producto", "ofert", "descuent", "pagar", "tarjet", "efectiv"]
-      },
-      "Celebraciones": {
-        phrases: ["fiesta de cumpleaños", "celebrar el cumpleaños"],
-        stems: ["cumple", "celebr", "fiesta", "regal", "invit", "famil", "amig", "tart", "sorpres", "reun", "cen"]
-      },
-      "Una decisión": {
-        phrases: ["tomar una decisión", "cambiar de trabajo"],
-        stems: ["decision", "decid", "eleg", "escog", "cambi", "trabaj", "estudi", "mud", "empez", "dej", "important", "motivo"]
-      },
-      "Una sorpresa": {
-        phrases: ["la última vez", "noticia inesperada"],
-        stems: ["sorpr", "inesper", "notici", "situacion", "ocurr", "pas", "reaccion", "enter", "descubr", "impresion"]
-      },
-      "Infancia": {
-        phrases: ["de pequeño", "cuando eras niño", "en tu infancia"],
-        stems: ["nino", "infanci", "jug", "juguet", "parque", "costumbr", "gust", "sol", "hac", "famil", "amig", "dibuj", "coleccion"]
-      },
-      "Escuela": {
-        phrases: ["escuela primaria", "ir al colegio"],
-        stems: ["escuel", "colegi", "primari", "asignatur", "profesor", "alumn", "clase", "recre", "deber", "gust", "era", "iba"]
-      },
-      "Vacaciones de antes": {
-        phrases: ["todos los veranos", "vacaciones de verano"],
-        stems: ["veran", "vacacion", "playa", "puebl", "viaj", "camp", "piscin", "famil", "iba", "hac", "sol", "pas"]
-      },
-      "Casa de la infancia": {
-        phrases: ["casa de la infancia", "habitación propia"],
-        stems: ["casa", "habitacion", "barri", "edific", "jardin", "cocin", "salon", "dormitori", "viv", "famil", "era", "teni", "grande", "pequen"]
-      },
-      "Tecnología de antes": {
-        phrases: ["antes de tener un smartphone", "teléfono fijo"],
-        stems: ["smartphone", "movil", "telefono", "comunic", "entreten", "internet", "ordenador", "mensaje", "llam", "carta", "television", "radio", "usab"]
-      },
-      "Amistades": {
-        phrases: ["mejor amigo", "mejor amiga"],
-        stems: ["amig", "persona", "caracter", "simpatic", "timid", "divertid", "generos", "conoc", "jug", "junt", "era", "teni"]
-      },
-      "Rutina": {
-        phrases: ["día normal", "todos los días"],
-        stems: ["rutin", "normal", "levant", "despert", "desayun", "trabaj", "estudi", "volv", "cen", "dorm", "soli", "cada", "dia"]
-      },
-      "Profesores": {
-        phrases: ["profesor de", "clases de"],
-        stems: ["profesor", "maestr", "clase", "institut", "estudi", "explic", "ensen", "asignatur", "exigent", "simpatic", "aburr", "interes", "era"]
+      {
+        "label": "para qué lo ha usado",
+        "cue": "purpose",
+        "verbs": [
+          "usar",
+          "utilizar",
+          "servir",
+          "aplicar"
+        ],
+        "anchors": [
+          "lo",
+          "la",
+          "aplicacion",
+          "dispositivo"
+        ]
       }
-    };
-
-    const lexicalStopWords = new Set([
-      "como", "cuando", "donde", "quien", "quienes", "cual", "cuales", "cuanto", "cuanta",
-      "cuantos", "cuantas", "que", "porque", "para", "pero", "esta", "este", "estos", "estas"
-    ]);
-
-    const weakVocabularyStems = new Set([
-      "hacer", "hecho", "hac", "pas", "ocurr", "fue", "era", "eran", "iba", "ibas", "teni",
-      "sol", "persona", "dia", "moment", "normal", "interes", "dific", "mejor", "peor", "vez",
-      "estado", "visto", "ver", "usar", "util", "cambi", "famil", "amig", "pregunt", "not"
-    ]);
-
-    const tenseLabels = {
-      perfecto: "pretérito perfecto",
-      indefinido: "pretérito indefinido",
-      imperfecto: "pretérito imperfecto"
-    };
-
-    const strongQuestionWords = [
-      "qué", "que", "quién", "quien", "quiénes", "quienes", "cómo", "como",
-      "cuándo", "cuando", "dónde", "donde", "adónde", "adonde", "cuál", "cual",
-      "cuáles", "cuales", "cuánto", "cuanto", "cuánta", "cuanta", "cuántos", "cuantos",
-      "cuántas", "cuantas", "por qué", "por que"
-    ];
-
-    const yesNoStarters = [
-      "has", "ha", "han", "habéis", "habeis", "hiciste", "fuiste", "tuviste", "estuviste",
-      "viste", "dijiste", "pudiste", "quisiste", "viniste", "compraste", "viajaste", "comiste",
-      "eras", "ibas", "tenías", "tenias", "hacías", "hacias", "solías", "solias", "te", "os"
-    ];
-
-    const irregularParticiples = [
-      "abierto", "cubierto", "dicho", "escrito", "frito", "hecho", "muerto", "puesto",
-      "resuelto", "roto", "visto", "vuelto", "descubierto", "impreso", "satisfecho"
-    ];
-
-    const imperfectIrregular = [
-      "era", "eras", "éramos", "eramos", "erais", "eran",
-      "iba", "ibas", "íbamos", "ibamos", "ibais", "iban",
-      "veía", "veia", "veías", "veias", "veíamos", "veiamos", "veíais", "veiais", "veían", "veian"
-    ];
-
-    const indefinidoIrregular = [
-      "fui", "fuiste", "fue", "fuimos", "fuisteis", "fueron",
-      "tuve", "tuviste", "tuvo", "tuvimos", "tuvisteis", "tuvieron",
-      "estuve", "estuviste", "estuvo", "estuvimos", "estuvisteis", "estuvieron",
-      "hice", "hiciste", "hizo", "hicimos", "hicisteis", "hicieron",
-      "pude", "pudiste", "pudo", "pudimos", "pudisteis", "pudieron",
-      "puse", "pusiste", "puso", "pusimos", "pusisteis", "pusieron",
-      "supe", "supiste", "supo", "supimos", "supisteis", "supieron",
-      "quise", "quisiste", "quiso", "quisimos", "quisisteis", "quisieron",
-      "vine", "viniste", "vino", "vinimos", "vinisteis", "vinieron",
-      "dije", "dijiste", "dijo", "dijimos", "dijisteis", "dijeron",
-      "traje", "trajiste", "trajo", "trajimos", "trajisteis", "trajeron",
-      "anduve", "anduviste", "anduvo", "anduvimos", "anduvisteis", "anduvieron",
-      "di", "diste", "dio", "dimos", "disteis", "dieron",
-      "vi", "viste", "vio", "vimos", "visteis", "vieron",
-      "leí", "lei", "leíste", "leiste", "leyó", "leyo", "leímos", "leimos", "leísteis", "leisteis", "leyeron",
-      "oí", "oi", "oíste", "oiste", "oyó", "oyo", "oímos", "oimos", "oísteis", "oisteis", "oyeron"
-    ];
-
-    const falseImperfectWords = new Set([
-      "día", "dia", "policía", "policia", "geografía", "geografia", "biología", "biologia",
-      "tecnología", "tecnologia", "energía", "energia", "fotografía", "fotografia", "familia",
-      "historia", "comida", "vida", "noticia", "experiencia", "vacaciones", "primaria",
-      "secundaria", "materia", "memoria", "farmacia", "iglesia", "ciencia", "distancia",
-      "importancia", "infancia", "estancia", "diferencia", "compañía", "compania", "alegría",
-      "alegria", "cafetería", "cafeteria", "panadería", "panaderia"
-    ]);
-
-    const falseIndefiniteWords = new Set([
-      "qué", "que", "sí", "si", "aquí", "aqui", "allí", "alli", "país", "pais", "día", "dia",
-      "café", "cafe", "menú", "menu", "sofá", "sofa", "mamá", "mama", "papá", "papa"
-    ]);
-
-
-    const personLabels = {
-      "1s": "1. os. l.poj. (yo)",
-      "2s": "2. os. l.poj. (tú)",
-      "3s": "3. os. l.poj. (él/ella/usted)",
-      "1p": "1. os. l.mn. (nosotros/as)",
-      "2p": "2. os. l.mn. (vosotros/as)",
-      "3p": "3. os. l.mn. (ellos/ellas/ustedes)"
-    };
-
-    const subjectPronounPersons = {
-      "yo": "1s",
-      "tú": "2s",
-      "él": "3s",
-      "ella": "3s",
-      "usted": "3s",
-      "nosotros": "1p",
-      "nosotras": "1p",
-      "vosotros": "2p",
-      "vosotras": "2p",
-      "ellos": "3p",
-      "ellas": "3p",
-      "ustedes": "3p"
-    };
-
-    const prepositionsBeforePronoun = new Set(["a", "de", "para", "por", "con", "sin", "sobre", "entre"]);
-
-    const commonSpellingCorrections = {
-      "nostros": "nosotros",
-      "nosostros": "nosotros",
-      "nosotors": "nosotros",
-      "vosostros": "vosotros",
-      "vosotors": "vosotros",
-      "quando": "cuando",
-      "qeu": "que",
-      "qe": "que",
-      "porqe": "porque",
-      "porq": "porque"
-    };
-
-    const perfectAuxPersons = {
-      "he": ["1s"],
-      "has": ["2s"],
-      "ha": ["3s"],
-      "hemos": ["1p"],
-      "habéis": ["2p"],
-      "habeis": ["2p"],
-      "han": ["3p"]
-    };
-
-    const irregularIndefinitePersons = new Map();
-    const irregularImperfectPersons = new Map();
-    const personOrder = ["1s", "2s", "3s", "1p", "2p", "3p"];
-
-    function registerVerbPersons(map, forms) {
-      forms.forEach((form, index) => map.set(form, [personOrder[index]]));
-    }
-
-    [
-      ["fui", "fuiste", "fue", "fuimos", "fuisteis", "fueron"],
-      ["tuve", "tuviste", "tuvo", "tuvimos", "tuvisteis", "tuvieron"],
-      ["estuve", "estuviste", "estuvo", "estuvimos", "estuvisteis", "estuvieron"],
-      ["hice", "hiciste", "hizo", "hicimos", "hicisteis", "hicieron"],
-      ["pude", "pudiste", "pudo", "pudimos", "pudisteis", "pudieron"],
-      ["puse", "pusiste", "puso", "pusimos", "pusisteis", "pusieron"],
-      ["supe", "supiste", "supo", "supimos", "supisteis", "supieron"],
-      ["quise", "quisiste", "quiso", "quisimos", "quisisteis", "quisieron"],
-      ["vine", "viniste", "vino", "vinimos", "vinisteis", "vinieron"],
-      ["dije", "dijiste", "dijo", "dijimos", "dijisteis", "dijeron"],
-      ["traje", "trajiste", "trajo", "trajimos", "trajisteis", "trajeron"],
-      ["anduve", "anduviste", "anduvo", "anduvimos", "anduvisteis", "anduvieron"],
-      ["di", "diste", "dio", "dimos", "disteis", "dieron"],
-      ["vi", "viste", "vio", "vimos", "visteis", "vieron"],
-      ["leí", "leíste", "leyó", "leímos", "leísteis", "leyeron"],
-      ["lei", "leiste", "leyo", "leimos", "leisteis", "leyeron"],
-      ["oí", "oíste", "oyó", "oímos", "oísteis", "oyeron"],
-      ["oi", "oiste", "oyo", "oimos", "oisteis", "oyeron"]
-    ].forEach(forms => registerVerbPersons(irregularIndefinitePersons, forms));
-
-    [
-      ["era", "eras", "era", "éramos", "erais", "eran"],
-      ["era", "eras", "era", "eramos", "erais", "eran"],
-      ["iba", "ibas", "iba", "íbamos", "ibais", "iban"],
-      ["iba", "ibas", "iba", "ibamos", "ibais", "iban"],
-      ["veía", "veías", "veía", "veíamos", "veíais", "veían"],
-      ["veia", "veias", "veia", "veiamos", "veiais", "veian"]
-    ].forEach(forms => {
-      forms.forEach((form, index) => {
-        const existing = irregularImperfectPersons.get(form) || [];
-        const person = personOrder[index];
-        if (!existing.includes(person)) existing.push(person);
-        irregularImperfectPersons.set(form, existing);
-      });
-    });
-
-    let currentMission = null;
-    let lastMissionIndex = -1;
-    let round = 1;
-    let remainingSeconds = 300;
-    let timerId = null;
-    let timerRunning = false;
-    let resultAnimationToken = 0;
-
-    const topicText = document.getElementById("topicText");
-    const contextText = document.getElementById("contextText");
-    const missionText = document.getElementById("missionText");
-    const roundLabel = document.getElementById("roundLabel");
-    const timerDisplay = document.getElementById("timerDisplay");
-    const timerHint = document.getElementById("timerHint");
-    const startPauseBtn = document.getElementById("startPauseBtn");
-    const resetTimerBtn = document.getElementById("resetTimerBtn");
-    const questionInput = document.getElementById("questionInput");
-    const charCount = document.getElementById("charCount");
-    const analyzeBtn = document.getElementById("analyzeBtn");
-    const nextBtn = document.getElementById("nextBtn");
-    const clearBtn = document.getElementById("clearBtn");
-    const resultsPlaceholder = document.getElementById("resultsPlaceholder");
-    const resultsPanel = document.getElementById("resultsPanel");
-    const evaluationStatus = document.getElementById("evaluationStatus");
-    const evaluationStep = document.getElementById("evaluationStep");
-    const evaluationProgress = document.getElementById("evaluationProgress");
-    const detectedBox = document.getElementById("detectedBox");
-    const resultSummary = document.getElementById("resultSummary");
-    const scoreCircle = document.getElementById("scoreCircle");
-    const scoreNumber = document.getElementById("scoreNumber");
-    const scoreTitle = document.getElementById("scoreTitle");
-    const scoreSubtitle = document.getElementById("scoreSubtitle");
-    const writingScore = document.getElementById("writingScore");
-    const contextScore = document.getElementById("contextScore");
-    const detectedText = document.getElementById("detectedText");
-    const feedbackList = document.getElementById("feedbackList");
-    const teacherInfo = document.getElementById("teacherInfo");
-    const toast = document.getElementById("toast");
-
-    function normalizeText(text) {
-      return text
-        .toLowerCase()
-        .replace(/[“”«»]/g, '"')
-        .replace(/\s+/g, " ")
-        .trim();
-    }
-
-    function removeAccents(text) {
-      return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    }
-
-    function tokenize(text) {
-      return normalizeText(text)
-        .replace(/[¿?¡!.,;:()\[\]{}"']/g, " ")
-        .split(/\s+/)
-        .filter(Boolean);
-    }
-
-    function formatTime(seconds) {
-      const minutes = Math.floor(seconds / 60).toString().padStart(2, "0");
-      const secs = (seconds % 60).toString().padStart(2, "0");
-      return `${minutes}:${secs}`;
-    }
-
-    function updateTimerUI() {
-      timerDisplay.textContent = formatTime(remainingSeconds);
-      timerDisplay.classList.toggle("warning", remainingSeconds <= 60 && remainingSeconds > 0);
-      timerDisplay.classList.toggle("finished", remainingSeconds === 0);
-
-      if (remainingSeconds === 0) {
-        timerHint.textContent = "¡Se acabó el tiempo! Zapisz teraz główne pytanie.";
-      } else if (remainingSeconds <= 60) {
-        timerHint.textContent = "¡Último minuto! Dokończcie rozmowę i wybierzcie główne pytanie.";
-      } else if (timerRunning) {
-        timerHint.textContent = "Rozmowa trwa. Zadaj pytania dodatkowe i słuchaj odpowiedzi partnera.";
-      } else {
-        timerHint.textContent = "Po uruchomieniu macie 5 minut na rozmowę.";
+    ]
+  },
+  {
+    "topic": "Comida",
+    "context": "hoy",
+    "situation": "El día de hoy todavía no ha terminado y tu compañero ya ha comido o cocinado algo.",
+    "prompt": "Pregúntale qué ha comido o preparado hoy y si le ha gustado.",
+    "expected": "perfecto",
+    "reason": "«Hoy» suele considerarse un periodo no terminado en el español peninsular.",
+    "topicKeywords": [
+      "com",
+      "prepar",
+      "cocin",
+      "desayun",
+      "almorz",
+      "cen",
+      "plato",
+      "comida",
+      "receta",
+      "gust"
+    ],
+    "timeMarkers": [
+      "hoy",
+      "esta mañana",
+      "esta tarde"
+    ],
+    "example": "¿Qué has comido hoy y te ha gustado?",
+    "requirements": [
+      {
+        "label": "qué ha comido o preparado",
+        "cue": "what",
+        "verbs": [
+          "comer",
+          "preparar",
+          "cocinar",
+          "desayunar",
+          "almorzar",
+          "cenar"
+        ],
+        "anchors": [
+          "comida",
+          "plato",
+          "receta"
+        ]
+      },
+      {
+        "label": "si le ha gustado",
+        "cue": "yesNo",
+        "verbs": [
+          "gustar",
+          "encantar",
+          "parecer",
+          "disfrutar"
+        ],
+        "anchors": [
+          "te",
+          "le",
+          "comida",
+          "plato"
+        ]
       }
-    }
+    ]
+  },
+  {
+    "topic": "Cine y series",
+    "context": "este mes",
+    "situation": "Tu compañero ha tenido tiempo este mes para ver alguna película o serie.",
+    "prompt": "Pregúntale qué película o serie ha visto y qué le ha parecido.",
+    "expected": "perfecto",
+    "reason": "«Este mes» todavía pertenece al periodo actual.",
+    "topicKeywords": [
+      "pelicul",
+      "serie",
+      "cine",
+      "capitul",
+      "temporad",
+      "ver",
+      "visto",
+      "recomend",
+      "gust"
+    ],
+    "timeMarkers": [
+      "este mes",
+      "estas semanas",
+      "ultimamente"
+    ],
+    "example": "¿Qué película has visto este mes y qué te ha parecido?",
+    "requirements": [
+      {
+        "label": "qué película o serie ha visto",
+        "cue": "what",
+        "verbs": [
+          "ver",
+          "mirar",
+          "terminar"
+        ],
+        "anchors": [
+          "pelicula",
+          "serie",
+          "capitulo",
+          "temporada"
+        ]
+      },
+      {
+        "label": "qué le ha parecido",
+        "cue": "what",
+        "verbs": [
+          "parecer",
+          "gustar",
+          "encantar",
+          "recomendar",
+          "tener"
+        ],
+        "anchors": [
+          "te",
+          "pelicula",
+          "serie",
+          "opinion"
+        ],
+        "allowPresent": true
+      }
+    ]
+  },
+  {
+    "topic": "Aprendizaje",
+    "context": "desde que empezó el curso",
+    "situation": "El curso sigue en marcha y tu compañero puede valorar sus progresos hasta ahora.",
+    "prompt": "Pregúntale qué ha aprendido o mejorado y cómo lo ha practicado.",
+    "expected": "perfecto",
+    "reason": "«Desde que empezó el curso» describe un periodo que llega hasta el presente.",
+    "topicKeywords": [
+      "aprend",
+      "mejor",
+      "curso",
+      "clase",
+      "idioma",
+      "estudi",
+      "practic",
+      "vocabular",
+      "pronunci"
+    ],
+    "timeMarkers": [
+      "desde",
+      "hasta ahora",
+      "este curso"
+    ],
+    "example": "¿Qué has aprendido desde que empezó el curso y cómo lo has practicado?",
+    "requirements": [
+      {
+        "label": "qué ha aprendido o mejorado",
+        "cue": "what",
+        "verbs": [
+          "aprender",
+          "mejorar",
+          "estudiar",
+          "desarrollar"
+        ],
+        "anchors": [
+          "curso",
+          "idioma",
+          "vocabulario",
+          "gramatica",
+          "pronunciacion"
+        ]
+      },
+      {
+        "label": "cómo lo ha practicado",
+        "cue": "manner",
+        "verbs": [
+          "practicar",
+          "estudiar",
+          "usar",
+          "aplicar",
+          "repasar"
+        ],
+        "anchors": [
+          "lo",
+          "clase",
+          "ejercicio",
+          "practica"
+        ]
+      }
+    ]
+  },
+  {
+    "topic": "Experiencias",
+    "context": "alguna vez en tu vida",
+    "situation": "Quieres descubrir si tu compañero ha vivido alguna experiencia poco habitual.",
+    "prompt": "Pregúntale si ha vivido alguna experiencia extraña y qué le ha pasado.",
+    "expected": "perfecto",
+    "reason": "Las experiencias vitales sin un momento cerrado suelen expresarse con pretérito perfecto.",
+    "topicKeywords": [
+      "vez",
+      "experien",
+      "viv",
+      "probar",
+      "pas",
+      "ocurr",
+      "extrañ",
+      "aventur",
+      "sorprend"
+    ],
+    "timeMarkers": [
+      "alguna vez",
+      "nunca",
+      "en tu vida",
+      "ya"
+    ],
+    "example": "¿Has vivido alguna vez una experiencia extraña y qué te ha pasado?",
+    "requirements": [
+      {
+        "label": "si ha vivido una experiencia extraña",
+        "cue": "yesNo",
+        "verbs": [
+          "vivir",
+          "tener",
+          "probar",
+          "hacer"
+        ],
+        "anchors": [
+          "experiencia",
+          "vez",
+          "algo",
+          "extrano"
+        ]
+      },
+      {
+        "label": "qué le ha pasado",
+        "cue": "what",
+        "verbs": [
+          "pasar",
+          "ocurrir",
+          "suceder",
+          "vivir"
+        ],
+        "anchors": [
+          "te",
+          "experiencia",
+          "situacion"
+        ]
+      }
+    ]
+  },
+  {
+    "topic": "Salud y hábitos",
+    "context": "en los últimos días",
+    "situation": "Tu compañero quizá ha cambiado recientemente algo en su rutina para sentirse mejor.",
+    "prompt": "Pregúntale qué hábito ha cambiado y cómo se ha sentido desde entonces.",
+    "expected": "perfecto",
+    "reason": "«En los últimos días» se refiere a un periodo reciente relacionado con el presente.",
+    "topicKeywords": [
+      "salud",
+      "habit",
+      "cambi",
+      "dorm",
+      "ejerc",
+      "deport",
+      "comer",
+      "sent",
+      "mejor",
+      "rutina"
+    ],
+    "timeMarkers": [
+      "ultimos dias",
+      "ultimamente",
+      "recientemente",
+      "desde entonces"
+    ],
+    "example": "¿Qué hábito has cambiado en los últimos días y cómo te has sentido desde entonces?",
+    "requirements": [
+      {
+        "label": "qué hábito ha cambiado",
+        "cue": "what",
+        "verbs": [
+          "cambiar",
+          "empezar",
+          "dejar",
+          "mejorar"
+        ],
+        "anchors": [
+          "habito",
+          "rutina",
+          "salud",
+          "ejercicio",
+          "dieta"
+        ]
+      },
+      {
+        "label": "cómo se ha sentido",
+        "cue": "manner",
+        "verbs": [
+          "sentirse",
+          "estar",
+          "encontrarse",
+          "mejorar"
+        ],
+        "anchors": [
+          "te",
+          "sentido",
+          "mejor",
+          "peor"
+        ]
+      }
+    ]
+  },
+  {
+    "topic": "Redes sociales",
+    "context": "esta semana",
+    "situation": "Esta semana tu compañero puede haber encontrado algo llamativo en internet.",
+    "prompt": "Pregúntale qué ha visto en las redes y por qué le ha sorprendido o interesado.",
+    "expected": "perfecto",
+    "reason": "La semana actual todavía no ha terminado.",
+    "topicKeywords": [
+      "red",
+      "instagram",
+      "tiktok",
+      "video",
+      "publicacion",
+      "internet",
+      "ver",
+      "sorprend",
+      "interes"
+    ],
+    "timeMarkers": [
+      "esta semana",
+      "estos dias",
+      "hoy"
+    ],
+    "example": "¿Qué has visto en las redes esta semana y por qué te ha sorprendido?",
+    "requirements": [
+      {
+        "label": "qué ha visto en las redes",
+        "cue": "what",
+        "verbs": [
+          "ver",
+          "encontrar",
+          "descubrir",
+          "leer"
+        ],
+        "anchors": [
+          "redes",
+          "video",
+          "publicacion",
+          "internet",
+          "tiktok",
+          "instagram"
+        ]
+      },
+      {
+        "label": "por qué le ha sorprendido o interesado",
+        "cue": "reason",
+        "verbs": [
+          "sorprender",
+          "interesar",
+          "llamar",
+          "gustar",
+          "impactar"
+        ],
+        "anchors": [
+          "te",
+          "eso",
+          "video",
+          "publicacion"
+        ]
+      }
+    ]
+  },
+  {
+    "topic": "Fin de semana",
+    "context": "el fin de semana pasado",
+    "situation": "El fin de semana ya terminó y quieres saber cómo lo pasó tu compañero.",
+    "prompt": "Pregúntale qué hizo y con quién pasó el tiempo.",
+    "expected": "indefinido",
+    "reason": "«El fin de semana pasado» es un periodo terminado.",
+    "topicKeywords": [
+      "fin de semana",
+      "sabado",
+      "domingo",
+      "hacer",
+      "sal",
+      "visit",
+      "pas",
+      "amig",
+      "famil"
+    ],
+    "timeMarkers": [
+      "fin de semana pasado",
+      "sabado",
+      "domingo"
+    ],
+    "example": "¿Qué hiciste el fin de semana pasado y con quién pasaste el tiempo?",
+    "requirements": [
+      {
+        "label": "qué hizo",
+        "cue": "what",
+        "verbs": [
+          "hacer",
+          "salir",
+          "ir",
+          "visitar",
+          "quedar",
+          "descansar"
+        ],
+        "anchors": [
+          "fin de semana",
+          "sabado",
+          "domingo"
+        ]
+      },
+      {
+        "label": "con quién pasó el tiempo",
+        "cue": "withPerson",
+        "verbs": [
+          "pasar",
+          "estar",
+          "quedar",
+          "salir",
+          "ver"
+        ],
+        "anchors": [
+          "amigo",
+          "familia",
+          "pareja",
+          "persona"
+        ],
+        "allowBackgroundImperfecto": true
+      }
+    ]
+  },
+  {
+    "topic": "Viajes",
+    "context": "las últimas vacaciones",
+    "situation": "Durante sus últimas vacaciones tu compañero tuvo un imprevisto.",
+    "prompt": "Pregúntale qué problema tuvo y cómo lo solucionó.",
+    "expected": "indefinido",
+    "reason": "Las últimas vacaciones forman un periodo cerrado.",
+    "topicKeywords": [
+      "vacacion",
+      "viaj",
+      "problema",
+      "pas",
+      "ocurr",
+      "solucion",
+      "hotel",
+      "vuelo",
+      "maleta"
+    ],
+    "timeMarkers": [
+      "ultimas vacaciones",
+      "el verano pasado",
+      "durante el viaje"
+    ],
+    "example": "¿Qué problema tuviste durante tus últimas vacaciones y cómo lo solucionaste?",
+    "requirements": [
+      {
+        "label": "qué problema tuvo",
+        "cue": "what",
+        "verbs": [
+          "tener",
+          "pasar",
+          "ocurrir",
+          "suceder",
+          "salir"
+        ],
+        "anchors": [
+          "problema",
+          "imprevisto",
+          "viaje",
+          "vacaciones"
+        ]
+      },
+      {
+        "label": "cómo lo solucionó",
+        "cue": "manner",
+        "verbs": [
+          "solucionar",
+          "resolver",
+          "arreglar",
+          "hacer",
+          "reaccionar"
+        ],
+        "anchors": [
+          "lo",
+          "problema",
+          "situacion"
+        ]
+      }
+    ]
+  },
+  {
+    "topic": "Un día especial",
+    "context": "ayer",
+    "situation": "Ayer ocurrió algo especialmente interesante o difícil.",
+    "prompt": "Pregúntale qué pasó y cómo se sintió.",
+    "expected": "indefinido",
+    "reason": "«Ayer» indica un momento terminado.",
+    "topicKeywords": [
+      "ayer",
+      "momento",
+      "pas",
+      "ocurr",
+      "dia",
+      "dific",
+      "interes",
+      "sent",
+      "reaccion"
+    ],
+    "timeMarkers": [
+      "ayer",
+      "anoche"
+    ],
+    "example": "¿Qué te pasó ayer y cómo te sentiste?",
+    "requirements": [
+      {
+        "label": "qué pasó",
+        "cue": "what",
+        "verbs": [
+          "pasar",
+          "ocurrir",
+          "suceder",
+          "hacer",
+          "vivir"
+        ],
+        "anchors": [
+          "ayer",
+          "momento",
+          "dia"
+        ]
+      },
+      {
+        "label": "cómo se sintió",
+        "cue": "manner",
+        "verbs": [
+          "sentirse",
+          "estar",
+          "reaccionar",
+          "parecer"
+        ],
+        "anchors": [
+          "te",
+          "emocion",
+          "bien",
+          "mal"
+        ]
+      }
+    ]
+  },
+  {
+    "topic": "Educación",
+    "context": "el último examen",
+    "situation": "Tu compañero ya ha terminado un examen importante.",
+    "prompt": "Pregúntale cómo fue el examen y qué parte le resultó más difícil.",
+    "expected": "indefinido",
+    "reason": "Se habla de un examen concreto y terminado.",
+    "topicKeywords": [
+      "examen",
+      "prueba",
+      "nota",
+      "pregunta",
+      "aprobar",
+      "suspender",
+      "dific",
+      "parte",
+      "resultado"
+    ],
+    "timeMarkers": [
+      "ultimo examen",
+      "la semana pasada",
+      "ayer"
+    ],
+    "example": "¿Cómo fue tu último examen y qué parte te resultó más difícil?",
+    "requirements": [
+      {
+        "label": "cómo fue el examen",
+        "cue": "manner",
+        "verbs": [
+          "ser",
+          "ir",
+          "salir",
+          "parecer",
+          "resultar"
+        ],
+        "anchors": [
+          "examen",
+          "prueba"
+        ]
+      },
+      {
+        "label": "qué parte fue difícil",
+        "cue": "what",
+        "verbs": [
+          "resultar",
+          "ser",
+          "costar",
+          "parecer"
+        ],
+        "anchors": [
+          "parte",
+          "pregunta",
+          "ejercicio",
+          "dificil"
+        ]
+      }
+    ]
+  },
+  {
+    "topic": "Compras",
+    "context": "la última vez que fuiste de compras",
+    "situation": "La última compra de tu compañero ya está terminada.",
+    "prompt": "Pregúntale qué compró y por qué lo eligió.",
+    "expected": "indefinido",
+    "reason": "«La última vez» sitúa la acción en un episodio concreto y cerrado.",
+    "topicKeywords": [
+      "compr",
+      "tienda",
+      "precio",
+      "eleg",
+      "ropa",
+      "producto",
+      "pag",
+      "decid"
+    ],
+    "timeMarkers": [
+      "ultima vez",
+      "ayer",
+      "semana pasada"
+    ],
+    "example": "¿Qué compraste la última vez que fuiste de compras y por qué lo elegiste?",
+    "requirements": [
+      {
+        "label": "qué compró",
+        "cue": "what",
+        "verbs": [
+          "comprar",
+          "adquirir",
+          "conseguir",
+          "llevar"
+        ],
+        "anchors": [
+          "producto",
+          "ropa",
+          "cosa",
+          "compra"
+        ]
+      },
+      {
+        "label": "por qué lo eligió",
+        "cue": "reason",
+        "verbs": [
+          "elegir",
+          "escoger",
+          "decidir",
+          "comprar",
+          "preferir"
+        ],
+        "anchors": [
+          "lo",
+          "la",
+          "producto",
+          "eso"
+        ]
+      }
+    ]
+  },
+  {
+    "topic": "Celebraciones",
+    "context": "tu último cumpleaños",
+    "situation": "Tu compañero ya celebró su último cumpleaños.",
+    "prompt": "Pregúntale cómo lo celebró y con quién estuvo.",
+    "expected": "indefinido",
+    "reason": "El último cumpleaños es un acontecimiento concreto y terminado.",
+    "topicKeywords": [
+      "cumple",
+      "celebr",
+      "fiesta",
+      "regal",
+      "invit",
+      "famil",
+      "amig",
+      "estar",
+      "pas"
+    ],
+    "timeMarkers": [
+      "ultimo cumpleaños",
+      "el año pasado"
+    ],
+    "example": "¿Cómo celebraste tu último cumpleaños y con quién estuviste?",
+    "requirements": [
+      {
+        "label": "cómo lo celebró",
+        "cue": "manner",
+        "verbs": [
+          "celebrar",
+          "pasar",
+          "hacer",
+          "organizar"
+        ],
+        "anchors": [
+          "cumpleanos",
+          "fiesta",
+          "celebracion"
+        ]
+      },
+      {
+        "label": "con quién estuvo",
+        "cue": "withPerson",
+        "verbs": [
+          "estar",
+          "celebrar",
+          "pasar",
+          "reunirse",
+          "invitar"
+        ],
+        "anchors": [
+          "familia",
+          "amigo",
+          "persona",
+          "invitado"
+        ],
+        "allowBackgroundImperfecto": true
+      }
+    ]
+  },
+  {
+    "topic": "Una decisión",
+    "context": "el año pasado",
+    "situation": "El año pasado tu compañero tomó una decisión que cambió algo importante.",
+    "prompt": "Pregúntale qué decisión tomó y por qué la tomó.",
+    "expected": "indefinido",
+    "reason": "«El año pasado» es un periodo cerrado.",
+    "topicKeywords": [
+      "decision",
+      "decid",
+      "cambi",
+      "eleg",
+      "trabaj",
+      "estudi",
+      "tomar",
+      "motivo"
+    ],
+    "timeMarkers": [
+      "año pasado",
+      "en 2025",
+      "entonces"
+    ],
+    "example": "¿Qué decisión importante tomaste el año pasado y por qué la tomaste?",
+    "requirements": [
+      {
+        "label": "qué decisión tomó",
+        "cue": "what",
+        "verbs": [
+          "tomar",
+          "decidir",
+          "elegir",
+          "cambiar",
+          "empezar",
+          "dejar"
+        ],
+        "anchors": [
+          "decision",
+          "cambio",
+          "trabajo",
+          "estudios"
+        ]
+      },
+      {
+        "label": "por qué la tomó",
+        "cue": "reason",
+        "verbs": [
+          "tomar",
+          "decidir",
+          "elegir",
+          "hacer",
+          "cambiar"
+        ],
+        "anchors": [
+          "la",
+          "decision",
+          "motivo",
+          "eso"
+        ]
+      }
+    ]
+  },
+  {
+    "topic": "Una sorpresa",
+    "context": "la última vez",
+    "situation": "Piensa en la última situación que sorprendió mucho a tu compañero.",
+    "prompt": "Pregúntale qué ocurrió y cómo reaccionó.",
+    "expected": "indefinido",
+    "reason": "La pregunta se refiere a un único acontecimiento concreto.",
+    "topicKeywords": [
+      "sorpr",
+      "pas",
+      "ocurr",
+      "noticia",
+      "situacion",
+      "reaccion",
+      "enter",
+      "descubr"
+    ],
+    "timeMarkers": [
+      "ultima vez",
+      "cuando",
+      "ayer"
+    ],
+    "example": "¿Qué ocurrió la última vez que te sorprendiste y cómo reaccionaste?",
+    "requirements": [
+      {
+        "label": "qué ocurrió",
+        "cue": "what",
+        "verbs": [
+          "ocurrir",
+          "pasar",
+          "suceder",
+          "descubrir",
+          "enterarse"
+        ],
+        "anchors": [
+          "situacion",
+          "noticia",
+          "sorpresa",
+          "vez"
+        ]
+      },
+      {
+        "label": "cómo reaccionó",
+        "cue": "manner",
+        "verbs": [
+          "reaccionar",
+          "hacer",
+          "decir",
+          "sentirse",
+          "responder"
+        ],
+        "anchors": [
+          "te",
+          "reaccion",
+          "despues"
+        ]
+      }
+    ]
+  },
+  {
+    "topic": "Infancia",
+    "context": "cuando eras niño/a",
+    "situation": "Quieres conocer una costumbre habitual de la infancia de tu compañero.",
+    "prompt": "Pregúntale qué hacía normalmente y dónde o con quién lo hacía.",
+    "expected": "imperfecto",
+    "reason": "Los hábitos y acciones repetidas del pasado se expresan con imperfecto.",
+    "topicKeywords": [
+      "niñ",
+      "infancia",
+      "jug",
+      "costumbr",
+      "hacer",
+      "gust",
+      "parque",
+      "amig",
+      "famil"
+    ],
+    "timeMarkers": [
+      "cuando eras",
+      "de pequeño",
+      "en tu infancia",
+      "normalmente"
+    ],
+    "example": "¿Qué hacías normalmente cuando eras niño y con quién lo hacías?",
+    "requirements": [
+      {
+        "label": "qué hacía normalmente",
+        "cue": "what",
+        "verbs": [
+          "hacer",
+          "jugar",
+          "pasar",
+          "ir",
+          "practicar"
+        ],
+        "anchors": [
+          "infancia",
+          "nino",
+          "normalmente",
+          "costumbre"
+        ]
+      },
+      {
+        "label": "dónde o con quién lo hacía",
+        "cue": "whereOrWith",
+        "verbs": [
+          "hacer",
+          "jugar",
+          "pasar",
+          "ir"
+        ],
+        "anchors": [
+          "parque",
+          "casa",
+          "amigo",
+          "familia",
+          "lo"
+        ]
+      }
+    ]
+  },
+  {
+    "topic": "Escuela",
+    "context": "cuando ibas a primaria",
+    "situation": "Tu compañero puede recordar sus gustos y experiencias de la escuela primaria.",
+    "prompt": "Pregúntale qué asignatura le gustaba más y por qué.",
+    "expected": "imperfecto",
+    "reason": "Los gustos y descripciones habituales del pasado requieren imperfecto.",
+    "topicKeywords": [
+      "escuel",
+      "colegi",
+      "primaria",
+      "asignatur",
+      "profesor",
+      "gust",
+      "clase",
+      "recre",
+      "matemat",
+      "historia",
+      "idioma",
+      "ingles"
+    ],
+    "timeMarkers": [
+      "cuando ibas",
+      "en primaria",
+      "de pequeño"
+    ],
+    "example": "¿Qué asignatura te gustaba más cuando ibas a primaria y por qué?",
+    "requirements": [
+      {
+        "label": "qué asignatura le gustaba",
+        "cue": "what",
+        "verbs": [
+          "gustar",
+          "encantar",
+          "preferir",
+          "interesar"
+        ],
+        "anchors": [
+          "asignatura",
+          "materia",
+          "clase",
+          "matematicas",
+          "historia",
+          "idioma",
+          "ingles"
+        ]
+      },
+      {
+        "label": "por qué le gustaba",
+        "cue": "reason",
+        "verbs": [
+          "gustar",
+          "encantar",
+          "interesar",
+          "ser",
+          "tener"
+        ],
+        "anchors": [
+          "porque",
+          "profesor",
+          "facil",
+          "interesante"
+        ]
+      }
+    ]
+  },
+  {
+    "topic": "Vacaciones de antes",
+    "context": "todos los veranos",
+    "situation": "Tu compañero recuerda cómo eran normalmente los veranos de su infancia.",
+    "prompt": "Pregúntale adónde iba y qué hacía allí.",
+    "expected": "imperfecto",
+    "reason": "«Todos los veranos» indica repetición habitual.",
+    "topicKeywords": [
+      "verano",
+      "vacacion",
+      "playa",
+      "pueblo",
+      "viaj",
+      "iba",
+      "hac",
+      "camp",
+      "famil"
+    ],
+    "timeMarkers": [
+      "todos los veranos",
+      "cada verano",
+      "normalmente"
+    ],
+    "example": "¿Adónde ibas todos los veranos y qué hacías allí?",
+    "requirements": [
+      {
+        "label": "adónde iba",
+        "cue": "destination",
+        "verbs": [
+          "ir",
+          "viajar",
+          "quedarse",
+          "pasar"
+        ],
+        "anchors": [
+          "playa",
+          "pueblo",
+          "campamento",
+          "lugar",
+          "vacaciones"
+        ]
+      },
+      {
+        "label": "qué hacía allí",
+        "cue": "what",
+        "verbs": [
+          "hacer",
+          "jugar",
+          "nadar",
+          "pasar",
+          "visitar"
+        ],
+        "anchors": [
+          "alli",
+          "playa",
+          "pueblo",
+          "actividad"
+        ]
+      }
+    ]
+  },
+  {
+    "topic": "Casa de la infancia",
+    "context": "cuando vivías con tu familia",
+    "situation": "Quieres imaginar el lugar donde vivía tu compañero durante su infancia.",
+    "prompt": "Pregúntale cómo era la casa o el barrio y qué parte le gustaba más.",
+    "expected": "imperfecto",
+    "reason": "Las descripciones de lugares y del fondo pasado se construyen con imperfecto.",
+    "topicKeywords": [
+      "casa",
+      "habitacion",
+      "barrio",
+      "viv",
+      "era",
+      "teni",
+      "famil",
+      "jardin",
+      "salon"
+    ],
+    "timeMarkers": [
+      "cuando vivias",
+      "antes",
+      "en aquella epoca"
+    ],
+    "example": "¿Cómo era la casa donde vivías y qué habitación te gustaba más?",
+    "requirements": [
+      {
+        "label": "cómo era la casa o el barrio",
+        "cue": "manner",
+        "verbs": [
+          "ser",
+          "tener",
+          "estar",
+          "vivir"
+        ],
+        "anchors": [
+          "casa",
+          "barrio",
+          "habitacion",
+          "edificio"
+        ]
+      },
+      {
+        "label": "qué parte le gustaba más",
+        "cue": "what",
+        "verbs": [
+          "gustar",
+          "preferir",
+          "encantar",
+          "usar"
+        ],
+        "anchors": [
+          "habitacion",
+          "jardin",
+          "salon",
+          "parte"
+        ]
+      }
+    ]
+  },
+  {
+    "topic": "Tecnología de antes",
+    "context": "antes de tener un smartphone",
+    "situation": "Tu compañero recuerda su vida cotidiana antes de usar un teléfono inteligente.",
+    "prompt": "Pregúntale cómo se comunicaba y cómo se entretenía.",
+    "expected": "imperfecto",
+    "reason": "Los antiguos hábitos y formas habituales de actuar se expresan con imperfecto.",
+    "topicKeywords": [
+      "smartphone",
+      "movil",
+      "telefono",
+      "comunic",
+      "entreten",
+      "internet",
+      "mensaje",
+      "llam",
+      "carta",
+      "television"
+    ],
+    "timeMarkers": [
+      "antes",
+      "cuando no tenias",
+      "en aquella epoca"
+    ],
+    "example": "¿Cómo te comunicabas antes de tener un smartphone y cómo te entretenías?",
+    "requirements": [
+      {
+        "label": "cómo se comunicaba",
+        "cue": "manner",
+        "verbs": [
+          "comunicarse",
+          "hablar",
+          "llamar",
+          "escribir",
+          "usar"
+        ],
+        "anchors": [
+          "telefono",
+          "carta",
+          "mensaje",
+          "amigo"
+        ]
+      },
+      {
+        "label": "cómo se entretenía",
+        "cue": "manner",
+        "verbs": [
+          "entretenerse",
+          "divertirse",
+          "jugar",
+          "ver",
+          "escuchar"
+        ],
+        "anchors": [
+          "television",
+          "radio",
+          "juego",
+          "musica"
+        ]
+      }
+    ]
+  },
+  {
+    "topic": "Amistades",
+    "context": "cuando tenías 12 años",
+    "situation": "Quieres conocer a la persona que era importante para tu compañero a los doce años.",
+    "prompt": "Pregúntale cómo era su mejor amigo o amiga y qué hacían juntos.",
+    "expected": "imperfecto",
+    "reason": "La descripción de una persona y las actividades habituales del pasado requieren imperfecto.",
+    "topicKeywords": [
+      "amig",
+      "persona",
+      "caracter",
+      "era",
+      "teni",
+      "conoc",
+      "jug",
+      "junt",
+      "divertid"
+    ],
+    "timeMarkers": [
+      "cuando tenias",
+      "a los 12 años",
+      "de pequeño"
+    ],
+    "example": "¿Cómo era tu mejor amigo cuando tenías doce años y qué hacíais juntos?",
+    "requirements": [
+      {
+        "label": "cómo era su mejor amigo",
+        "cue": "manner",
+        "verbs": [
+          "ser",
+          "tener",
+          "parecer"
+        ],
+        "anchors": [
+          "amigo",
+          "amiga",
+          "caracter",
+          "persona"
+        ]
+      },
+      {
+        "label": "qué hacían juntos",
+        "cue": "what",
+        "verbs": [
+          "hacer",
+          "jugar",
+          "pasar",
+          "ir",
+          "quedar"
+        ],
+        "anchors": [
+          "juntos",
+          "amigo",
+          "actividad"
+        ]
+      }
+    ]
+  },
+  {
+    "topic": "Rutina",
+    "context": "en aquella época",
+    "situation": "Tu compañero recuerda una etapa anterior de su vida y su rutina diaria.",
+    "prompt": "Pregúntale cómo era un día normal y qué hacía después de estudiar o trabajar.",
+    "expected": "imperfecto",
+    "reason": "Las rutinas y acciones repetidas del pasado se describen con imperfecto.",
+    "topicKeywords": [
+      "dia",
+      "rutina",
+      "normal",
+      "levant",
+      "trabaj",
+      "estudi",
+      "volv",
+      "cen",
+      "dorm",
+      "despues"
+    ],
+    "timeMarkers": [
+      "en aquella epoca",
+      "normalmente",
+      "cada dia",
+      "antes"
+    ],
+    "example": "¿Cómo era un día normal para ti en aquella época y qué hacías después de estudiar?",
+    "requirements": [
+      {
+        "label": "cómo era un día normal",
+        "cue": "manner",
+        "verbs": [
+          "ser",
+          "empezar",
+          "transcurrir",
+          "tener"
+        ],
+        "anchors": [
+          "dia",
+          "rutina",
+          "normal"
+        ]
+      },
+      {
+        "label": "qué hacía después",
+        "cue": "what",
+        "verbs": [
+          "hacer",
+          "volver",
+          "descansar",
+          "salir",
+          "comer",
+          "dormir"
+        ],
+        "anchors": [
+          "despues",
+          "trabajo",
+          "clase",
+          "casa"
+        ]
+      }
+    ]
+  },
+  {
+    "topic": "Profesores",
+    "context": "cuando estudiabas en el instituto",
+    "situation": "Tu compañero recuerda a sus profesores y la forma habitual de dar clase.",
+    "prompt": "Pregúntale cómo eran los profesores o las clases y cómo explicaban.",
+    "expected": "imperfecto",
+    "reason": "Las descripciones y experiencias habituales del pasado se expresan con imperfecto.",
+    "topicKeywords": [
+      "profesor",
+      "clase",
+      "instituto",
+      "estudi",
+      "era",
+      "explic",
+      "enseñ",
+      "asignatur",
+      "exigent"
+    ],
+    "timeMarkers": [
+      "cuando estudiabas",
+      "en el instituto",
+      "antes"
+    ],
+    "example": "¿Cómo eran tus profesores cuando estudiabas en el instituto y cómo explicaban?",
+    "requirements": [
+      {
+        "label": "cómo eran los profesores o las clases",
+        "cue": "manner",
+        "verbs": [
+          "ser",
+          "parecer",
+          "tener"
+        ],
+        "anchors": [
+          "profesor",
+          "clase",
+          "instituto"
+        ]
+      },
+      {
+        "label": "cómo explicaban",
+        "cue": "manner",
+        "verbs": [
+          "explicar",
+          "ensenar",
+          "dar",
+          "ayudar"
+        ],
+        "anchors": [
+          "explicacion",
+          "clase",
+          "tema",
+          "profesor"
+        ]
+      }
+    ]
+  }
+];
 
-    function stopTimer() {
-      if (timerId) clearInterval(timerId);
+const tenseLabels = {
+  perfecto: "pretérito perfecto",
+  indefinido: "pretérito indefinido",
+  imperfecto: "pretérito imperfecto"
+};
+
+const personLabels = {
+  "1s": "1. os. l.poj. (yo)",
+  "2s": "2. os. l.poj. (tú)",
+  "3s": "3. os. l.poj. (él/ella/usted)",
+  "1p": "1. os. l.mn. (nosotros/as)",
+  "2p": "2. os. l.mn. (vosotros/as)",
+  "3p": "3. os. l.mn. (ellos/ellas/ustedes)"
+};
+
+const subjectPronounPersons = {
+  yo: "1s", "tú": "2s", "él": "3s", ella: "3s", usted: "3s",
+  nosotros: "1p", nosotras: "1p", vosotros: "2p", vosotras: "2p",
+  ellos: "3p", ellas: "3p", ustedes: "3p"
+};
+
+const reflexivePronounPersons = {
+  me: ["1s"], te: ["2s"], se: ["3s", "3p"], nos: ["1p"], os: ["2p"]
+};
+
+const allCliticPronouns = new Set(["me", "te", "se", "nos", "os", "lo", "la", "los", "las", "le", "les"]);
+const prepositionsBeforePronoun = new Set(["a", "de", "para", "por", "con", "sin", "sobre", "entre"]);
+const interrogatives = ["qué", "cómo", "cuándo", "dónde", "adónde", "quién", "quiénes", "cuál", "cuáles", "cuánto", "cuánta", "cuántos", "cuántas", "por qué", "para qué"];
+const unaccentedInterrogatives = {que:"qué",como:"cómo",cuando:"cuándo",donde:"dónde",adonde:"adónde",quien:"quién",quienes:"quiénes",cual:"cuál",cuales:"cuáles",cuanto:"cuánto",cuanta:"cuánta",cuantos:"cuántos",cuantas:"cuántas"};
+
+const commonSpellingCorrections = {
+  nostros: "nosotros", nosostros: "nosotros", nosotors: "nosotros",
+  vosostros: "vosotros", vosotors: "vosotros", quando: "cuando",
+  qeu: "que", qe: "que", porqe: "porque", porq: "porque", asi: "así"
+};
+
+const perfectAuxPersons = {
+  he:["1s"], has:["2s"], ha:["3s"], hemos:["1p"], "habéis":["2p"], habeis:["2p"], han:["3p"]
+};
+
+const irregularParticiples = {
+  abierto:"abr", cubierto:"cubr", dicho:"dec", escrito:"escrib", frito:"fre",
+  hecho:"hac", muerto:"mor", puesto:"pon", resuelto:"resolv", roto:"romp",
+  visto:"ver", vuelto:"volv", descubierto:"descubr", impreso:"imprim", satisfecho:"satisfac"
+};
+
+const irregularPastForms = new Map();
+function registerPastForms(infinitive, stem, forms, tense) {
+  forms.forEach((form, index) => {
+    const persons = ["1s","2s","3s","1p","2p","3p"];
+    const stems=String(stem).split("/");
+    const existing=irregularPastForms.get(form);
+    if (existing && existing.tense===tense) {
+      irregularPastForms.set(form,{...existing,persons:[...new Set([...existing.persons,persons[index]])],stems:[...new Set([...existing.stems,...stems])]});
+    } else irregularPastForms.set(form, { infinitive, stems, persons:[persons[index]], tense });
+  });
+}
+
+[
+  ["ser/ir","ser/ir",["fui","fuiste","fue","fuimos","fuisteis","fueron"]],
+  ["tener","ten",["tuve","tuviste","tuvo","tuvimos","tuvisteis","tuvieron"]],
+  ["estar","est",["estuve","estuviste","estuvo","estuvimos","estuvisteis","estuvieron"]],
+  ["hacer","hac",["hice","hiciste","hizo","hicimos","hicisteis","hicieron"]],
+  ["poder","pod",["pude","pudiste","pudo","pudimos","pudisteis","pudieron"]],
+  ["poner","pon",["puse","pusiste","puso","pusimos","pusisteis","pusieron"]],
+  ["saber","sab",["supe","supiste","supo","supimos","supisteis","supieron"]],
+  ["querer","quer",["quise","quisiste","quiso","quisimos","quisisteis","quisieron"]],
+  ["venir","ven",["vine","viniste","vino","vinimos","vinisteis","vinieron"]],
+  ["decir","dec",["dije","dijiste","dijo","dijimos","dijisteis","dijeron"]],
+  ["traer","tra",["traje","trajiste","trajo","trajimos","trajisteis","trajeron"]],
+  ["andar","and",["anduve","anduviste","anduvo","anduvimos","anduvisteis","anduvieron"]],
+  ["dar","d",["di","diste","dio","dimos","disteis","dieron"]],
+  ["ver","ver",["vi","viste","vio","vimos","visteis","vieron"]],
+  ["leer","le",["leí","leíste","leyó","leímos","leísteis","leyeron"]],
+  ["oír","o",["oí","oíste","oyó","oímos","oísteis","oyeron"]]
+].forEach(item => registerPastForms(item[0], item[1], item[2], "indefinido"));
+
+[
+  ["ser","ser",["era","eras","era","éramos","erais","eran"]],
+  ["ir","ir",["iba","ibas","iba","íbamos","ibais","iban"]],
+  ["ver","ver",["veía","veías","veía","veíamos","veíais","veían"]]
+].forEach(item => registerPastForms(item[0], item[1], item[2], "imperfecto"));
+
+// Wersje bez akcentów są rozpoznawane jako próba poprawnej formy.
+[...irregularPastForms.entries()].forEach(([form, data]) => {
+  const plain = form.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  if (!irregularPastForms.has(plain)) irregularPastForms.set(plain, data);
+});
+
+const falseImperfectWords = new Set([
+  "día","dia","policía","policia","geografía","geografia","biología","biologia","tecnología","tecnologia",
+  "energía","energia","fotografía","fotografia","familia","historia","comida","vida","noticia","experiencia",
+  "vacaciones","primaria","secundaria","materia","memoria","farmacia","iglesia","ciencia","distancia",
+  "importancia","infancia","estancia","diferencia","compañía","compania","alegría","alegria","cafetería","cafeteria"
+]);
+const falseIndefiniteWords = new Set(["qué","que","sí","si","aquí","aqui","allí","alli","país","pais","día","dia","café","cafe","menú","menu","sofá","sofa","mamá","mama","papá","papa"]);
+const ambiguousNosotrosPresent = new Set(["somos","estamos","vamos","tenemos","hacemos","podemos","queremos","sabemos","vemos","damos"]);
+
+const reflexiveVerbStems = [
+  "levant","acost","despert","duch","vest","sent","divert","aburr","preocup","ocup","reun","comunic",
+  "organiz","mud","qued","adapt","relaj","cuid","present","dedic","acostumbr","entret","sorprend","decid"
+];
+const gustarLikeStems = ["gust","encant","interes","import","preocup","molest","parec","apetec","result","cost"];
+const antecedentSensitiveVerbStems = ["eleg","visit","usar","utiliz","compr","conoc","prepar","cocin","ver","descubr","encontr","resolver","solucion"];
+const clearlyInanimateLeErrorStems = ["usar","utiliz","eleg","instal","descarg","compr","ver","visitar"];
+
+const nounFeatures = {
+  "país":["m","s"], pais:["m","s"], destino:["m","s"], viaje:["m","s"], problema:["m","s"], hábito:["m","s"], habito:["m","s"],
+  dispositivo:["m","s"], teléfono:["m","s"], telefono:["m","s"], ordenador:["m","s"], curso:["m","s"], examen:["m","s"],
+  producto:["m","s"], regalo:["m","s"], amigo:["m","s"], barrio:["m","s"], profesor:["m","s"], lugar:["m","s"],
+  "países":["m","p"], paises:["m","p"], destinos:["m","p"], viajes:["m","p"], problemas:["m","p"], hábitos:["m","p"], habitos:["m","p"],
+  dispositivos:["m","p"], cursos:["m","p"], exámenes:["m","p"], examenes:["m","p"], productos:["m","p"], regalos:["m","p"], amigos:["m","p"], profesores:["m","p"],
+  ciudad:["f","s"], aplicación:["f","s"], aplicacion:["f","s"], película:["f","s"], pelicula:["f","s"], serie:["f","s"],
+  comida:["f","s"], receta:["f","s"], experiencia:["f","s"], decisión:["f","s"], decision:["f","s"], sorpresa:["f","s"],
+  casa:["f","s"], habitación:["f","s"], habitacion:["f","s"], escuela:["f","s"], asignatura:["f","s"], clase:["f","s"],
+  ciudades:["f","p"], aplicaciones:["f","p"], películas:["f","p"], peliculas:["f","p"], series:["f","p"], comidas:["f","p"],
+  recetas:["f","p"], experiencias:["f","p"], decisiones:["f","p"], sorpresas:["f","p"], casas:["f","p"], habitaciones:["f","p"], escuelas:["f","p"], asignaturas:["f","p"], clases:["f","p"]
+};
+
+const semanticVerbFamilies = [
+  ["viaj","ir","visit","conoc","desplaz"],
+  ["usar","utiliz","emple","aplic","serv"],
+  ["eleg","escog","decid","prefer","compr"],
+  ["hacer","realiz","practic","prepar","cocin"],
+  ["aprend","estudi","mejor","practic","repas","desarroll"],
+  ["viv","experiment","tener","pas","ocurr","suced"],
+  ["cambi","empez","dej","mejor","transform"],
+  ["ver","mir","encontr","descubr","leer"],
+  ["gust","encant","parec","recomend","interes","disfrut"],
+  ["sent","estar","encontr","reaccion"],
+  ["pas","ocurr","suced","tener","salir"],
+  ["solucion","resolv","arregl","reaccion","hacer"],
+  ["ser","ir","salir","parec","result"],
+  ["celebr","pas","organiz","reun"],
+  ["comunic","habl","llam","escrib"],
+  ["entret","divert","jug","ver","escuch"],
+  ["explic","enseñ","ensen","dar","ayud"],
+  ["qued","estar","pas","ver","sal"],
+  ["tom","decid","eleg","cambi","empez","dej"]
+];
+
+const missionStopWords = new Set([
+  "pregunta","preguntale","tu","compañero","companero","el","la","los","las","un","una","de","del","al","a","en","con","por","para","sin","sobre","y","o",
+  "que","como","cuando","donde","adonde","quien","quienes","si","lo","le","se","me","te","nos","os","su","sus","este","esta","estos","estas","ese","esa","eso","alli","ahi",
+  "pasado","pasada","ultimos","ultimas","ultimo","ultima","vez","dia","dias","semana","mes","año","ano","años","anos","persona","algo","cosa","parte"
+]);
+
+let currentMission = null;
+let lastMissionIndex = -1;
+let round = 1;
+let remainingSeconds = 300;
+let timerId = null;
+let timerRunning = false;
+let resultAnimationToken = 0;
+let toastTimer = null;
+
+const $ = id => document.getElementById(id);
+const topicText = $("topicText");
+const contextText = $("contextText");
+const situationText = $("situationText");
+const missionText = $("missionText");
+const roundLabel = $("roundLabel");
+const timerDisplay = $("timerDisplay");
+const timerHint = $("timerHint");
+const startPauseBtn = $("startPauseBtn");
+const resetTimerBtn = $("resetTimerBtn");
+const questionInput = $("questionInput");
+const charCount = $("charCount");
+const analyzeBtn = $("analyzeBtn");
+const nextBtn = $("nextBtn");
+const clearBtn = $("clearBtn");
+const resultsPlaceholder = $("resultsPlaceholder");
+const resultsPanel = $("resultsPanel");
+const evaluationStatus = $("evaluationStatus");
+const evaluationSpinner = $("evaluationSpinner");
+const evaluationStep = $("evaluationStep");
+const evaluationProgress = $("evaluationProgress");
+const evaluationProgressFill = $("evaluationProgressFill");
+const detectedBox = $("detectedBox");
+const resultSummary = $("resultSummary");
+const scoreCircle = $("scoreCircle");
+const scoreNumber = $("scoreNumber");
+const scoreTitle = $("scoreTitle");
+const scoreSubtitle = $("scoreSubtitle");
+const writingScore = $("writingScore");
+const contextScore = $("contextScore");
+const detectedText = $("detectedText");
+const feedbackList = $("feedbackList");
+const teacherInfo = $("teacherInfo");
+const tenseHelpWrap = $("tenseHelpWrap");
+const tenseHelpButton = $("tenseHelpButton");
+const tenseHelpContent = $("tenseHelpContent");
+const toast = $("toast");
+const confettiLayer = $("confettiLayer");
+
+function normalizeText(value) {
+  return String(value || "").toLowerCase().replace(/[“”«»]/g,'"').replace(/\s+/g," ").trim();
+}
+function removeAccents(value) {
+  return normalizeText(value).normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+function wordsFrom(value) {
+  return normalizeText(value).match(/[a-záéíóúüñ]+/g) || [];
+}
+function tokenize(value) {
+  return wordsFrom(value);
+}
+function escapeHtml(value) {
+  return String(value).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+}
+function hasPhrase(text, phrase) {
+  const plain = removeAccents(text);
+  const target = removeAccents(phrase).replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+  return new RegExp(`(^|[^a-zñ])${target}([^a-zñ]|$)`,"i").test(plain);
+}
+function formatTime(seconds) {
+  return `${String(Math.floor(seconds / 60)).padStart(2,"0")}:${String(seconds % 60).padStart(2,"0")}`;
+}
+function showToast(message) {
+  clearTimeout(toastTimer);
+  toast.textContent = message;
+  toast.classList.add("visible");
+  toastTimer = setTimeout(() => toast.classList.remove("visible"), 2500);
+}
+function updateTimerUI() {
+  timerDisplay.textContent = formatTime(remainingSeconds);
+  timerDisplay.classList.toggle("warning", remainingSeconds <= 60 && remainingSeconds > 0);
+  timerDisplay.classList.toggle("finished", remainingSeconds === 0);
+  if (remainingSeconds === 0) timerHint.textContent = "¡Se acabó el tiempo! Zapisz teraz główne pytanie.";
+  else if (remainingSeconds <= 60) timerHint.textContent = "¡Último minuto! Dokończcie rozmowę i wybierzcie główne pytanie.";
+  else if (timerRunning) timerHint.textContent = "Rozmowa trwa. Zadaj pytania dodatkowe i słuchaj odpowiedzi partnera.";
+  else timerHint.textContent = "Po uruchomieniu macie 5 minut na rozmowę.";
+}
+function stopTimer() {
+  if (timerId) clearInterval(timerId);
+  timerId = null;
+  timerRunning = false;
+  startPauseBtn.textContent = remainingSeconds === 300 ? "Rozpocznij" : "Wznów";
+  updateTimerUI();
+}
+function toggleTimer() {
+  if (timerRunning) return stopTimer();
+  if (remainingSeconds === 0) remainingSeconds = 300;
+  timerRunning = true;
+  startPauseBtn.textContent = "Pauza";
+  updateTimerUI();
+  timerId = setInterval(() => {
+    remainingSeconds -= 1;
+    if (remainingSeconds <= 0) {
+      remainingSeconds = 0;
+      clearInterval(timerId);
       timerId = null;
       timerRunning = false;
-      startPauseBtn.textContent = remainingSeconds === 300 ? "Rozpocznij" : "Wznów";
-      updateTimerUI();
+      startPauseBtn.textContent = "Uruchom ponownie";
+      showToast("Czas minął. Zapiszcie teraz główne pytanie.");
     }
+    updateTimerUI();
+  }, 1000);
+}
+function resetTimer() {
+  stopTimer();
+  remainingSeconds = 300;
+  startPauseBtn.textContent = "Rozpocznij";
+  updateTimerUI();
+}
+function chooseMission() {
+  let index;
+  do index = Math.floor(Math.random() * missions.length); while (index === lastMissionIndex && missions.length > 1);
+  lastMissionIndex = index;
+  currentMission = missions[index];
+  topicText.textContent = currentMission.topic;
+  contextText.textContent = currentMission.context;
+  situationText.textContent = currentMission.situation;
+  missionText.textContent = currentMission.prompt;
+  questionInput.placeholder = `Ej.: ${currentMission.example}`;
+  updateTenseHelp();
+}
+function resetRoundView(clearInput = true) {
+  resultAnimationToken += 1;
+  resetTimer();
+  if (clearInput) questionInput.value = "";
+  charCount.textContent = questionInput.value.length;
+  resultsPanel.classList.remove("visible");
+  resultsPlaceholder.classList.remove("hidden");
+  feedbackList.innerHTML = "";
+  detectedBox.classList.remove("visible");
+  resultSummary.classList.remove("visible");
+  tenseHelpWrap.classList.add("hidden");
+  tenseHelpContent.classList.remove("visible");
+  tenseHelpButton.setAttribute("aria-expanded","false");
+  scoreCircle.style.setProperty("--score-angle","0deg");
+  scoreNumber.textContent = "0";
+}
+function nextRound() {
+  round += 1;
+  roundLabel.textContent = `Runda ${round}`;
+  chooseMission();
+  resetRoundView(true);
+}
 
-    function toggleTimer() {
-      if (timerRunning) {
-        stopTimer();
-        return;
+function inferRegularPastForm(token, tense, allowAmbiguousNosotros = false) {
+  const plain = removeAccents(token);
+  if (tense === "imperfecto") {
+    const endings = [
+      ["abamos",["1p"]],["iamos",["1p"]],["abais",["2p"]],["iais",["2p"]],
+      ["abas",["2s"]],["ias",["2s"]],["aban",["3p"]],["ian",["3p"]],
+      ["aba",["1s","3s"]],["ia",["1s","3s"]]
+    ];
+    for (const [ending, persons] of endings) {
+      if (plain.endsWith(ending) && plain.length > ending.length + 1) {
+        return { persons, stems:[plain.slice(0,-ending.length)], infinitive:"" };
       }
-
-      if (remainingSeconds === 0) remainingSeconds = 300;
-      timerRunning = true;
-      startPauseBtn.textContent = "Pauza";
-      updateTimerUI();
-
-      timerId = setInterval(() => {
-        remainingSeconds -= 1;
-        updateTimerUI();
-        if (remainingSeconds <= 0) {
-          remainingSeconds = 0;
-          clearInterval(timerId);
-          timerId = null;
-          timerRunning = false;
-          startPauseBtn.textContent = "Uruchom ponownie";
-          updateTimerUI();
-          showToast("Czas minął. Zapiszcie teraz główne pytanie.");
-        }
-      }, 1000);
     }
-
-    function resetTimer() {
-      stopTimer();
-      remainingSeconds = 300;
-      startPauseBtn.textContent = "Rozpocznij";
-      updateTimerUI();
-    }
-
-    function pickMission() {
-      let index;
-      do {
-        index = Math.floor(Math.random() * missions.length);
-      } while (index === lastMissionIndex && missions.length > 1);
-
-      lastMissionIndex = index;
-      currentMission = missions[index];
-      topicText.textContent = currentMission.topic;
-      contextText.textContent = currentMission.context;
-      missionText.textContent = currentMission.mission;
-      roundLabel.textContent = `Runda ${round}`;
-      questionInput.value = "";
-      charCount.textContent = "0";
-      resetTimer();
-      hideResults();
-      questionInput.focus();
-    }
-
-    function hideResults() {
-      resultAnimationToken += 1;
-      resultsPanel.classList.remove("visible");
-      resultsPlaceholder.classList.remove("hidden");
-      detectedBox.classList.remove("visible");
-      resultSummary.classList.remove("visible");
-      evaluationStatus.classList.remove("done");
-      feedbackList.innerHTML = "";
-      scoreCircle.classList.remove("celebrate");
-      scoreCircle.style.setProperty("--score-angle", "0deg");
-      scoreNumber.textContent = "0";
-      writingScore.textContent = "0";
-      contextScore.textContent = "0";
-      analyzeBtn.disabled = false;
-    }
-
-    function showToast(message) {
-      toast.textContent = message;
-      toast.classList.add("visible");
-      setTimeout(() => toast.classList.remove("visible"), 2400);
-    }
-
-    function detectPerfect(tokens) {
-      const auxiliaries = new Set(["he", "has", "ha", "hemos", "habéis", "habeis", "han"]);
-      const detections = [];
-
-      for (let i = 0; i < tokens.length; i++) {
-        if (!auxiliaries.has(tokens[i])) continue;
-
-        const lookAhead = tokens.slice(i + 1, i + 5);
-        const participle = lookAhead.find(token =>
-          /(?:ado|ido)$/.test(token) || irregularParticiples.includes(token)
-        );
-
-        if (participle) {
-          detections.push(`${tokens[i]} ${participle}`);
-        } else {
-          detections.push(`${tokens[i]} (…)`);
-        }
+  }
+  if (tense === "indefinido") {
+    const endings = [
+      ["asteis",["2p"]],["isteis",["2p"]],["aron",["3p"]],["ieron",["3p"]],
+      ["aste",["2s"]],["iste",["2s"]],["io",["3s"]],["o",["3s"]],
+      ["e",["1s"]],["i",["1s"]]
+    ];
+    for (const [ending, persons] of endings) {
+      if (plain.endsWith(ending) && plain.length > ending.length + 1) {
+        if ((ending === "o" || ending === "e" || ending === "i") && !/[óéí]$/.test(token)) continue;
+        return { persons, stems:[plain.slice(0,-ending.length)], infinitive:"" };
       }
-
-      return [...new Set(detections)];
     }
-
-    function detectImperfect(tokens) {
-      const detections = [];
-      const imperfectPattern = /(?:aba|abas|ábamos|abamos|abais|aban|ía|ia|ías|ias|íamos|iamos|íais|iais|ían|ian)$/;
-
-      tokens.forEach(token => {
-        if (falseImperfectWords.has(token)) return;
-        if (imperfectIrregular.includes(token) || imperfectPattern.test(token)) {
-          detections.push(token);
-        }
-      });
-
-      return [...new Set(detections)];
+    if (allowAmbiguousNosotros && /(?:amos|imos)$/.test(plain) && !ambiguousNosotrosPresent.has(plain)) {
+      const ending = plain.endsWith("amos") ? "amos" : "imos";
+      if (plain.length > ending.length + 1) return {persons:["1p"],stems:[plain.slice(0,-ending.length)],infinitive:""};
     }
+  }
+  return null;
+}
 
-    function detectIndefinido(tokens) {
-      const detections = [];
-      const strongPattern = /(?:aste|iste|ó|ió|aron|ieron|asteis|isteis)$/;
-      const firstPersonPattern = /(?:é|í)$/;
+function participleStem(token) {
+  const plain = removeAccents(token);
+  if (irregularParticiples[plain]) return [irregularParticiples[plain]];
+  if (plain.endsWith("ado") && plain.length > 4) return [plain.slice(0,-3)];
+  if (plain.endsWith("ido") && plain.length > 4) return [plain.slice(0,-3)];
+  return [];
+}
+function isParticiple(token) {
+  const plain = removeAccents(token);
+  return Boolean(irregularParticiples[plain]) || /(?:ado|ido)$/.test(plain);
+}
+function finiteStemFromToken(token, tense) {
+  const plain = removeAccents(token);
+  const irregular = irregularPastForms.get(token) || irregularPastForms.get(plain);
+  if (irregular && irregular.tense === tense) return irregular;
+  return inferRegularPastForm(token, tense, false);
+}
+function inferInfinitiveLabel(stems) {
+  return stems?.[0] || "";
+}
 
-      tokens.forEach(token => {
-        if (falseIndefiniteWords.has(token)) return;
+function detectDetailedVerbForms(text) {
+  const tokens = tokenize(text);
+  const forms = [];
+  const plainText = removeAccents(text);
+  const allowAmbiguousNosotros = currentMission?.expected === "indefinido" || ["ayer","anoche","pasado","ultima vez","última vez"].some(marker => plainText.includes(removeAccents(marker)));
 
-        if (indefinidoIrregular.includes(token)) {
-          detections.push(token);
-          return;
-        }
+  for (let index=0; index<tokens.length; index+=1) {
+    const token = tokens[index];
+    const plain = removeAccents(token);
 
-        if (strongPattern.test(token)) {
-          detections.push(token);
-          return;
-        }
-
-        if (firstPersonPattern.test(token) && token.length >= 4) {
-          detections.push(token);
-        }
-      });
-
-      return [...new Set(detections)];
-    }
-
-    function findPotentialInfinitives(tokens) {
-      const infinitives = tokens.filter(token => /(?:ar|er|ir)$/.test(token) && token.length > 3);
-      return [...new Set(infinitives)];
-    }
-
-    function inferImperfectPersons(token) {
-      if (irregularImperfectPersons.has(token)) return irregularImperfectPersons.get(token);
-      const plain = removeAccents(token);
-      if (/(?:abamos|iamos)$/.test(plain)) return ["1p"];
-      if (/(?:abais|iais)$/.test(plain)) return ["2p"];
-      if (/(?:abas|ias)$/.test(plain)) return ["2s"];
-      if (/(?:aban|ian)$/.test(plain)) return ["3p"];
-      if (/(?:aba|ia)$/.test(plain)) return ["1s", "3s"];
-      return [];
-    }
-
-    function inferIndefinitePersons(token) {
-      if (irregularIndefinitePersons.has(token)) return irregularIndefinitePersons.get(token);
-      const plain = removeAccents(token);
-      if (/(?:asteis|isteis)$/.test(plain)) return ["2p"];
-      if (/(?:aste|iste)$/.test(plain)) return ["2s"];
-      if (/(?:aron|ieron)$/.test(plain)) return ["3p"];
-      if (/(?:ó|ió)$/.test(token)) return ["3s"];
-      if (/[éí]$/.test(token)) return ["1s"];
-      return [];
-    }
-
-    function detectDetailedVerbForms(text) {
-      const tokens = tokenize(text);
-      const forms = [];
-      const perfectAuxiliaries = new Set(Object.keys(perfectAuxPersons));
-
-      for (let index = 0; index < tokens.length; index += 1) {
-        const token = tokens[index];
-
-        if (perfectAuxiliaries.has(token)) {
-          const nextTokens = tokens.slice(index + 1, index + 5);
-          const participle = nextTokens.find(item => /(?:ado|ido)$/.test(item) || irregularParticiples.includes(item));
-          if (participle) {
-            forms.push({
-              form: `${token} ${participle}`,
-              token,
-              tense: "perfecto",
-              persons: perfectAuxPersons[token],
-              index
-            });
-          }
-        }
-
-        if (!falseImperfectWords.has(token)) {
-          const persons = inferImperfectPersons(token);
-          if (persons.length > 0) {
-            forms.push({ form: token, token, tense: "imperfecto", persons, index });
-          }
-        }
-
-        if (!falseIndefiniteWords.has(token)) {
-          const persons = inferIndefinitePersons(token);
-          if (persons.length > 0) {
-            forms.push({ form: token, token, tense: "indefinido", persons, index });
-          }
-        }
+    if (perfectAuxPersons[token] || perfectAuxPersons[plain]) {
+      const auxPersons = perfectAuxPersons[token] || perfectAuxPersons[plain];
+      let participleIndex = -1;
+      for (let j=index+1; j<=Math.min(tokens.length-1,index+4); j+=1) {
+        if (isParticiple(tokens[j])) { participleIndex = j; break; }
+        if (allCliticPronouns.has(tokens[j]) && j === index+1) continue;
+        if (j > index+2) break;
       }
-
-      return forms.filter((form, index, array) =>
-        array.findIndex(item => item.form === form.form && item.tense === form.tense && item.index === form.index) === index
-      );
-    }
-
-    function detectTenses(text) {
-      const tokens = tokenize(text);
-      return {
-        tokens,
-        perfecto: detectPerfect(tokens),
-        indefinido: detectIndefinido(tokens),
-        imperfecto: detectImperfect(tokens),
-        infinitives: findPotentialInfinitives(tokens),
-        detailed: detectDetailedVerbForms(text)
-      };
-    }
-
-    function containsAny(text, fragments) {
-      const normalized = ` ${removeAccents(normalizeText(text)).replace(/[^a-zñ0-9]+/g, " ")} `;
-      return fragments.some(fragment => {
-        const clean = removeAccents(fragment.toLowerCase()).trim();
-        return clean.includes(" ")
-          ? normalized.includes(` ${clean} `)
-          : normalized.split(/\s+/).some(token => token === clean || (clean.length >= 4 && token.startsWith(clean)));
-      });
-    }
-
-    function findTopicVocabulary(text, mission) {
-      const normalized = removeAccents(normalizeText(text)).replace(/[^a-zñ0-9]+/g, " ").trim();
-      const tokens = normalized.split(/\s+/).filter(Boolean);
-      const lexicon = topicLexicons[mission.topic] || { phrases: [], stems: [] };
-      const phraseMatches = [];
-      const strongWordMatches = [];
-      const weakWordMatches = [];
-
-      for (const phrase of lexicon.phrases) {
-        const clean = removeAccents(phrase.toLowerCase());
-        if (` ${normalized} `.includes(` ${clean} `)) phraseMatches.push(phrase);
-      }
-
-      const stems = [
-        ...lexicon.stems,
-        ...mission.topicKeywords.filter(keyword => !keyword.includes(" ") && keyword.length >= 3)
-      ].map(item => removeAccents(item.toLowerCase()));
-
-      for (const token of tokens) {
-        if (lexicalStopWords.has(token)) continue;
-        const matchedStem = stems.find(stem => {
-          if (stem.length <= 3) return token.startsWith(stem) && token.length > stem.length;
-          return token === stem || token.startsWith(stem);
-        });
-        if (matchedStem) {
-          const weak = [...weakVocabularyStems].some(stem => matchedStem === stem || matchedStem.startsWith(stem));
-          (weak ? weakWordMatches : strongWordMatches).push(token);
-        }
-      }
-
-      for (const keyword of mission.topicKeywords.filter(item => item.includes(" "))) {
-        const clean = removeAccents(keyword.toLowerCase());
-        if (` ${normalized} `.includes(` ${clean} `)) phraseMatches.push(keyword);
-      }
-
-      const strongMatches = [...new Set([...phraseMatches, ...strongWordMatches])];
-      const weakMatches = [...new Set(weakWordMatches)];
-      const matches = [...new Set([...strongMatches, ...weakMatches])];
-      return {
-        matches,
-        strongMatches,
-        weakMatches,
-        partial: weakMatches.length >= 1,
-        strong: strongMatches.length >= 1 || weakMatches.length >= 2,
-        rich: strongMatches.length >= 2 || (strongMatches.length >= 1 && weakMatches.length >= 1)
-      };
-    }
-
-    function startsLikeQuestion(text) {
-      const normalized = normalizeText(text).replace(/^¿\s*/, "");
-      return strongQuestionWords.some(word => normalized.startsWith(`${word} `) || normalized === word) ||
-        yesNoStarters.some(word => normalized.startsWith(`${word} `) || normalized === word);
-    }
-
-    function findMissingQuestionAccent(text) {
-      const normalized = normalizeText(text).replace(/^¿\s*/, "");
-      const accentPairs = [
-        ["que ", "qué"], ["como ", "cómo"], ["cuando ", "cuándo"], ["donde ", "dónde"],
-        ["quien ", "quién"], ["cual ", "cuál"], ["cuanto ", "cuánto"], ["cuanta ", "cuánta"],
-        ["cuantos ", "cuántos"], ["cuantas ", "cuántas"]
-      ];
-      const found = accentPairs.find(([plain]) => normalized.startsWith(plain));
-      return found ? found[1] : null;
-    }
-
-
-    function formatPersons(persons) {
-      return persons.map(person => personLabels[person]).join(" lub ");
-    }
-
-    function findSpellingIssues(text) {
-      const tokens = tokenize(text);
-      const issues = [];
-
-      tokens.forEach((token, index) => {
-        if (commonSpellingCorrections[token]) {
-          issues.push({
-            type: "danger",
-            title: "Pisownia",
-            message: `Forma „${token}” wygląda na literówkę. Prawdopodobnie chodzi o „${commonSpellingCorrections[token]}”.`,
-            formPenalty: 4,
-            critical: token === "nostros" || token === "nosostros" || token === "nosotors"
-          });
-        }
-
-        if (token === "anos") {
-          const nearby = tokens.slice(Math.max(0, index - 4), index + 1);
-          const ageContext = nearby.some(item => /^\d{1,2}$/.test(item)) ||
-            nearby.some(item => ["tener", "tenia", "tenias", "teniamos", "tuve", "tuviste", "tuvo", "tuvimos", "edad"].includes(removeAccents(item)));
-          if (ageContext) {
-            issues.push({
-              type: "danger",
-              title: "Litera ñ",
-              message: "W wyrażeniu wieku trzeba napisać „años”. Forma „anos” ma inne znaczenie i nie może zastępować „años”.",
-              formPenalty: 5,
-              critical: true
-            });
-          }
-        }
-      });
-
-      return issues;
-    }
-
-    function findAgreementIssues(analysis) {
-      const correctedTokens = analysis.tokens.map(token => commonSpellingCorrections[token] || token);
-      const subjects = [];
-
-      correctedTokens.forEach((token, index) => {
-        if (!subjectPronounPersons[token]) return;
-        if (index > 0 && prepositionsBeforePronoun.has(correctedTokens[index - 1])) return;
-        subjects.push({ token, person: subjectPronounPersons[token], index });
-      });
-
-      const issues = [];
-      subjects.forEach(subject => {
-        const candidates = analysis.detailed
-          .filter(form => Math.abs(form.index - subject.index) <= 4)
-          .sort((a, b) => Math.abs(a.index - subject.index) - Math.abs(b.index - subject.index));
-        const nearest = candidates[0];
-        if (!nearest || nearest.persons.length === 0) return;
-
-        if (!nearest.persons.includes(subject.person)) {
-          issues.push({
-            type: "danger",
-            title: "Zgodność osoby",
-            message: `Zaimek „${subject.token}” oznacza ${personLabels[subject.person]}, ale forma „${nearest.form}” wskazuje na ${formatPersons(nearest.persons)}. Te elementy nie mogą odnosić się do tego samego podmiotu.`,
-            formPenalty: 8,
-            usePenalty: 6,
-            critical: true,
-            subject,
-            verb: nearest
-          });
-        }
-      });
-
-      return issues.filter((issue, index, array) =>
-        array.findIndex(item => item.subject.index === issue.subject.index && item.verb.index === issue.verb.index) === index
-      );
-    }
-
-    function findTemporalCoherenceIssues(text, mission, analysis) {
-      const plain = removeAccents(normalizeText(text));
-      const issues = [];
-      const ageForms = {
-        "tuve": "tenía",
-        "tuviste": "tenías",
-        "tuvo": "tenía",
-        "tuvimos": "teníamos",
-        "tuvisteis": "teníais",
-        "tuvieron": "tenían"
-      };
-      const ageWords = "(?:\\d{1,2}|diez|once|doce|trece|catorce|quince|dieciseis|diecisiete|dieciocho|diecinueve|veinte)";
-      const ageRegex = new RegExp(`\\bcuando\\s+(?:(?:yo|tu|el|ella|usted|nosotros|nosotras|vosotros|vosotras|ellos|ellas|ustedes)\\s+)?(tuve|tuviste|tuvo|tuvimos|tuvisteis|tuvieron)\\s+${ageWords}\\s+anos\\b`, "i");
-      const ageMatch = plain.match(ageRegex);
-
-      if (ageMatch) {
-        const wrong = ageMatch[1].toLowerCase();
-        issues.push({
-          type: "danger",
-          title: "Wiek jako tło",
-          message: `Przy podawaniu wieku w tle przeszłości używamy imperfecto: „cuando ${ageForms[wrong]} … años”, a nie „cuando ${wrong} … años”.`,
-          usePenalty: 12,
-          critical: true
-        });
-      }
-
-      const closedMarkers = ["ayer", "anoche", "la semana pasada", "el ano pasado", "en 2024", "en 2025", "el fin de semana pasado"];
-      const openMarkers = ["hoy", "esta semana", "este mes", "ultimamente", "recientemente", "hasta ahora", "desde que"];
-      const habitualMarkers = ["normalmente", "siempre", "cada dia", "todos los dias", "todos los veranos", "de pequeno", "en aquella epoca"];
-
-      const hasClosed = closedMarkers.some(marker => plain.includes(marker));
-      const hasOpen = openMarkers.some(marker => plain.includes(marker));
-      const hasHabitual = habitualMarkers.some(marker => plain.includes(marker));
-
-      if (mission.expected === "perfecto" && hasClosed && analysis.perfecto.length > 0) {
-        issues.push({
-          type: "danger",
-          title: "Okres zakończony",
-          message: "W pytaniu połączono pretérito perfecto z wyraźnie zakończonym okresem, np. ayer lub el año pasado. W takim kontekście zwykle potrzebny jest indefinido.",
-          usePenalty: 10,
-          critical: true
-        });
-      }
-
-      if (mission.expected === "indefinido" && hasOpen && analysis.indefinido.length > 0) {
-        issues.push({
-          type: "warning",
-          title: "Okres trwający",
-          message: "Określenie czasu łączy przeszłość z teraźniejszością. Sprawdź, czy zamiast indefinido nie powinno pojawić się pretérito perfecto.",
-          usePenalty: 5,
-          critical: false
-        });
-      }
-
-      if (mission.expected === "imperfecto" && hasHabitual && analysis.indefinido.length > 0 && !ageMatch) {
-        issues.push({
-          type: "warning",
-          title: "Zwyczaj a pojedyncze wydarzenie",
-          message: `W zdaniu pojawia się marker zwyczaju oraz forma indefinido (${analysis.indefinido.join(", ")}). To może być poprawne tylko wtedy, gdy indefinido opisuje osobne, jednorazowe wydarzenie, a nie sam zwyczaj.`,
-          usePenalty: 5,
-          critical: false
-        });
-      }
-
-      if (/\bcuando\b.+\banos\b.+\bnormalmente\s*$/.test(plain.replace(/[?¿]/g, "").trim())) {
-        issues.push({
-          type: "warning",
-          title: "Pozycja „normalmente”",
-          message: "Umieszczone na końcu „normalmente” może wyglądać tak, jakby opisywało sam wiek. Naturalniej: „¿Qué hacías normalmente cuando tenías 10 años?”.",
-          usePenalty: 3,
-          critical: false
-        });
-      }
-
-      return issues;
-    }
-
-    function findAddresseeIssues(analysis, mission) {
-      const correctedTokens = analysis.tokens.map(token => commonSpellingCorrections[token] || token);
-      const hasWePronoun = correctedTokens.some(token => token === "nosotros" || token === "nosotras");
-      if (!hasWePronoun || !mission.mission.toLowerCase().includes("tu compañero")) return [];
-
-      return [{
-        type: "warning",
-        title: "Osoba, o którą pytasz",
-        message: "Karta prosi o doświadczenie rozmówcy, natomiast „nosotros/nosotras” zmienia sens na wspólne „my”. Może to być celowe, ale sprawdź, czy rzeczywiście odpowiada misji.",
-        usePenalty: 4,
-        critical: false
-      }];
-    }
-
-    function buildCorrectionHint(agreementIssues, temporalIssues, spellingIssues) {
-      const hints = [];
-      if (agreementIssues.length > 0) {
-        const issue = agreementIssues[0];
-        hints.push(`Ujednolić osobę: „${issue.subject.token}” wymaga formy w ${personLabels[issue.subject.person]}.`);
-        if (issue.subject.person === "1p" && issue.verb.persons.includes("2s")) {
-          hints.push("Jeśli pytasz rozmówcę, usuń „nosotros” i zachowaj 2. osobę: „hacías / tenías”. Jeśli naprawdę chodzi o wspólne „my”, użyj 1. osoby liczby mnogiej: „hacíamos / teníamos”.");
-        }
-      }
-      if (temporalIssues.some(issue => issue.title === "Wiek jako tło")) {
-        hints.push("Przy wieku zastosuj imperfecto: cuando tenía/tenías/teníamos … años.");
-      }
-      if (spellingIssues.some(issue => issue.message.includes("años"))) {
-        hints.push("Popraw „anos” na „años”.");
-      }
-      return hints;
-    }
-
-    function addFeedback(items, type, title, message) {
-      items.push({ type, title, message });
-    }
-
-    function analyzeQuestion() {
-      const raw = questionInput.value.trim();
-      if (!raw) {
-        showToast("Najpierw wpisz pytanie po hiszpańsku.");
-        questionInput.focus();
-        return;
-      }
-
-      const analysis = detectTenses(raw);
-      const normalized = normalizeText(raw);
-      const wordCount = analysis.tokens.length;
-      const feedback = [];
-      let formScore = 0;
-      let useScore = 0;
-
-      const spellingIssues = findSpellingIssues(raw);
-      const agreementIssues = findAgreementIssues(analysis);
-      const temporalIssues = findTemporalCoherenceIssues(raw, currentMission, analysis);
-      const addresseeIssues = findAddresseeIssues(analysis, currentMission);
-      const grammarIssues = [...spellingIssues, ...agreementIssues, ...temporalIssues, ...addresseeIssues];
-
-      const hasOpeningMark = normalized.startsWith("¿");
-      const hasClosingMark = normalized.endsWith("?");
-      const hasAnyQuestionMark = normalized.includes("?");
-      const questionStart = startsLikeQuestion(raw);
-      const missingAccent = findMissingQuestionAccent(raw);
-
-      if (hasOpeningMark && hasClosingMark) {
-        formScore += 10;
-        addFeedback(feedback, "success", "Znaki zapytania", "Pytanie ma poprawne hiszpańskie znaki ¿ ... ?.");
-      } else if (hasAnyQuestionMark) {
-        formScore += 6;
-        addFeedback(feedback, "warning", "Znaki zapytania", "Pytanie jest czytelne, ale po hiszpańsku najlepiej użyć obu znaków: ¿ ... ?.");
+      if (participleIndex >= 0) {
+        const participle = tokens[participleIndex];
+        const stems = participleStem(participle);
+        forms.push({form:`${token} ${participle}`, token, participle, tense:"perfecto", persons:auxPersons, index, endIndex:participleIndex, stems, stem:stems[0] || "", infinitive:inferInfinitiveLabel(stems)});
       } else {
-        addFeedback(feedback, "danger", "Znaki zapytania", "Brakuje znaku zapytania. Zapisz pełne pytanie, najlepiej w formacie ¿ ... ?.");
+        forms.push({form:`${token} (…)`, token, tense:"perfecto", persons:auxPersons, index, endIndex:index, stems:[], stem:"", infinitive:"", incomplete:true});
       }
-
-      if (wordCount >= 5) {
-        formScore += 8;
-        addFeedback(feedback, "success", "Pełne zdanie", `Pytanie ma ${wordCount} słów i jest wystarczająco rozwinięte do analizy.`);
-      } else if (wordCount >= 3) {
-        formScore += 5;
-        addFeedback(feedback, "warning", "Długość pytania", "Pytanie jest bardzo krótkie. Może być poprawne, ale warto dodać kontekst lub szczegół.");
-      } else {
-        addFeedback(feedback, "danger", "Pełne zdanie", "Wpis jest zbyt krótki, aby wiarygodnie ocenić pytanie.");
-      }
-
-      if (questionStart) {
-        formScore += 10;
-        addFeedback(feedback, "success", "Budowa pytania", "Początek zdania pasuje do pytania otwartego lub pytania typu sí/no.");
-      } else if (hasAnyQuestionMark && wordCount >= 4) {
-        formScore += 6;
-        addFeedback(feedback, "warning", "Budowa pytania", "Zdanie wygląda jak pytanie, ale gra nie rozpoznała typowego początku. Sprawdź szyk i formę czasownika.");
-      } else {
-        addFeedback(feedback, "danger", "Budowa pytania", "Gra nie rozpoznaje typowej konstrukcji pytającej.");
-      }
-
-      const allDetectedForms = [
-        ...analysis.perfecto,
-        ...analysis.indefinido,
-        ...analysis.imperfecto
-      ];
-
-      if (allDetectedForms.length > 0) {
-        formScore += 8;
-        addFeedback(feedback, "success", "Forma czasownikowa", "W pytaniu wykryto co najmniej jedną odmienioną formę czasu przeszłego.");
-      } else if (analysis.infinitives.length > 0) {
-        formScore += 3;
-        addFeedback(feedback, "danger", "Forma czasownikowa", `Wykryto bezokolicznik (${analysis.infinitives.join(", ")}), ale nie znaleziono wyraźnej odmienionej formy badanego czasu.`);
-      } else {
-        addFeedback(feedback, "danger", "Forma czasownikowa", "Nie wykryto wyraźnej formy pretérito perfecto, indefinido ani imperfecto.");
-      }
-
-      if (missingAccent) {
-        formScore = Math.max(0, formScore - 3);
-        addFeedback(feedback, "warning", "Akcent w słowie pytającym", `Na początku pytania prawdopodobnie potrzebny jest akcent: „${missingAccent}”.`);
-      } else if (strongQuestionWords.some(word => normalizeText(raw).replace(/^¿\s*/, "").startsWith(word))) {
-        formScore += 4;
-        addFeedback(feedback, "success", "Słowo pytające", "Słowo pytające jest zapisane poprawnie.");
-      } else {
-        formScore += 2;
-      }
-
-      spellingIssues.forEach(issue => {
-        formScore = Math.max(0, formScore - issue.formPenalty);
-        addFeedback(feedback, issue.type, issue.title, issue.message);
-      });
-
-      agreementIssues.forEach(issue => {
-        formScore = Math.max(0, formScore - issue.formPenalty);
-        useScore = Math.max(0, useScore - issue.usePenalty);
-        addFeedback(feedback, issue.type, issue.title, issue.message);
-      });
-
-      formScore = Math.min(40, formScore);
-
-      const expectedForms = analysis[currentMission.expected];
-      const otherTenses = Object.keys(tenseLabels).filter(key => key !== currentMission.expected && analysis[key].length > 0);
-
-      if (expectedForms.length > 0) {
-        useScore += 35;
-        addFeedback(
-          feedback,
-          "success",
-          "Dobór czasu",
-          `Wykryto oczekiwany ${tenseLabels[currentMission.expected]}: ${expectedForms.join(", ")}.`
-        );
-      } else {
-        const detectedNames = Object.keys(tenseLabels)
-          .filter(key => analysis[key].length > 0)
-          .map(key => tenseLabels[key]);
-        addFeedback(
-          feedback,
-          "danger",
-          "Dobór czasu",
-          detectedNames.length
-            ? `W tym kontekście oczekiwany jest ${tenseLabels[currentMission.expected]}, ale wykryto: ${detectedNames.join(" i ")}.`
-            : `W tym kontekście oczekiwany jest ${tenseLabels[currentMission.expected]}, ale gra nie znalazła jego wyraźnej formy.`
-        );
-      }
-
-      if (otherTenses.length === 0 && agreementIssues.length === 0 && temporalIssues.length === 0) {
-        useScore += 8;
-        addFeedback(feedback, "success", "Spójność gramatyczna", "Nie wykryto konkurencyjnego czasu ani konfliktu osoby gramatycznej.");
-      } else if (otherTenses.length > 0 && expectedForms.length > 0) {
-        useScore += 3;
-        addFeedback(
-          feedback,
-          "warning",
-          "Więcej niż jeden czas",
-          `W pytaniu pojawia się też ${otherTenses.map(key => tenseLabels[key]).join(" i ")}. Samo użycie dwóch czasów może być poprawne, ale ich role muszą pasować do sensu całego zdania.`
-        );
-      } else if (expectedForms.length === 0) {
-        addFeedback(feedback, "danger", "Spójność gramatyczna", "Wykryty czas nie odpowiada czasowi oczekiwanemu w tej misji.");
-      }
-
-      temporalIssues.forEach(issue => {
-        useScore = Math.max(0, useScore - issue.usePenalty);
-        addFeedback(feedback, issue.type, issue.title, issue.message);
-      });
-
-      addresseeIssues.forEach(issue => {
-        useScore = Math.max(0, useScore - issue.usePenalty);
-        addFeedback(feedback, issue.type, issue.title, issue.message);
-      });
-
-      const topicVocabulary = findTopicVocabulary(raw, currentMission);
-      if (topicVocabulary.rich) {
-        useScore += 9;
-        addFeedback(
-          feedback,
-          "success",
-          "Zgodność z tematem",
-          `Pytanie zawiera wyraźne słownictwo z tematu „${currentMission.topic}”: ${topicVocabulary.matches.slice(0, 4).join(", ")}. Punkty za temat nie anulują jednak błędów w osobie lub sensie zdania.`
-        );
-      } else if (topicVocabulary.strong) {
-        useScore += 8;
-        addFeedback(
-          feedback,
-          "success",
-          "Zgodność z tematem",
-          `Rozpoznano słownictwo pasujące do tematu „${currentMission.topic}”: ${topicVocabulary.matches.join(", ")}.`
-        );
-      } else if (topicVocabulary.partial) {
-        useScore += 5;
-        addFeedback(
-          feedback,
-          "warning",
-          "Zgodność z tematem",
-          `Rozpoznano jedynie ogólne słowo („${topicVocabulary.weakMatches.join(", ")}”). Dodaj bardziej charakterystyczne słownictwo dla tematu „${currentMission.topic}”.`
-        );
-      } else if (wordCount >= 7) {
-        useScore += 3;
-        addFeedback(feedback, "warning", "Zgodność z tematem", "Pytanie jest rozwinięte, ale używa mniej oczywistego słownictwa niż przewiduje karta. Sens warto potwierdzić ręcznie.");
-      } else {
-        addFeedback(feedback, "warning", "Zgodność z tematem", `Nie znaleziono jednoznacznego słownictwa związanego z tematem „${currentMission.topic}”. Dodaj konkretny rzeczownik lub czasownik z tego obszaru.`);
-      }
-
-      const markerMatch = containsAny(raw, currentMission.timeMarkers);
-      if (markerMatch) {
-        useScore += 8;
-        addFeedback(feedback, "success", "Kontekst czasowy", "Pytanie zawiera określenie czasu pasujące do karty.");
-      } else if (expectedForms.length > 0) {
-        useScore += 5;
-        addFeedback(feedback, "warning", "Kontekst czasowy", "Czas gramatyczny pasuje, ale warto dodać określenie czasu, aby pytanie było bardziej jednoznaczne.");
-      } else {
-        addFeedback(feedback, "danger", "Kontekst czasowy", "Brakuje zarówno oczekiwanego czasu, jak i wyraźnego określenia temporalnego z karty.");
-      }
-
-      const perfectAuxWithoutParticiple = analysis.perfecto.some(form => form.includes("(…)"));
-      if (perfectAuxWithoutParticiple) {
-        useScore = Math.max(0, useScore - 8);
-        addFeedback(feedback, "danger", "Konstrukcja perfecto", "Wykryto formę haber, ale nie znaleziono po niej imiesłowu typu -ado/-ido lub formy nieregularnej, np. hecho, visto, dicho.");
-      }
-
-      const incompatiblePerfectPair = /\b(?:he|has|ha|hemos|hab[eé]is|han)\s+(?:fui|fuiste|fue|hiciste|hizo|tuviste|tuvo|estuve|estuvo|dijiste|dijo)\b/i.test(normalized);
-      if (incompatiblePerfectPair) {
-        useScore = Math.max(0, useScore - 12);
-        addFeedback(feedback, "danger", "Połączenie form", "Po haber powinien wystąpić participio, np. has hecho, a nie forma indefinido.");
-      }
-
-      const correctionHints = buildCorrectionHint(agreementIssues, temporalIssues, spellingIssues);
-      if (correctionHints.length > 0) {
-        addFeedback(feedback, "warning", "Jak poprawić zdanie", correctionHints.join(" "));
-      }
-
-      useScore = Math.max(0, Math.min(60, useScore));
-      formScore = Math.max(0, Math.min(40, formScore));
-
-      const criticalCount = grammarIssues.filter(issue => issue.critical).length;
-      let scoreCap = 100;
-      if (criticalCount === 1) scoreCap = 68;
-      if (criticalCount >= 2) scoreCap = 52;
-      if (criticalCount >= 2 && spellingIssues.length >= 2) scoreCap = 48;
-      if (expectedForms.length === 0) scoreCap = Math.min(scoreCap, 62);
-
-      const uncappedTotal = Math.min(100, formScore + useScore);
-      const totalScore = Math.min(uncappedTotal, scoreCap);
-
-      if (totalScore < uncappedTotal) {
-        addFeedback(
-          feedback,
-          "danger",
-          "Ograniczenie wyniku",
-          "Mimo obecności właściwego czasu i słów kluczowych wynik został ograniczony, ponieważ wykryto błąd, który zmienia osobę lub sens zdania. Nie wystarczy „wpisać się w klucz”."
-        );
-      }
-
-      renderResults({
-        totalScore,
-        formScore,
-        useScore,
-        analysis,
-        feedback,
-        raw,
-        topicVocabulary,
-        grammarIssues,
-        criticalCount,
-        scoreCap
-      });
     }
 
-    function wait(milliseconds) {
-      return new Promise(resolve => setTimeout(resolve, milliseconds));
+    if (!falseImperfectWords.has(token) && !falseImperfectWords.has(plain)) {
+      const irregular = irregularPastForms.get(token) || irregularPastForms.get(plain);
+      const info = irregular?.tense === "imperfecto" ? irregular : inferRegularPastForm(token,"imperfecto",false);
+      if (info) forms.push({form:token,token,tense:"imperfecto",persons:info.persons,index,endIndex:index,stems:info.stems,stem:info.stems[0] || "",infinitive:info.infinitive || inferInfinitiveLabel(info.stems)});
     }
 
-    function createFeedbackElement(item) {
-      const icon = item.type === "success" ? "✓" : item.type === "warning" ? "!" : "×";
-      const element = document.createElement("div");
-      element.className = `feedback-item ${item.type}`;
-      element.innerHTML = `
-        <div class="feedback-icon">${icon}</div>
-        <p><strong>${escapeHtml(item.title)}</strong>${escapeHtml(item.message)}</p>
-      `;
-      return element;
+    if (!falseIndefiniteWords.has(token) && !falseIndefiniteWords.has(plain)) {
+      const irregular = irregularPastForms.get(token) || irregularPastForms.get(plain);
+      const info = irregular?.tense === "indefinido" ? irregular : inferRegularPastForm(token,"indefinido",allowAmbiguousNosotros);
+      if (info) forms.push({form:token,token,tense:"indefinido",persons:info.persons,index,endIndex:index,stems:info.stems,stem:info.stems[0] || "",infinitive:info.infinitive || inferInfinitiveLabel(info.stems)});
+    }
+  }
+
+  return forms.filter((form,index,array) => array.findIndex(item => item.form === form.form && item.tense === form.tense && item.index === form.index) === index);
+}
+
+function findPotentialInfinitives(tokens) {
+  return [...new Set(tokens.filter(token => /(?:ar|er|ir)(?:me|te|se|nos|os|lo|la|los|las|le|les){0,2}$/.test(removeAccents(token)) && token.length > 3))];
+}
+function detectTenses(text) {
+  const tokens = tokenize(text);
+  const detailed = detectDetailedVerbForms(text);
+  const group = tense => [...new Set(detailed.filter(form => form.tense === tense).map(form => form.form))];
+  return {tokens,detailed,perfecto:group("perfecto"),indefinido:group("indefinido"),imperfecto:group("imperfecto"),infinitives:findPotentialInfinitives(tokens)};
+}
+function correctedTokens(tokens) {
+  return tokens.map(token => commonSpellingCorrections[token] || token);
+}
+function formatPersons(persons) {
+  return persons.map(person => personLabels[person]).join(" lub ");
+}
+function startsLikeQuestion(raw, analysis) {
+  const beginning = normalizeText(raw).replace(/^¿\s*/,"");
+  if (interrogatives.some(word => beginning === word || beginning.startsWith(`${word} `))) return true;
+  const tokens = correctedTokens(analysis.tokens);
+  if (!tokens.length) return false;
+  if (allCliticPronouns.has(tokens[0]) && analysis.detailed.some(form => form.index <= 1)) return true;
+  return analysis.detailed.some(form => form.index === 0 || form.index === 1);
+}
+function findAccentProblem(raw) {
+  const beginning = normalizeText(raw).replace(/^¿\s*/,"");
+  const first = removeAccents(beginning.split(/\s+/)[0] || "");
+  if (unaccentedInterrogatives[first] && !beginning.startsWith(unaccentedInterrogatives[first])) return `${first} → ${unaccentedInterrogatives[first]}`;
+  if (/^por que\b/.test(beginning)) return "por que → por qué";
+  if (/^para que\b/.test(beginning)) return "para que → para qué";
+  return null;
+}
+
+function findTopicVocabulary(raw, mission) {
+  const plain = removeAccents(raw);
+  const tokens = wordsFrom(raw).map(removeAccents);
+  const matches = [];
+  mission.topicKeywords.forEach(keyword => {
+    const key = removeAccents(keyword);
+    if (key.includes(" ")) {
+      if (plain.includes(key)) matches.push(keyword);
+    } else {
+      const found = tokens.some(token => token === key || (key.length >= 3 && token.startsWith(key)) || (token.length >= 5 && key.startsWith(token)));
+      if (found) matches.push(keyword);
+    }
+  });
+  return [...new Set(matches)];
+}
+
+function findSpellingIssues(raw) {
+  const tokens = tokenize(raw);
+  const issues = [];
+  tokens.forEach((token,index) => {
+    if (commonSpellingCorrections[token]) {
+      issues.push({type:"danger",title:"Pisownia",formPenalty:4,usePenalty:1,critical:["nostros","nosostros","nosotors"].includes(token),message:`Forma „${token}” wygląda na literówkę. Prawdopodobnie chodzi o „${commonSpellingCorrections[token]}”.`});
+    }
+    if (token === "anos") {
+      const nearby = tokens.slice(Math.max(0,index-4),index+1).map(removeAccents);
+      if (nearby.some(item => /^\d{1,2}$/.test(item)) || nearby.some(item => ["tener","tenia","tenias","teniamos","tuve","tuviste","tuvo","tuvimos","edad","doce","diez"].includes(item))) {
+        issues.push({type:"danger",title:"Litera ñ",formPenalty:5,usePenalty:3,critical:true,message:"W wyrażeniu wieku trzeba napisać „años”. Forma „anos” nie może zastępować „años”."});
+      }
+    }
+  });
+  const plain = removeAccents(raw);
+  if (/\bpara\s+tu\b/.test(plain)) issues.push({type:"danger",title:"Tú / ti",formPenalty:5,usePenalty:2,critical:false,message:"Po przyimku „para” używamy „ti”: «para ti», nie «para tú»."});
+  if (/\bcon\s+tu\b/.test(plain)) issues.push({type:"danger",title:"Forma po przyimku",formPenalty:5,usePenalty:2,critical:false,message:"Zamiast «con tú» używamy «contigo»."});
+  if (/\bcon\s+yo\b/.test(plain)) issues.push({type:"danger",title:"Forma po przyimku",formPenalty:5,usePenalty:2,critical:false,message:"Zamiast «con yo» używamy «conmigo»."});
+  if (/\ba\s+mi\s+(?:me|te|le|nos|os|les)\b/.test(plain) && !/\ba\s+mí\b/.test(normalizeText(raw))) issues.push({type:"warning",title:"Akcent w «mí»",formPenalty:2,usePenalty:0,critical:false,message:"Po przyimku zapisujemy «mí» z akcentem: «a mí me…»."});
+  return issues;
+}
+
+function findAgreementIssues(analysis) {
+  const tokens = correctedTokens(analysis.tokens);
+  const issues = [];
+  const compoundHandled=new Set();
+  tokens.forEach((token,index) => {
+    const person=subjectPronounPersons[token];
+    if (!person || (index>0&&prepositionsBeforePronoun.has(tokens[index-1]))) return;
+    const yIndex=tokens.slice(index+1,index+4).findIndex(item=>item==='y');
+    if (yIndex<0) return;
+    const conjunctionIndex=index+1+yIndex;
+    const nearest=analysis.detailed.filter(form=>form.index>conjunctionIndex&&form.index-conjunctionIndex<=5).sort((a,b)=>a.index-b.index)[0];
+    if (!nearest) return;
+    const expectedPersons=person==='1s'||person==='1p'?['1p']:person==='2s'||person==='2p'?['2p','3p']:['3p'];
+    compoundHandled.add(index);
+    if (!nearest.persons.some(item=>expectedPersons.includes(item))) issues.push({type:"danger",title:"Podmiot złożony",formPenalty:8,usePenalty:6,critical:true,message:`Podmiot „${tokens.slice(index,Math.min(tokens.length,conjunctionIndex+3)).join(' ')}” jest w liczbie mnogiej. Oczekiwana jest ${expectedPersons.map(item=>personLabels[item]).join(' lub ')}, a forma „${nearest.form}” wskazuje na ${formatPersons(nearest.persons)}.`,subject:{token,index,person:expectedPersons[0]},verb:nearest});
+  });
+  tokens.forEach((token,index) => {
+    const person = subjectPronounPersons[token];
+    if (!person || compoundHandled.has(index)) return;
+    if (index > 0 && prepositionsBeforePronoun.has(tokens[index-1])) return;
+    const after = analysis.detailed.filter(form => form.index >= index && form.index-index <= 5).sort((a,b)=>a.index-b.index);
+    const before = analysis.detailed.filter(form => form.index < index && index-form.index <= 3).sort((a,b)=>b.index-a.index);
+    const nearest = after[0] || before[0];
+    if (!nearest || nearest.persons.includes(person)) return;
+    issues.push({type:"danger",title:"Zgodność osoby",formPenalty:8,usePenalty:6,critical:true,message:`Zaimek „${token}” oznacza ${personLabels[person]}, ale forma „${nearest.form}” wskazuje na ${formatPersons(nearest.persons)}.`,subject:{token,index,person},verb:nearest});
+  });
+
+  // «tu» bez akcentu użyte jako samodzielny podmiot przed czasownikiem.
+  tokens.forEach((token,index) => {
+    if (token !== "tu") return;
+    const next = tokens[index+1];
+    const nextIsNoun = Boolean(nounFeatures[next]) || (next && !analysis.detailed.some(form => form.index === index+1));
+    const nearbyVerb = analysis.detailed.find(form => form.index === index+1 || form.index === index+2);
+    if (nearbyVerb && !nextIsNoun) issues.push({type:"warning",title:"Tú czy tu?",formPenalty:3,usePenalty:1,critical:false,message:`Jeśli „tu” jest podmiotem przy „${nearbyVerb.form}”, potrzebny jest akcent: «tú». Bez akcentu «tu» oznacza «twój/twoja».`});
+  });
+  return issues;
+}
+
+function isLikelyArticle(tokens,index,analysis) {
+  const token = tokens[index];
+  if (!["lo","la","los","las"].includes(token)) return false;
+  const next = tokens[index+1];
+  if (!next) return false;
+  if (analysis.detailed.some(form => form.tense === "perfecto" && form.index < index && (form.endIndex ?? form.index) > index)) return false;
+  if (analysis.detailed.some(form => form.index === index+1)) return false;
+  if (allCliticPronouns.has(next)) return false;
+  if (/^(?:que|cual|como|donde|cuando|quien)$/.test(next)) return false;
+  return true;
+}
+function nearestFiniteAfter(index,analysis,maxDistance=4) {
+  return analysis.detailed.find(form => form.index > index && form.index-index <= maxDistance) || null;
+}
+function findNearestAntecedent(tokens,index) {
+  for (let i=index-1;i>=Math.max(0,index-10);i-=1) {
+    if (nounFeatures[tokens[i]]) return {token:tokens[i],features:nounFeatures[tokens[i]],index:i};
+  }
+  return null;
+}
+function expectedDirectPronoun(features) {
+  const [gender,number] = features;
+  if (gender === "m" && number === "s") return "lo";
+  if (gender === "f" && number === "s") return "la";
+  if (gender === "m" && number === "p") return "los";
+  return "las";
+}
+function stemMatches(stem,list) {
+  const clean = removeAccents(stem);
+  return list.some(item => clean.startsWith(removeAccents(item)) || removeAccents(item).startsWith(clean));
+}
+function missionTargetsPartner(mission=currentMission) {
+  const text = removeAccents(`${mission?.prompt || ""} ${mission?.situation || ""}`);
+  return /preguntale|tu companero/.test(text);
+}
+function analyzePronouns(raw,analysis) {
+  const tokens = correctedTokens(analysis.tokens);
+  const occurrences = [];
+  const issues = [];
+
+  tokens.forEach((token,index) => {
+    if (!allCliticPronouns.has(token) || isLikelyArticle(tokens,index,analysis)) return;
+    const finite = nearestFiniteAfter(index,analysis,4);
+    const next = tokens[index+1];
+    let role = "zaimek dopełnienia";
+    if (token === "se" && ["lo","la","los","las"].includes(next)) role = "dopełnienie dalsze (se zamiast le/les)";
+    else if (["le","les"].includes(token)) role = "dopełnienie dalsze";
+    else if (["lo","la","los","las"].includes(token)) role = "dopełnienie bliższe";
+    else if (finite) {
+      if (finite.stems.some(stem => stemMatches(stem,gustarLikeStems))) role = "dopełnienie dalsze";
+      else if (token === "se" && !finite.stems.some(stem => stemMatches(stem,reflexiveVerbStems)) && finite.persons.some(person => ["3s","3p"].includes(person))) role = "se bezosobowe lub zwrotne bierne";
+      else if (finite.stems.some(stem => stemMatches(stem,reflexiveVerbStems))) {
+        const agrees = reflexivePronounPersons[token]?.some(person => finite.persons.includes(person));
+        role = agrees ? "zaimek zwrotny" : "zwrotny lub osobowy";
+      } else role = "dopełnienie bliższe/dalsze zależnie od czasownika";
+    }
+    occurrences.push({token,index,role,finite});
+  });
+
+  // Zaimka nie stawiamy po odmienionym czasowniku. W perfecto dotyczy to także pozycji między haber i participio.
+  analysis.detailed.forEach(form => {
+    const next = tokens[form.index+1];
+    if (next && allCliticPronouns.has(next) && !isLikelyArticle(tokens,form.index+1,analysis)) {
+      issues.push({type:"danger",title:"Pozycja zaimka",formPenalty:7,usePenalty:5,critical:true,message:`Zaimek „${next}” powinien stać przed odmienioną formą: np. «${next} ${form.form.replace(" (…)","")}». W perfecto: «te has preparado», nie «has te preparado».`});
+    }
+    const afterEnd = tokens[(form.endIndex ?? form.index)+1];
+    if (afterEnd && allCliticPronouns.has(afterEnd) && !isLikelyArticle(tokens,(form.endIndex ?? form.index)+1,analysis)) {
+      issues.push({type:"danger",title:"Pozycja zaimka",formPenalty:7,usePenalty:5,critical:true,message:`Zaimek „${afterEnd}” nie może stać po całej odmienionej konstrukcji „${form.form}”. Umieść go przed czasownikiem: «${afterEnd} ${form.form}».`});
+    }
+  });
+
+  // Podwójne zaimki: se lo, me la itd.
+  for (let i=0;i<tokens.length-1;i+=1) {
+    const first=tokens[i], second=tokens[i+1];
+    if (["le","les"].includes(first) && ["lo","la","los","las"].includes(second)) {
+      issues.push({type:"danger",title:"Podwójne zaimki",formPenalty:7,usePenalty:5,critical:true,message:`Przed lo/la/los/las zaimki le/les zmieniają się w «se»: zamiast «${first} ${second}» napisz «se ${second}».`});
+    }
+    if (["lo","la","los","las"].includes(first) && ["me","te","se","nos","os","le","les"].includes(second)) {
+      const correctFirst = second === "le" || second === "les" ? "se" : second;
+      issues.push({type:"danger",title:"Kolejność zaimków",formPenalty:7,usePenalty:5,critical:true,message:`Najpierw stawiamy zaimek osoby, potem lo/la/los/las: zamiast «${first} ${second}» użyj «${correctFirst} ${first}».`});
+    }
+  }
+
+  occurrences.forEach(item => {
+    const {token,finite,role,index} = item;
+    if (!finite) return;
+    if (role === "zwrotny lub osobowy" && reflexivePronounPersons[token] && !finite.persons.some(person => reflexivePronounPersons[token].includes(person))) {
+      const definitelyWrong = token === "se" && finite.persons.some(person => ["1s","2s","1p","2p"].includes(person));
+      issues.push({type:definitelyWrong?"danger":"warning",title:"Zaimek zwrotny i osoba",formPenalty:definitelyWrong?7:3,usePenalty:definitelyWrong?6:2,critical:definitelyWrong,message:`Jeśli «${token} ${finite.form}» ma być formą zwrotną, zaimek musi zgadzać się z osobą czasownika. Dla ${formatPersons(finite.persons)} użyj ${finite.persons.includes("1s")?"me":finite.persons.includes("2s")?"te":finite.persons.includes("1p")?"nos":finite.persons.includes("2p")?"os":"se"}.`});
     }
 
-    function animateScore(targetScore, token) {
-      const duration = 1050;
-      const startTime = performance.now();
-
-      function frame(now) {
-        if (token !== resultAnimationToken) return;
-        const progress = Math.min(1, (now - startTime) / duration);
-        const eased = 1 - Math.pow(1 - progress, 3);
-        const value = Math.round(targetScore * eased);
-        scoreNumber.textContent = value;
-        scoreCircle.style.setProperty("--score-angle", `${value * 3.6}deg`);
-
-        if (progress < 1) {
-          requestAnimationFrame(frame);
-        } else {
-          scoreCircle.classList.add("celebrate");
-        }
-      }
-
-      requestAnimationFrame(frame);
+    if (["le","les"].includes(token) && finite.stems.some(stem => stemMatches(stem,clearlyInanimateLeErrorStems))) {
+      const antecedent = findNearestAntecedent(tokens,index);
+      if (antecedent) issues.push({type:"danger",title:"Dopełnienie bliższe czy dalsze?",formPenalty:6,usePenalty:5,critical:true,message:`Czasownik odnosi się tutaj bezpośrednio do rzeczy „${antecedent.token}”. Potrzebny jest zaimek dopełnienia bliższego «${expectedDirectPronoun(antecedent.features)}», a nie «${token}».`});
     }
 
-    async function renderResults(result) {
-      const token = ++resultAnimationToken;
-      analyzeBtn.disabled = true;
-      resultsPlaceholder.classList.add("hidden");
-      resultsPanel.classList.add("visible");
-      feedbackList.innerHTML = "";
-      detectedBox.classList.remove("visible");
-      resultSummary.classList.remove("visible");
-      evaluationStatus.classList.remove("done");
-      scoreCircle.classList.remove("celebrate");
-      scoreCircle.style.setProperty("--score-angle", "0deg");
-      scoreNumber.textContent = "0";
-      writingScore.textContent = "0";
-      contextScore.textContent = "0";
-      evaluationStep.textContent = "Czytam zapis pytania…";
-      evaluationProgress.textContent = "Sprawdzam znaki, długość i budowę zdania";
-
-      const groups = [];
-      Object.keys(tenseLabels).forEach(key => {
-        if (result.analysis[key].length > 0) {
-          groups.push(`<strong>${tenseLabels[key]}:</strong> ${escapeHtml(result.analysis[key].join(", "))}`);
-        }
-      });
-      if (result.analysis.infinitives.length > 0) {
-        groups.push(`<strong>bezokoliczniki:</strong> ${escapeHtml(result.analysis.infinitives.join(", "))}`);
+    if (["lo","la","los","las"].includes(token) && finite.stems.some(stem => stemMatches(stem,antecedentSensitiveVerbStems))) {
+      const antecedent = findNearestAntecedent(tokens,index);
+      if (antecedent) {
+        const expected = expectedDirectPronoun(antecedent.features);
+        if (token !== expected) issues.push({type:"danger",title:"Zgodność zaimka z rzeczownikiem",formPenalty:6,usePenalty:5,critical:true,message:`Zaimek „${token}” nie zgadza się z rzeczownikiem „${antecedent.token}”. Naturalna forma to «${expected} ${finite.form}».`});
       }
-      const personDetections = result.analysis.detailed
-        .filter(item => item.persons.length > 0)
-        .slice(0, 6)
-        .map(item => `${item.form} → ${formatPersons(item.persons)}`);
-      if (personDetections.length > 0) {
-        groups.push(`<strong>osoba gramatyczna:</strong> ${escapeHtml(personDetections.join("; "))}`);
-      }
-      detectedText.innerHTML = groups.length ? groups.join("<br>") : "Nie wykryto jednoznacznej formy badanego czasu.";
-
-      if (result.criticalCount > 0) {
-        scoreTitle.textContent = "Czas rozpoznany, ale sens wymaga poprawy";
-        scoreSubtitle.textContent = "Gra wykryła konflikt osoby, pisowni lub relacji czasowej. Dlatego same słowa kluczowe nie wystarczyły do wysokiej oceny.";
-      } else if (result.totalScore >= 85) {
-        scoreTitle.textContent = "¡Excelente! Bardzo dobre pytanie";
-        scoreSubtitle.textContent = "Forma, słownictwo, osoba gramatyczna i dobór czasu dobrze pasują do misji.";
-      } else if (result.totalScore >= 70) {
-        scoreTitle.textContent = "¡Muy bien! Dobra odpowiedź";
-        scoreSubtitle.textContent = "Pytanie jest komunikatywne, choć jeden lub dwa elementy można dopracować.";
-      } else if (result.totalScore >= 50) {
-        scoreTitle.textContent = "Dobry kierunek";
-        scoreSubtitle.textContent = "Sens jest widoczny, lecz forma pytania, osoba lub użyty czas wymagają korekty.";
-      } else {
-        scoreTitle.textContent = "Spróbuj jeszcze raz";
-        scoreSubtitle.textContent = "Przeczytaj kontekst i przebuduj pytanie, zwracając uwagę na osobę, czasownik i sens całego zdania.";
-      }
-
-      const diagnosticSummary = result.grammarIssues.length
-        ? result.grammarIssues.map(issue => `${issue.title}: ${issue.message}`).join(" | ")
-        : "nie wykryto istotnego konfliktu osoby ani kontekstu";
-
-      teacherInfo.innerHTML = `
-        Oczekiwany czas: <strong>${tenseLabels[currentMission.expected]}</strong>.<br>
-        Uzasadnienie: ${escapeHtml(currentMission.reason)}<br>
-        Przykładowe poprawne pytanie: <strong>${escapeHtml(currentMission.example)}</strong><br>
-        Rozpoznane słownictwo tematyczne: <strong>${escapeHtml(result.topicVocabulary.matches.join(", ") || "brak jednoznacznego dopasowania")}</strong>.<br>
-        Diagnostyka spójności: <strong>${escapeHtml(diagnosticSummary)}</strong>.<br>
-        Maksymalny wynik po uwzględnieniu błędów krytycznych: <strong>${result.scoreCap}%</strong>.<br><br>
-        Ocena jest heurystyczna. Pytanie złożone może poprawnie zawierać więcej niż jeden czas, dlatego ostateczna decyzja należy do nauczyciela.
-      `;
-
-      await wait(380);
-      if (token !== resultAnimationToken) return;
-      evaluationStep.textContent = "Rozpoznaję czasowniki…";
-      evaluationProgress.textContent = "Perfecto, indefinido czy imperfecto?";
-      detectedBox.classList.add("visible");
-
-      await wait(480);
-      if (token !== resultAnimationToken) return;
-
-      for (let index = 0; index < result.feedback.length; index += 1) {
-        const item = result.feedback[index];
-        evaluationStep.textContent = item.title;
-        evaluationProgress.textContent = `Kryterium ${index + 1} z ${result.feedback.length}`;
-        feedbackList.appendChild(createFeedbackElement(item));
-        await wait(265);
-        if (token !== resultAnimationToken) return;
-      }
-
-      evaluationStatus.classList.add("done");
-      evaluationStep.textContent = "Ocena zakończona!";
-      evaluationProgress.textContent = "Podsumowuję wynik punktowy";
-
-      await wait(420);
-      if (token !== resultAnimationToken) return;
-      writingScore.textContent = result.formScore;
-      contextScore.textContent = result.useScore;
-      resultSummary.classList.add("visible");
-      animateScore(result.totalScore, token);
-      analyzeBtn.disabled = false;
     }
+  });
 
-    function escapeHtml(value) {
-      return String(value)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+  // Konstrukcje typu gustar: czasownik zgadza się z rzeczą, a odbiorca jest wyrażony me/te/le...
+  analysis.detailed.forEach(form => {
+    if (!form.stems.some(stem => stemMatches(stem,gustarLikeStems))) return;
+    const before = tokens.slice(Math.max(0,form.index-3),form.index);
+    const hasIndirect = before.some(token => ["me","te","le","nos","os","les"].includes(token));
+    const beforeSubject = tokens.slice(Math.max(0,form.index-6),form.index).reverse().find(token=>nounFeatures[token]);
+    const after = tokens.slice((form.endIndex ?? form.index)+1,(form.endIndex ?? form.index)+6);
+    let subjectToken = beforeSubject || after.find(token => nounFeatures[token] || /(?:ar|er|ir)$/.test(removeAccents(token)));
+    let pluralSubject = subjectToken && nounFeatures[subjectToken]?.[1] === "p";
+    if (!subjectToken) {
+      const articleIndex=after.findIndex(token=>token==="los"||token==="las");
+      if (articleIndex>=0 && after[articleIndex+1]) {subjectToken=after[articleIndex+1];pluralSubject=true;}
     }
-
-    function insertAtCursor(character) {
-      const start = questionInput.selectionStart;
-      const end = questionInput.selectionEnd;
-      const value = questionInput.value;
-      questionInput.value = value.slice(0, start) + character + value.slice(end);
-      const nextPosition = start + character.length;
-      questionInput.setSelectionRange(nextPosition, nextPosition);
-      questionInput.focus();
-      charCount.textContent = questionInput.value.length;
+    const expectedPerson = pluralSubject ? "3p" : "3s";
+    if (!form.persons.includes(expectedPerson)) {
+      issues.push({type:"danger",title:"Konstrukcja typu gustar",formPenalty:7,usePenalty:6,critical:true,message:`W konstrukcji typu «gustar» czasownik zgadza się z rzeczą. Tutaj oczekiwana jest ${personLabels[expectedPerson]}, np. «te gustaba + rzeczownik l.poj./bezokolicznik» albo «te gustaban + rzeczownik l.mn.».`});
     }
+    if (!hasIndirect && missionTargetsPartner()) issues.push({type:"warning",title:"Osoba w konstrukcji gustar",formPenalty:2,usePenalty:2,critical:false,message:`Gdy pytasz rozmówcę, zwykle potrzebujesz zaimka: «¿Te ${form.form}…?».`});
+  });
 
-    startPauseBtn.addEventListener("click", toggleTimer);
-    resetTimerBtn.addEventListener("click", resetTimer);
-    analyzeBtn.addEventListener("click", analyzeQuestion);
+  // Zaimki dołączone do bezokolicznika: querías prepararte / podías hacerlo.
+  tokens.forEach((token,index) => {
+    const plain = removeAccents(token);
+    const match = plain.match(/^([a-zñ]+(?:ar|er|ir))(me|te|se|nos|os)(lo|la|los|las)?$/);
+    if (!match) return;
+    const base = match[1], reflexive = match[2];
+    const governing = [...analysis.detailed].reverse().find(form => form.index < index && index-form.index <= 3);
+    if (!governing || !stemMatches(base.replace(/(?:ar|er|ir)$/,""),reflexiveVerbStems)) return;
+    const allowed = reflexivePronounPersons[reflexive] || [];
+    if (!governing.persons.some(person => allowed.includes(person))) {
+      issues.push({type:"danger",title:"Zaimek przy bezokoliczniku",formPenalty:6,usePenalty:5,critical:true,message:`W konstrukcji „${governing.form} ${token}” zaimek zwrotny nie zgadza się z osobą czasownika nadrzędnego.`});
+    }
+  });
 
-    nextBtn.addEventListener("click", () => {
-      round += 1;
-      pickMission();
-    });
+  return {occurrences,issues};
+}
 
-    clearBtn.addEventListener("click", () => {
-      questionInput.value = "";
-      charCount.textContent = "0";
-      hideResults();
-      questionInput.focus();
-    });
+function findTemporalIssues(raw,analysis,mission) {
+  const plain = removeAccents(raw);
+  const issues = [];
+  const closedMarkers = ["ayer","anoche","la semana pasada","el ano pasado","el fin de semana pasado","las ultimas vacaciones","la ultima vez"];
+  const openMarkers = ["hoy","esta semana","este mes","ultimamente","recientemente","hasta ahora","desde que","en los ultimos dias"];
+  const habitualMarkers = ["normalmente","siempre","cada dia","todos los dias","todos los veranos","de pequeno","en aquella epoca","cuando eras","cuando ibas"];
+  const closed = closedMarkers.find(marker => plain.includes(marker));
+  const open = openMarkers.find(marker => plain.includes(marker));
+  const habitual = habitualMarkers.find(marker => plain.includes(marker));
 
-    questionInput.addEventListener("input", () => {
-      charCount.textContent = questionInput.value.length;
-    });
+  if (analysis.perfecto.length && closed) issues.push({type:"danger",title:"Okres zakończony",formPenalty:1,usePenalty:10,critical:true,message:`Pretérito perfecto połączono z zakończonym okresem «${closed}». W tym kontekście zwykle potrzebny jest indefinido.`});
+  if (analysis.indefinido.length && open && mission.expected === "perfecto") issues.push({type:"warning",title:"Okres związany z teraźniejszością",formPenalty:0,usePenalty:6,critical:false,message:`Marker «${open}» naturalnie łączy się tutaj z pretérito perfecto, a nie z indefinido.`});
+  if (analysis.indefinido.length && habitual && mission.expected === "imperfecto") issues.push({type:"warning",title:"Zwyczaj a pojedyncze wydarzenie",formPenalty:0,usePenalty:5,critical:false,message:`Marker «${habitual}» wskazuje na zwyczaj. Indefinido może wystąpić tylko w osobnym członie opisującym jednorazowe zdarzenie.`});
 
-    questionInput.addEventListener("keydown", event => {
-      if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
-        event.preventDefault();
-        analyzeQuestion();
-      }
-    });
+  const ageWords = "(?:\\d{1,2}|diez|once|doce|trece|catorce|quince|dieciseis|diecisiete|dieciocho|diecinueve|veinte)";
+  const ageMatch = plain.match(new RegExp(`\\bcuando\\s+(?:(?:yo|tu|el|ella|nosotros|vosotros|ellos)\\s+)?(tuve|tuviste|tuvo|tuvimos|tuvisteis|tuvieron)\\s+${ageWords}\\s+anos\\b`));
+  if (ageMatch) {
+    const replacements={tuve:"tenía",tuviste:"tenías",tuvo:"tenía",tuvimos:"teníamos",tuvisteis:"teníais",tuvieron:"tenían"};
+    issues.push({type:"danger",title:"Wiek jako tło",formPenalty:2,usePenalty:11,critical:true,message:`Przy wieku jako tle używamy imperfecto: «cuando ${replacements[ageMatch[1]]} … años», a nie «cuando ${ageMatch[1]} … años».`});
+  }
+  if (/\bcuando\b.+\banos\b.+\bnormalmente\s*$/.test(plain.replace(/[?¿]/g,"").trim())) issues.push({type:"warning",title:"Pozycja «normalmente»",formPenalty:0,usePenalty:3,critical:false,message:"Naturalniej umieścić «normalmente» przy czynności: «¿Qué hacías normalmente cuando tenías 10 años?»."});
+  return issues;
+}
 
-    document.querySelectorAll("[data-char]").forEach(button => {
-      button.addEventListener("click", () => insertAtCursor(button.dataset.char));
-    });
+function analyzePorPara(raw) {
+  const plain = removeAccents(raw);
+  if (!/\b(por|para)\b/.test(plain)) return {used:false,correct:[],warnings:[],errors:[]};
+  const correct=[],warnings=[],errors=[];
+  if (/\bpor que\b/.test(plain)) correct.push("por qué — pytanie o przyczynę");
+  if (/\bpara que\b/.test(plain)) correct.push("para qué — pytanie o cel");
+  if (/\bpor (la|el) (manana|tarde|noche)\b/.test(plain)) correct.push("por + pora dnia");
+  if (/\bpor (internet|telefono|correo|tren|avion|coche|autobus)\b/.test(plain)) correct.push("por + środek/kanał");
+  if (/\bgracias para\b/.test(plain)) errors.push("po «gracias» używamy «por»");
+  if (/\bpara\s+[a-zñ]+(?:ar|er|ir)\b/.test(plain)) correct.push("para + infinitivo — cel");
+  if (/\bpara (mi|ti|el|ella|nosotros|vosotros|ellos|ellas)\b/.test(plain)) correct.push("para + odbiorca/opinia");
+  if (/\b(?:con|por)\s+para\b|\bpara\s+por\b/.test(plain)) errors.push("połączono dwa przyimki, np. «con para»");
+  const count=(plain.match(/\b(por|para)\b/g)||[]).length;
+  if (correct.length+errors.length<count) warnings.push("część użyć por/para zależy od zamierzonego znaczenia");
+  return {used:true,correct,warnings,errors};
+}
 
-    pickMission();
+const cueDefinitions = {
+  what: {label:"co / jaki element", patterns:[/\bque\b/,/\bcual(?:es)?\b/]},
+  reason: {label:"dlaczego", patterns:[/\bpor que\b/,/\bpara que\b/]},
+  purpose: {label:"w jakim celu", patterns:[/\bpara que\b/,/\bpor que\b/]},
+  manner: {label:"jak", patterns:[/\bcomo\b/,/\bque tal\b/,/\bde que manera\b/,/\bde que forma\b/]},
+  yesNo: {label:"pytanie tak/nie", patterns:[]},
+  withPerson: {label:"z kim", patterns:[/\bcon quien\b/]},
+  whereOrWith: {label:"gdzie lub z kim", patterns:[/\b(?:a donde|adonde|donde)\b/,/\bcon quien\b/]},
+  destination: {label:"dokąd", patterns:[/\b(?:a donde|adonde|donde)\b/]}
+};
+
+function rootVerb(value) {
+  let plain = removeAccents(value).replace(/se$/,'');
+  const common = {
+    hacer:"hac", viajar:"viaj", ir:"ir", visitar:"visit", conocer:"conoc", descubrir:"descubr", encontrar:"encontr", probar:"prob",
+    usar:"usar", utilizar:"utiliz", servir:"serv", aplicar:"aplic", comer:"com", preparar:"prepar", cocinar:"cocin", desayunar:"desayun", almorzar:"almorz", cenar:"cen",
+    gustar:"gust", encantar:"encant", parecer:"parec", disfrutar:"disfrut", ver:"ver", mirar:"mir", terminar:"termin", recomendar:"recomend",
+    aprender:"aprend", mejorar:"mejor", estudiar:"estudi", desarrollar:"desarroll", practicar:"practic", repasar:"repas", vivir:"viv", tener:"ten",
+    pasar:"pas", ocurrir:"ocurr", suceder:"suced", cambiar:"cambi", empezar:"empez", dejar:"dej", sentirse:"sent", estar:"est", encontrarse:"encontr",
+    sorprender:"sorprend", interesar:"interes", llamar:"llam", impactar:"impact", salir:"sal", quedar:"qued", descansar:"descans", resolver:"resolv",
+    solucionar:"solucion", arreglar:"arregl", reaccionar:"reaccion", ser:"ser", resultar:"result", costar:"cost", comprar:"compr", adquirir:"adquir",
+    conseguir:"consegu", llevar:"llev", elegir:"eleg", escoger:"escog", decidir:"decid", preferir:"prefer", celebrar:"celebr", organizar:"organiz",
+    reunirse:"reun", invitar:"invit", tomar:"tom", enterarse:"enter", decir:"dec", responder:"respond", jugar:"jug", nadar:"nad", quedarse:"qued",
+    comunicarse:"comunic", hablar:"habl", llamar:"llam", escribir:"escrib", entretenerse:"entret", divertirse:"divert", escuchar:"escuch", transcurrir:"transcurr",
+    volver:"volv", dormir:"dorm", explicar:"explic", enseñar:"enseñ", ayudar:"ayud", dar:"d"
+  };
+  if (common[plain]) return common[plain];
+  return plain.replace(/(?:ar|er|ir)$/,'');
+}
+function sameSemanticFamily(a,b) {
+  const left=rootVerb(a), right=rootVerb(b);
+  if (!left || !right) return 0;
+  if (left===right || left.startsWith(right) || right.startsWith(left)) return 1;
+  if (semanticVerbFamilies.some(family => family.some(item => left.startsWith(item) || item.startsWith(left)) && family.some(item => right.startsWith(item) || item.startsWith(right)))) return .9;
+  return 0;
+}
+function semanticVerbSimilarity(expected,actual,requirement,raw,responseClause) {
+  let score=sameSemanticFamily(expected,actual);
+  if (score) return score;
+  const e=rootVerb(expected), a=rootVerb(actual);
+  const context=removeAccents(`${raw} ${responseClause} ${currentMission?.topic || ''} ${requirement?.label || ''}`);
+
+  const selection=["eleg","escog","decid","prefer"];
+  const acquisition=["compr","adquir","consegu","llev"];
+  const movement=["ir","viaj","visit","conoc"];
+  if (requirement?.cue === "reason" && selection.some(x=>e.startsWith(x)) && acquisition.some(x=>a.startsWith(x))) return .9;
+  if (requirement?.cue === "reason" && selection.some(x=>e.startsWith(x)) && movement.some(x=>a.startsWith(x)) && /viaj|pais|destino|lugar|alli|vacacion/.test(context)) return .88;
+  if (requirement?.cue === "reason" && ["gust","interes","sorprend"].some(x=>e.startsWith(x)) && ["parec","llam","impact","gust"].some(x=>a.startsWith(x))) return .86;
+  if (["pas","ocurr","suced"].some(x=>e.startsWith(x)) && ["ten","viv","sal"].some(x=>a.startsWith(x))) return .86;
+  if (["solucion","resolv","arregl"].some(x=>e.startsWith(x)) && ["hacer","reaccion","ped","llam"].some(x=>a.startsWith(x))) return .78;
+  if (e === "hacer" && !["ser","est","ten","pod"].some(x=>a.startsWith(x))) return .82;
+  if (a === "hacer" && !["ser","est","ten","pod"].some(x=>e.startsWith(x))) return .72;
+  if (["ser","parec","result"].some(x=>e.startsWith(x)) && ["ir","sal"].some(x=>a.startsWith(x))) return .86;
+  if (["sent","reaccion"].some(x=>e.startsWith(x)) && ["est","parec"].some(x=>a.startsWith(x))) return .78;
+  return 0;
+}
+
+function splitResponseClauses(raw) {
+  const start=String.raw`(?:qu[eé]|c[oó]mo|por\s+qu[eé]|para\s+qu[eé]|si|con\s+qui[eé]n|(?:a\s+)?d[oó]nde|ad[oó]nde|cu[aá]l|cu[aá]nto)`;
+  let text=raw.toLowerCase().replace(/[¿?¡!]/g,'').replace(/[.;:]\s*/g,' || ');
+  text=text.replace(new RegExp(String.raw`,\s*(?=${start}(?:\s|$))`,'g'),' || ')
+           .replace(new RegExp(String.raw`\s+y\s+(?=${start}(?:\s|$))`,'g'),' || ')
+           .replace(/\s+y\s+(?=(?:me|te|le|nos|os|se|he|has|ha|hemos|hab[eé]is|han)\b)/g,' || ');
+  const firstPass=text.split('||').map(x=>x.trim()).filter(Boolean);
+  const result=[];
+  firstPass.forEach(clause=>{
+    // Jeżeli dwie odmienione formy są połączone zwykłym „y”, rozdziel je tylko wtedy,
+    // gdy obie strony tworzą samodzielne człony.
+    const parts=clause.split(/\s+y\s+/);
+    if (parts.length===2 && detectDetailedVerbForms(parts[0]).length && detectDetailedVerbForms(parts[1]).length) result.push(parts[0].trim(),parts[1].trim());
+    else result.push(clause);
+  });
+  return result.filter(Boolean);
+}
+function clauseCueScore(requirement,clause,clauseAnalysis) {
+  const plain=removeAccents(clause);
+  const definition=cueDefinitions[requirement.cue] || cueDefinitions.what;
+  if (requirement.cue==='what' && /^(?:por|para)\s+que\b/.test(plain.trim())) return 0;
+  if (definition.patterns.some(pattern=>pattern.test(plain))) return 1;
+  if (requirement.cue === 'destination' && /\bdonde\b/.test(plain) && clauseAnalysis.detailed.some(form=>form.stems.some(stem=>['ir','viaj','visit'].some(x=>stem.startsWith(x))))) return .92;
+  if (requirement.cue === 'destination' && /\b(?:que|cual)\b/.test(plain) && clauseAnalysis.detailed.some(form=>form.stems.some(stem=>['ir','viaj','visit','conoc'].some(x=>stem.startsWith(x))))) return .88;
+  if (requirement.cue === 'withPerson' && /\bquien\b/.test(plain) && clauseAnalysis.detailed.some(form=>form.stems.some(stem=>['est','pas','qued','sal','ver','reun'].some(x=>stem.startsWith(x))))) return .9;
+  if (requirement.cue === 'manner' && /\bque\b/.test(plain)) {
+    const stems=clauseActionStems(clause).stems;
+    const related=(requirement.verbs||[]).some(expected=>stems.some(actual=>semanticVerbSimilarity(expected,actual,requirement,clause,clause)>=.72));
+    if (related) return .8;
+  }
+  if (requirement.cue === 'whereOrWith' && (/\bdonde\b/.test(plain)||/\bcon quien\b/.test(plain))) return 1;
+  if (requirement.cue === 'yesNo' && clauseAnalysis.detailed.length) {
+    const beginning=removeAccents(clause).trim();
+    if (/^(?:que|como|cuando|donde|adonde|quien|cual|cuanto|por que|para que)\b/.test(beginning)) return 0;
+    const firstToken=correctedTokens(clauseAnalysis.tokens)[0];
+    if (allCliticPronouns.has(firstToken) || clauseAnalysis.detailed.some(form=>form.index<=1)) return .95;
+  }
+  if (requirement.cue === 'reason' && /^por que$/.test(plain.trim())) return 1;
+  return 0;
+}
+function commonPresentStems(clause) {
+  const map={tengo:"ten",tienes:"ten",tiene:"ten",tenemos:"ten",tienen:"ten",pienso:"pens",piensas:"pens",piensa:"pens",piensan:"pens",creo:"cre",crees:"cre",cree:"cre",creen:"cre",gusta:"gust",gustan:"gust",parece:"parec",parecen:"parec",recomiendo:"recomend",recomiendas:"recomend",recomienda:"recomend",recomiendan:"recomend",prefiero:"prefer",prefieres:"prefer",prefiere:"prefer",prefieren:"prefer"};
+  return wordsFrom(clause).map(removeAccents).filter(token=>map[token]).map(token=>map[token]);
+}
+function clauseActionStems(clause) {
+  const analysis=detectTenses(clause);
+  const stems=[...analysis.detailed.flatMap(form=>form.stems || []),...commonPresentStems(clause)];
+  analysis.infinitives.forEach(item=>stems.push(rootVerb(item.replace(/(?:me|te|se|nos|os|lo|la|los|las|le|les)+$/,''))));
+  return {analysis,stems:[...new Set(stems.filter(Boolean))]};
+}
+function textContainsAnchor(text,anchor) {
+  const plain=removeAccents(text), key=removeAccents(anchor);
+  if (["lo","la","los","las","le","te","me","nos","os","se","eso","alli","ahi"].includes(key)) return new RegExp(`\\b${key}\\b`).test(plain);
+  return wordsFrom(plain).map(removeAccents).some(token=>token===key || (key.length>=4 && token.startsWith(key)) || (token.length>=5 && key.startsWith(token)));
+}
+function findClauseForRequirement(requirement,raw,index,requirements) {
+  const clauses=splitResponseClauses(raw);
+  if (!clauses.length) return raw;
+  const matching=clauses.filter(clause=>clauseCueScore(requirement,clause,detectTenses(clause))>=.8);
+  const ordinal=requirements.slice(0,index).filter(item=>item.cue===requirement.cue).length;
+  return matching[ordinal] || matching[0] || clauses[Math.min(index,clauses.length-1)] || raw;
+}
+function evaluateRequirement(requirement,raw,index,requirements,topicMatches) {
+  const clause=findClauseForRequirement(requirement,raw,index,requirements);
+  const {analysis:clauseAnalysis,stems}=clauseActionStems(clause);
+  let cueScore=clauseCueScore(requirement,clause,clauseAnalysis);
+  let actionScore=requirement.verbs?.length ? 0 : 1;
+  let bestPair=null;
+  (requirement.verbs||[]).forEach(expected=>stems.forEach(actual=>{
+    const similarity=semanticVerbSimilarity(expected,actual,requirement,raw,clause);
+    if (similarity>actionScore) {actionScore=similarity;bestPair={expected,actual};}
+  }));
+  if (cueScore===0 && requirement.cue==='what' && actionScore>=.72 && (clauseAnalysis.detailed.length || commonPresentStems(clause).length)) cueScore=.74;
+
+  // Naturalna elipsa: „¿Qué compraste y por qué?” nie musi powtarzać czasownika.
+  if (!stems.length && ['reason','purpose'].includes(requirement.cue) && cueScore>=.9) {
+    const globalStems=detectTenses(raw).detailed.flatMap(form=>form.stems||[]);
+    let inherited=0;
+    (requirement.verbs||[]).forEach(expected=>globalStems.forEach(actual=>inherited=Math.max(inherited,semanticVerbSimilarity(expected,actual,requirement,raw,clause))));
+    if (inherited>=.72) {actionScore=Math.max(actionScore,.82);bestPair={expected:requirement.verbs[0],actual:'elipsa'};}
+  }
+
+  const anchorMatches=(requirement.anchors||[]).filter(anchor=>textContainsAnchor(clause,anchor));
+  let anchorScore=requirement.anchors?.length ? 0 : 1;
+  if (anchorMatches.length) anchorScore=1;
+  else if (/\b(lo|la|los|las|eso|alli|ahi)\b/.test(removeAccents(clause)) && topicMatches.length) anchorScore=.9;
+  else if (topicMatches.length && actionScore>=.72) anchorScore=.76;
+
+  const expectedTense=currentMission.expected;
+  let tenseOk=clauseAnalysis[expectedTense].length>0 || (requirement.allowPresent && commonPresentStems(clause).length>0) || (requirement.allowBackgroundImperfecto && clauseAnalysis.imperfecto.length>0);
+  // W elipsie „y por qué?” czas pochodzi z poprzedniego członu.
+  if (!tenseOk && !stems.length && ['reason','purpose'].includes(requirement.cue)) tenseOk=detectTenses(raw)[expectedTense].length>0;
+  const components=[{score:cueScore,weight:.35},{score:actionScore,weight:.42},{score:anchorScore,weight:.23}];
+  const semanticScore=components.reduce((sum,item)=>sum+item.score*item.weight,0);
+  const naturalParaphrase=Boolean(bestPair && bestPair.actual!=='elipsa' && actionScore>=.76 && actionScore<.98 && cueScore>=.75);
+  const missing=[];
+  if (cueScore<.45) missing.push(`forma pytająca: ${cueDefinitions[requirement.cue]?.label || requirement.cue}`);
+  if (actionScore<.45) missing.push('odpowiednia czynność lub naturalna parafraza');
+  else if (actionScore<.72) missing.push('czynność jest tylko częściowo podobna znaczeniowo');
+  if (anchorScore<.45) missing.push(`konkretny element: ${(requirement.anchors||[]).join(' / ')}`);
+  return {...requirement,responseClause:clause,semanticScore,cueScore,actionScore,anchorScore,tenseOk,naturalParaphrase,paraphrasePair:naturalParaphrase?bestPair:null,missing};
+}
+function analyzeMissionFit(raw,analysis,topicMatches) {
+  const requirements=currentMission.requirements || [];
+  const results=requirements.map((req,index)=>evaluateRequirement(req,raw,index,requirements,topicMatches));
+  const coverage=results.length ? results.reduce((sum,item)=>sum+item.semanticScore,0)/results.length : 1;
+  const matched=results.filter(item=>item.semanticScore>=.72);
+  const partial=results.filter(item=>item.semanticScore>=.45&&item.semanticScore<.72);
+  const missing=results.filter(item=>item.semanticScore<.45);
+  const semanticallyPresent=results.filter(item=>item.semanticScore>=.45);
+  const semanticWeight=semanticallyPresent.reduce((sum,item)=>sum+item.semanticScore,0);
+  const tenseCoverage=semanticWeight ? semanticallyPresent.reduce((sum,item)=>sum+(item.tenseOk?item.semanticScore:0),0)/semanticWeight : 0;
+  const naturalParaphrases=results.filter(item=>item.naturalParaphrase);
+  const tokens=correctedTokens(analysis.tokens);
+  const partnerPerspective=analysis.detailed.some(form=>form.persons.includes('2s')) || tokens.some(token=>['tu','tú','te','ti','tus','contigo'].includes(token));
+  const thirdPersonPossessive=/(?:tu|tus)\s+(?:escuela|casa|amigo|profesor|examen|cumpleanos|cumpleaños)/.test(removeAccents(raw));
+  const perspectiveOk=!missionTargetsPartner() || partnerPerspective || thirdPersonPossessive;
+
+  const vagueWords=(removeAccents(raw).match(/\b(asi|eso|esto|aquello|algo|cosa|cosas)\b/g)||[]);
+  const meaningful=wordsFrom(raw).map(removeAccents).filter(word=>word.length>=4&&!missionStopWords.has(word)&&!["hacer","hecho","hacia","hacias","hiciste","pasado","normalmente"].includes(word));
+  const genericStems=new Set(['hac','ser','est','ten','ir','pas']);
+  const onlyGeneric=analysis.detailed.length>0 && analysis.detailed.every(form=>form.stems.length===0 || form.stems.every(stem=>genericStems.has(stem)));
+  const lowSpecificity=topicMatches.length===0 && coverage<.68 && onlyGeneric && meaningful.length<=1;
+  return {requirements,results,coverage,matched,partial,missing,tenseCoverage,naturalParaphrases,perspectiveOk,lowSpecificity,vagueWords,meaningful};
+}
+
+function analyzeCompleteness(raw,analysis) {
+  const tokens=analysis.tokens;
+  const finiteCount=analysis.detailed.filter(form=>!form.incomplete).length;
+  const contentTokens=tokens.map(removeAccents).filter(word=>word.length>=3&&!missionStopWords.has(word));
+  const minimalReaction=/^¿?\s*(por\s+qu[eé]|para\s+qu[eé]|qu[eé]|c[oó]mo|d[oó]nde|cu[aá]ndo|qui[eé]n)\s*\??$/i.test(normalizeText(raw));
+  const fragment=finiteCount===0 || tokens.length<3 || contentTokens.length<1;
+  return {finiteCount,contentTokens,minimalReaction,fragment};
+}
+
+function addFeedback(list,type,title,message) { list.push({type,title,message}); }
+function buildTenseHelpHtml() {
+  const examples={
+    perfecto:`<p><strong>Budowa:</strong> <code>he/has/ha/hemos/habéis/han + participio</code>.</p><p><strong>Użycie:</strong> doświadczenia i okresy związane z teraźniejszością: hoy, esta semana, últimamente, alguna vez.</p><p><strong>Model:</strong> ${escapeHtml(currentMission.example)}</p>`,
+    indefinido:`<p><strong>Budowa:</strong> regularnie <code>-é/-aste/-ó/-amos/-asteis/-aron</code> oraz <code>-í/-iste/-ió/-imos/-isteis/-ieron</code>.</p><p><strong>Użycie:</strong> zakończone wydarzenia: ayer, la semana pasada, el año pasado, la última vez.</p><p><strong>Model:</strong> ${escapeHtml(currentMission.example)}</p>`,
+    imperfecto:`<p><strong>Budowa:</strong> <code>-aba/-abas/-ábamos...</code> oraz <code>-ía/-ías/-íamos...</code>; nieregularne: era, iba, veía.</p><p><strong>Użycie:</strong> zwyczaje, opisy i tło: normalmente, cuando era niño, todos los veranos.</p><p><strong>Model:</strong> ${escapeHtml(currentMission.example)}</p>`
+  };
+  return examples[currentMission.expected];
+}
+function updateTenseHelp() {
+  if (!tenseHelpContent) return;
+  tenseHelpContent.innerHTML=buildTenseHelpHtml();
+  const label=tenseLabels[currentMission.expected];
+  tenseHelpButton.querySelector('span').textContent=`💡 Podpowiedź: ${label}`;
+}
+
+function analyzeQuestion() {
+  const raw=questionInput.value.trim();
+  if (!raw) { showToast("Najpierw wpisz pytanie po hiszpańsku."); questionInput.focus(); return; }
+
+  const analysis=detectTenses(raw);
+  const completeness=analyzeCompleteness(raw,analysis);
+  const spellingIssues=findSpellingIssues(raw);
+  const agreementIssues=findAgreementIssues(analysis);
+  const pronounAnalysis=analyzePronouns(raw,analysis);
+  const temporalIssues=findTemporalIssues(raw,analysis,currentMission);
+  const porPara=analyzePorPara(raw);
+  const topicMatches=findTopicVocabulary(raw,currentMission);
+  const missionFit=analyzeMissionFit(raw,analysis,topicMatches);
+  const feedback=[];
+  let formScore=0,useScore=0;
+
+  const hasOpening=raw.startsWith("¿"), hasClosing=raw.endsWith("?");
+  if (hasOpening&&hasClosing) {formScore+=8;addFeedback(feedback,"success","Znaki pytania","Pytanie ma poprawne hiszpańskie znaki ¿…?.");}
+  else if (hasClosing) {formScore+=4;addFeedback(feedback,"warning","Znaki pytania","Dodaj odwrócony znak «¿» na początku.");}
+  else addFeedback(feedback,"danger","Znaki pytania","Pytanie powinno zaczynać się od «¿» i kończyć znakiem «?». ");
+
+  const accentProblem=findAccentProblem(raw);
+  if (accentProblem) {formScore+=1;addFeedback(feedback,"warning","Akcent w słowie pytającym",`Prawdopodobna korekta: ${accentProblem}.`);}
+  else {formScore+=5;addFeedback(feedback,"success","Akcenty pytające","Nie wykryto typowego błędu w qué, cómo, dónde, quién itd.");}
+
+  if (startsLikeQuestion(raw,analysis)) {formScore+=7;addFeedback(feedback,"success","Budowa pytania","Rozpoznano naturalny początek pytania albo konstrukcję tak/nie.");}
+  else addFeedback(feedback,"warning","Budowa pytania","Nie rozpoznano wyraźnej konstrukcji pytającej.");
+
+  if (analysis.tokens.length>=7) {formScore+=6;addFeedback(feedback,"success","Pełne zdanie",`Pytanie ma ${analysis.tokens.length} wyrazów i daje wystarczający kontekst.`);}
+  else if (analysis.tokens.length>=4) {formScore+=4;addFeedback(feedback,"warning","Pełne zdanie","Pytanie jest krótkie, ale może być kompletne. Gra dokładniej sprawdzi jego sens.");}
+  else addFeedback(feedback,"danger","Pełne zdanie","Pytanie jest zbyt krótkie, aby zrealizować rozbudowaną misję.");
+
+  if (completeness.finiteCount>0) {formScore+=8;addFeedback(feedback,"success","Forma czasownikowa",`Wykryto ${completeness.finiteCount} odmienioną formę lub konstrukcję czasu przeszłego.`);}
+  else if (analysis.infinitives.length) {formScore+=2;addFeedback(feedback,"danger","Forma czasownikowa",`Wykryto bezokolicznik (${analysis.infinitives.join(", ")}), ale nie znaleziono odmienionej formy czasu przeszłego.`);}
+  else addFeedback(feedback,"danger","Forma czasownikowa","Nie wykryto odmienionego czasownika.");
+
+  spellingIssues.forEach(issue=>{formScore-=issue.formPenalty||0;useScore-=issue.usePenalty||0;addFeedback(feedback,issue.type,issue.title,issue.message);});
+  agreementIssues.forEach(issue=>{formScore-=issue.formPenalty||0;useScore-=issue.usePenalty||0;addFeedback(feedback,issue.type,issue.title,issue.message);});
+  pronounAnalysis.issues.forEach(issue=>{formScore-=issue.formPenalty||0;useScore-=issue.usePenalty||0;addFeedback(feedback,issue.type,issue.title,issue.message);});
+
+  const expectedForms=analysis[currentMission.expected].filter(form=>!form.includes("(…)"));
+  const otherTenses=Object.keys(tenseLabels).filter(key=>key!==currentMission.expected&&analysis[key].length);
+  if (expectedForms.length) {useScore+=20;addFeedback(feedback,"success","Dobór czasu",`Rozpoznano oczekiwany ${tenseLabels[currentMission.expected]}: ${expectedForms.join(", ")}.`);}
+  else {
+    const detected=Object.keys(tenseLabels).filter(key=>analysis[key].length).map(key=>tenseLabels[key]);
+    addFeedback(feedback,"danger","Dobór czasu",detected.length?`Karta wymaga ${tenseLabels[currentMission.expected]}, ale wykryto: ${detected.join(" i ")}.`:`Nie wykryto oczekiwanego ${tenseLabels[currentMission.expected]}.`);
+  }
+
+  if (otherTenses.length&&expectedForms.length) addFeedback(feedback,"warning","Więcej niż jeden czas",`Pojawia się również ${otherTenses.map(key=>tenseLabels[key]).join(" i ")}. To może być naturalne, jeśli czasy pełnią różne funkcje; gra ocenia przede wszystkim człony wymagane przez kartę.`);
+  temporalIssues.forEach(issue=>{formScore-=issue.formPenalty||0;useScore-=issue.usePenalty||0;addFeedback(feedback,issue.type,issue.title,issue.message);});
+
+  const exactMarker=currentMission.timeMarkers.find(marker=>hasPhrase(raw,marker));
+  if (exactMarker) {useScore+=7;addFeedback(feedback,"success","Kontekst czasowy",`Użyto markera pasującego do karty: «${exactMarker}».`);}
+  else if (expectedForms.length) {useScore+=4;addFeedback(feedback,"warning","Kontekst czasowy",`Czas jest poprawny, ale warto dodać wyraźny kontekst, np. «${currentMission.context}».`);}
+  else addFeedback(feedback,"danger","Kontekst czasowy",`Brakuje oczekiwanego czasu i wyraźnego odniesienia do «${currentMission.context}».`);
+
+  if (topicMatches.length>=2) {useScore+=8;addFeedback(feedback,"success","Temat",`Rozpoznano konkretne słownictwo tematyczne: ${topicMatches.slice(0,5).join(", ")}.`);}
+  else if (topicMatches.length===1) {useScore+=6;addFeedback(feedback,"success","Temat",`Rozpoznano słowo związane z tematem: ${topicMatches[0]}.`);}
+  else if (missionFit.coverage>=.72) {useScore+=5;addFeedback(feedback,"success","Temat i sens","Mimo braku dosłownego słowa kluczowego pytanie przekazuje sens karty poprzez naturalną parafrazę lub zaimek.");}
+  else addFeedback(feedback,"warning","Temat",`Nie znaleziono jednoznacznego słownictwa z tematu «${currentMission.topic}».`);
+
+  const missionPoints=Math.round(25*missionFit.coverage);
+  useScore+=missionPoints;
+  const partialLabels=missionFit.partial.map(item=>`${item.label} (${Math.round(item.semanticScore*100)}%)`);
+  const missingLabels=missionFit.missing.map(item=>item.label);
+  if (missionFit.coverage>=.9) addFeedback(feedback,"success","Naturalna realizacja misji",`Pytanie przekazuje sens całego polecenia (${Math.round(missionFit.coverage*100)}% zgodności), nawet jeśli używa innych słów niż przykład.`);
+  else if (missionFit.coverage>=.72) addFeedback(feedback,"success","Realizacja misji",`Pytanie dobrze realizuje polecenie (${Math.round(missionFit.coverage*100)}% zgodności).${partialLabels.length?` Częściowo rozpoznane: ${partialLabels.join("; ")}.`:""}`);
+  else if (missionFit.coverage>=.5) addFeedback(feedback,"warning","Realizacja misji",`Główny sens jest częściowo obecny (${Math.round(missionFit.coverage*100)}%).${missingLabels.length?` Brakuje: ${missingLabels.join("; ")}.`:""}`);
+  else if (missionFit.coverage>.25) addFeedback(feedback,"warning","Realizacja misji",`Pytanie nawiązuje do karty, ale przekazuje tylko część wymaganej informacji (${Math.round(missionFit.coverage*100)}%).`);
+  else addFeedback(feedback,"danger","Realizacja misji",`Nie rozpoznano wystarczającego związku znaczeniowego. Trzeba zapytać o: ${currentMission.requirements.map(item=>item.label).join("; ")}.`);
+
+  if (missionFit.naturalParaphrases.length) {
+    const descriptions=missionFit.naturalParaphrases.map(item=>`${item.label}: «${item.paraphrasePair.actual}» naturalnie zastępuje tutaj «${item.paraphrasePair.expected}»`);
+    addFeedback(feedback,"success","Naturalna parafraza",descriptions.join("; ")+".");
+  }
+
+  const tenseMissing=missionFit.results.filter(item=>item.semanticScore>=.45&&!item.tenseOk);
+  if (tenseMissing.length) {
+    const penalty=Math.min(8,tenseMissing.length*4);useScore-=penalty;
+    addFeedback(feedback,"warning","Czas w poszczególnych częściach",`Sens tych elementów jest obecny, ale nie użyto w nich wymaganego czasu: ${tenseMissing.map(item=>`«${item.responseClause}»`).join("; ")}.`);
+  } else if (missionFit.coverage>=.45) useScore+=Math.min(4,currentMission.requirements.length*2);
+
+  if (!missionFit.perspectiveOk) {useScore-=5;addFeedback(feedback,"warning","Osoba, o którą pytasz","Karta dotyczy rozmówcy. Użyj 2. osoby, zaimka «te» albo wyrażenia typu «tu escuela / tu amigo», zależnie od sensu pytania.");}
+  if (missionFit.vagueWords.length&&missionFit.coverage<.65) addFeedback(feedback,"warning","Zbyt ogólne odniesienie",`Słowo ${missionFit.vagueWords.map(word=>`«${word}»`).join(", ")} nie wyjaśnia wystarczająco, o jaki element karty chodzi.`);
+
+  if (porPara.used) {
+    if (porPara.errors.length) {formScore-=Math.min(4,porPara.errors.length*2);addFeedback(feedback,"danger","Por czy para?",porPara.errors.join("; ")+".");}
+    else if (porPara.warnings.length) addFeedback(feedback,"warning","Por czy para?",porPara.warnings.join("; ")+".");
+    else {formScore+=1;addFeedback(feedback,"success","Por / para",porPara.correct.join("; ")+".");}
+  }
+
+  const incompletePerfect=analysis.detailed.some(form=>form.tense==='perfecto'&&form.incomplete);
+  if (incompletePerfect) {useScore-=8;addFeedback(feedback,"danger","Konstrukcja perfecto","Wykryto haber bez participio. Potrzebna jest forma typu «has hecho / has visto / has comido».");}
+
+  formScore=Math.max(0,Math.min(40,formScore));
+  useScore=Math.max(0,Math.min(60,useScore));
+  const grammarIssues=[...spellingIssues,...agreementIssues,...pronounAnalysis.issues,...temporalIssues];
+  const criticalCount=grammarIssues.filter(issue=>issue.critical).length;
+  let scoreCap=100;
+
+  if (completeness.minimalReaction) scoreCap=4;
+  else if (completeness.fragment) scoreCap=Math.min(scoreCap,12);
+  if (!expectedForms.length) scoreCap=Math.min(scoreCap,55);
+  if (!missionFit.perspectiveOk) scoreCap=Math.min(scoreCap,65);
+  if (missionFit.results.length>=2) {
+    if (missionFit.coverage<.18) scoreCap=Math.min(scoreCap,28);
+    else if (missionFit.coverage<.35) scoreCap=Math.min(scoreCap,45);
+    else if (missionFit.coverage<.55) scoreCap=Math.min(scoreCap,65);
+    else if (missionFit.coverage<.72) scoreCap=Math.min(scoreCap,80);
+    else if (missionFit.coverage<.88) scoreCap=Math.min(scoreCap,92);
+  }
+  if (missionFit.coverage>=.72&&missionFit.tenseCoverage<1) {
+    if (missionFit.tenseCoverage>=.5) scoreCap=Math.min(scoreCap,82);
+    else scoreCap=Math.min(scoreCap,70);
+  }
+  if (missionFit.lowSpecificity) scoreCap=Math.min(scoreCap,34);
+  if (missionFit.vagueWords.length && !topicMatches.length && missionFit.coverage<.65) scoreCap=Math.min(scoreCap,22);
+  if (!topicMatches.length&&missionFit.coverage<.45) scoreCap=Math.min(scoreCap,34);
+  if (criticalCount===1) scoreCap=Math.min(scoreCap,78);
+  if (criticalCount>=2) scoreCap=Math.min(scoreCap,55);
+
+  const uncapped=Math.min(100,formScore+useScore);
+  const totalScore=Math.min(uncapped,scoreCap);
+  if (totalScore<uncapped) addFeedback(feedback,"danger","Ograniczenie wyniku","Wynik został ograniczony przez brak treści, niewykonanie części misji albo błąd zmieniający osobę lub sens zdania. Sama poprawna końcówka czasu nie wystarcza.");
+
+  renderResults({raw,analysis,completeness,topicMatches,missionFit,pronounAnalysis,porPara,feedback,formScore,useScore,totalScore,scoreCap,criticalCount});
+}
+
+function wait(ms) {return new Promise(resolve=>setTimeout(resolve,ms));}
+function createFeedbackElement(item) {
+  const icon=item.type==='success'?'✓':item.type==='warning'?'!':'×';
+  const element=document.createElement('div');
+  element.className=`feedback-item ${item.type}`;
+  element.innerHTML=`<div class="feedback-icon">${icon}</div><p><strong>${escapeHtml(item.title)}</strong>${escapeHtml(item.message)}</p>`;
+  return element;
+}
+function setProgress(value) {if(evaluationProgressFill)evaluationProgressFill.style.width=`${value}%`;}
+function animateScore(target,token) {
+  const start=performance.now(),duration=1050;
+  function frame(now) {
+    if(token!==resultAnimationToken)return;
+    const p=Math.min(1,(now-start)/duration),eased=1-Math.pow(1-p,3),value=Math.round(target*eased);
+    scoreNumber.textContent=value;scoreCircle.style.setProperty('--score-angle',`${value*3.6}deg`);
+    if(p<1)requestAnimationFrame(frame);else scoreCircle.classList.add('celebrate');
+  }
+  requestAnimationFrame(frame);
+}
+function launchConfetti() {
+  if(!confettiLayer)return;
+  confettiLayer.innerHTML='';
+  for(let i=0;i<44;i+=1){const piece=document.createElement('span');piece.className='confetti';piece.style.left=`${Math.random()*100}%`;piece.style.setProperty('--x',`${(Math.random()-.5)*260}px`);piece.style.setProperty('--r',`${Math.random()*900-450}deg`);piece.style.setProperty('--d',`${2.1+Math.random()*1.7}s`);piece.style.setProperty('--c',["#6257d9","#16835b","#f59e0b","#3b82f6"][i%4]);confettiLayer.appendChild(piece);}setTimeout(()=>confettiLayer.innerHTML='',3500);
+}
+
+async function renderResults(result) {
+  const token=++resultAnimationToken;
+  analyzeBtn.disabled=true;
+  resultsPlaceholder.classList.add('hidden');resultsPanel.classList.add('visible');feedbackList.innerHTML='';detectedBox.classList.remove('visible');resultSummary.classList.remove('visible');
+  tenseHelpWrap.classList.add('hidden');tenseHelpContent.classList.remove('visible');tenseHelpButton.setAttribute('aria-expanded','false');
+  evaluationStatus.classList.remove('done');scoreCircle.classList.remove('celebrate');scoreCircle.style.setProperty('--score-angle','0deg');scoreNumber.textContent='0';writingScore.textContent='0';contextScore.textContent='0';setProgress(8);
+  evaluationStep.textContent='Czytam pytanie…';evaluationProgress.textContent='Sprawdzam zapis i budowę';
+
+  const detected=[];
+  Object.keys(tenseLabels).forEach(tense=>{if(result.analysis[tense].length)detected.push(`<strong>${tenseLabels[tense]}:</strong> ${escapeHtml(result.analysis[tense].join(', '))}`);});
+  if(result.pronounAnalysis.occurrences.length)detected.push(`<strong>zaimki:</strong> ${escapeHtml(result.pronounAnalysis.occurrences.map(item=>`${item.token} — ${item.role}`).join('; '))}`);
+  detectedText.innerHTML=detected.length?detected.join('<br>'):'Nie wykryto jednoznacznej formy czasu przeszłego.';
+
+  await wait(360);if(token!==resultAnimationToken)return;evaluationStep.textContent='Rozpoznaję czasy i osoby…';evaluationProgress.textContent='Sprawdzam formy, zaimki i zgodność';setProgress(28);detectedBox.classList.add('visible');
+  await wait(430);if(token!==resultAnimationToken)return;
+  for(let i=0;i<result.feedback.length;i+=1){feedbackList.appendChild(createFeedbackElement(result.feedback[i]));setProgress(32+Math.round((i+1)/result.feedback.length*50));await wait(115);if(token!==resultAnimationToken)return;}
+  evaluationStatus.classList.add('done');evaluationSpinner.textContent='✓';evaluationStep.textContent='Analiza zakończona';evaluationProgress.textContent='Wynik uwzględnia formę, sens i naturalne parafrazy';setProgress(100);
+
+  if(result.totalScore>=88){scoreTitle.textContent='¡Excelente!';scoreSubtitle.textContent='Pytanie jest naturalne, poprawne i naprawdę realizuje sytuację z karty.';}
+  else if(result.totalScore>=72){scoreTitle.textContent='¡Muy bien!';scoreSubtitle.textContent='Sens jest dobrze przekazany; pozostał pojedynczy element do dopracowania.';}
+  else if(result.totalScore>=52){scoreTitle.textContent='Dobry kierunek';scoreSubtitle.textContent='Pytanie częściowo realizuje misję, ale wymaga korekty czasu, osoby albo treści.';}
+  else{scoreTitle.textContent='Spróbuj ponownie';scoreSubtitle.textContent='Otwórz podpowiedź i zbuduj pełne pytanie zgodne z sytuacją.';}
+
+  writingScore.textContent=result.formScore;contextScore.textContent=result.useScore;
+  teacherInfo.innerHTML=`Wymagany czas: <strong>${escapeHtml(tenseLabels[currentMission.expected])}</strong>.<br>Sytuacja: <strong>${escapeHtml(currentMission.situation)}</strong><br>Polecenie: <strong>${escapeHtml(currentMission.prompt)}</strong><br>Przykładowe pytanie: <strong>${escapeHtml(currentMission.example)}</strong><br>Zgodność znaczeniowa: <strong>${Math.round(result.missionFit.coverage*100)}%</strong>.<br>Czas w rozpoznanych elementach misji: <strong>${Math.round(result.missionFit.tenseCoverage*100)}%</strong>.<br>Rozpoznane słownictwo: <strong>${escapeHtml(result.topicMatches.join(', ')||'brak dosłownych słów — oceniono sens całego pytania')}</strong>.<br>Por/para: <strong>${result.porPara.used?(result.porPara.errors.length?'prawdopodobny błąd':result.porPara.warnings.length?'częściowo niejednoznaczne':'wygląda poprawnie'):'nie występuje'}</strong>.`;
+
+  if(result.totalScore<72 || !result.analysis[currentMission.expected].length)tenseHelpWrap.classList.remove('hidden');
+  resultSummary.classList.add('visible');animateScore(result.totalScore,token);if(result.totalScore>=78)launchConfetti();
+  analyzeBtn.disabled=false;
+}
+
+startPauseBtn.addEventListener('click',toggleTimer);
+resetTimerBtn.addEventListener('click',resetTimer);
+analyzeBtn.addEventListener('click',analyzeQuestion);
+nextBtn.addEventListener('click',nextRound);
+clearBtn.addEventListener('click',()=>{questionInput.value='';charCount.textContent='0';questionInput.focus();});
+questionInput.addEventListener('input',()=>charCount.textContent=questionInput.value.length);
+document.querySelectorAll('.accent-button').forEach(button=>button.addEventListener('click',()=>{const start=questionInput.selectionStart,end=questionInput.selectionEnd;questionInput.value=questionInput.value.slice(0,start)+button.dataset.char+questionInput.value.slice(end);questionInput.selectionStart=questionInput.selectionEnd=start+button.dataset.char.length;charCount.textContent=questionInput.value.length;questionInput.focus();}));
+tenseHelpButton.addEventListener('click',()=>{const visible=tenseHelpContent.classList.toggle('visible');tenseHelpButton.setAttribute('aria-expanded',String(visible));});
+questionInput.addEventListener('keydown',event=>{if((event.ctrlKey||event.metaKey)&&event.key==='Enter')analyzeQuestion();});
+
+chooseMission();resetRoundView(false);updateTimerUI();
+
   </script>
 </body>
 </html>
