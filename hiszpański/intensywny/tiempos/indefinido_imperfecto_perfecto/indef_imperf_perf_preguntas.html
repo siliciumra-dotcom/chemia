@@ -1,0 +1,1834 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Gra konwersacyjna B1 do ćwiczenia pretérito perfecto, indefinido i imperfecto.">
+  <title>El reto del pasado – gra B1</title>
+  <style>
+    :root {
+      --bg-1: #f4f6ff;
+      --bg-2: #fff7ed;
+      --panel: rgba(255, 255, 255, 0.94);
+      --panel-strong: #ffffff;
+      --text: #20243a;
+      --muted: #687087;
+      --primary: #6257d9;
+      --primary-dark: #4e45b9;
+      --primary-soft: #efedff;
+      --success: #16835b;
+      --success-soft: #e8f8f1;
+      --warning: #b06a00;
+      --warning-soft: #fff3d9;
+      --danger: #b33a4a;
+      --danger-soft: #ffecef;
+      --border: #dfe3ef;
+      --shadow: 0 20px 55px rgba(43, 48, 89, 0.13);
+      --radius-xl: 26px;
+      --radius-lg: 18px;
+      --radius-md: 13px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { min-height: 100%; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 15% 10%, rgba(98, 87, 217, 0.16), transparent 28%),
+        radial-gradient(circle at 88% 15%, rgba(251, 146, 60, 0.16), transparent 24%),
+        linear-gradient(135deg, var(--bg-1), var(--bg-2));
+      padding: 22px;
+    }
+
+    button, textarea, select { font: inherit; }
+
+    button { cursor: pointer; }
+
+    .app {
+      width: min(1180px, 100%);
+      margin: 0 auto;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .title-wrap h1 {
+      margin: 0 0 7px;
+      font-size: clamp(1.7rem, 4vw, 2.65rem);
+      line-height: 1.08;
+      letter-spacing: -0.035em;
+    }
+
+    .title-wrap p {
+      margin: 0;
+      color: var(--muted);
+      max-width: 720px;
+      line-height: 1.55;
+    }
+
+    .round-pill {
+      flex: 0 0 auto;
+      background: var(--panel);
+      border: 1px solid rgba(255,255,255,0.7);
+      box-shadow: 0 10px 25px rgba(43,48,89,0.08);
+      border-radius: 999px;
+      padding: 10px 15px;
+      font-weight: 700;
+      color: var(--primary-dark);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.08fr) minmax(330px, 0.92fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid rgba(255,255,255,0.85);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .panel-body { padding: clamp(18px, 3vw, 30px); }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 13px;
+      color: var(--primary-dark);
+      font-size: 0.82rem;
+      font-weight: 800;
+      letter-spacing: 0.075em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--primary);
+      box-shadow: 0 0 0 5px var(--primary-soft);
+    }
+
+    .mission-card {
+      display: grid;
+      gap: 16px;
+    }
+
+    .mission-main {
+      padding: 21px;
+      border-radius: var(--radius-lg);
+      background: linear-gradient(145deg, #ffffff, #f7f6ff);
+      border: 1px solid var(--border);
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 11px;
+      margin-bottom: 17px;
+    }
+
+    .meta-item {
+      padding: 12px 14px;
+      border-radius: var(--radius-md);
+      background: var(--primary-soft);
+      min-width: 0;
+    }
+
+    .meta-label {
+      display: block;
+      color: var(--muted);
+      font-size: 0.76rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.055em;
+      margin-bottom: 5px;
+    }
+
+    .meta-value {
+      font-weight: 800;
+      overflow-wrap: anywhere;
+    }
+
+    .mission-text {
+      margin: 0;
+      font-size: clamp(1.12rem, 2.5vw, 1.45rem);
+      line-height: 1.5;
+      font-weight: 700;
+    }
+
+    .context-note {
+      margin: 12px 0 0;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .timer-box {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 16px;
+      align-items: center;
+      padding: 17px 19px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      background: #fff;
+    }
+
+    .timer {
+      min-width: 122px;
+      font-variant-numeric: tabular-nums;
+      font-size: clamp(2rem, 7vw, 3.55rem);
+      font-weight: 800;
+      letter-spacing: -0.055em;
+      color: var(--primary-dark);
+    }
+
+    .timer.warning { color: var(--warning); }
+    .timer.finished { color: var(--danger); }
+
+    .timer-actions, .main-actions, .secondary-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+    }
+
+    .btn {
+      border: 0;
+      border-radius: 12px;
+      min-height: 43px;
+      padding: 10px 15px;
+      font-weight: 750;
+      transition: transform 0.15s ease, opacity 0.15s ease, background 0.15s ease;
+    }
+
+    .btn:hover { transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); }
+    .btn:disabled { cursor: not-allowed; opacity: 0.52; transform: none; }
+
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-soft { background: var(--primary-soft); color: var(--primary-dark); }
+    .btn-neutral { background: #eef1f7; color: var(--text); }
+    .btn-danger-soft { background: var(--danger-soft); color: var(--danger); }
+
+    .input-section { margin-top: 20px; }
+
+    .input-section label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 800;
+    }
+
+    .input-hint {
+      display: block;
+      color: var(--muted);
+      font-size: 0.88rem;
+      font-weight: 500;
+      margin-top: 4px;
+      line-height: 1.45;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 128px;
+      resize: vertical;
+      border: 1.5px solid var(--border);
+      border-radius: 15px;
+      padding: 15px 16px;
+      background: #fff;
+      color: var(--text);
+      line-height: 1.55;
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px var(--primary-soft);
+    }
+
+    .char-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 8px;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .accent-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .accent-button {
+      border: 1px solid var(--border);
+      background: #fff;
+      border-radius: 9px;
+      padding: 5px 9px;
+      color: var(--primary-dark);
+      font-weight: 800;
+    }
+
+    .main-actions { margin-top: 14px; }
+
+    .results-placeholder {
+      display: grid;
+      place-items: center;
+      min-height: 515px;
+      text-align: center;
+      padding: 36px 28px;
+      color: var(--muted);
+    }
+
+    .placeholder-icon {
+      width: 72px;
+      height: 72px;
+      margin: 0 auto 18px;
+      display: grid;
+      place-items: center;
+      border-radius: 22px;
+      background: var(--primary-soft);
+      color: var(--primary-dark);
+      font-size: 2rem;
+      font-weight: 800;
+    }
+
+    .results { display: none; }
+    .results.visible { display: block; }
+
+    .evaluation-status {
+      display: grid;
+      grid-template-columns: 42px 1fr;
+      gap: 13px;
+      align-items: center;
+      min-height: 74px;
+      margin-bottom: 15px;
+      padding: 14px 15px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: linear-gradient(145deg, #ffffff, #f8f7ff);
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .evaluation-status.done {
+      background: var(--success-soft);
+      border-color: #c7eadc;
+    }
+
+    .evaluation-spinner {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      border: 4px solid #e7e8f4;
+      border-top-color: var(--primary);
+      animation: spin 0.8s linear infinite;
+      color: transparent;
+      font-weight: 900;
+    }
+
+    .evaluation-status.done .evaluation-spinner {
+      border: 0;
+      color: #fff;
+      background: var(--success);
+      animation: result-pop 0.42s ease both;
+    }
+
+    .evaluation-status strong {
+      display: block;
+      margin-bottom: 3px;
+    }
+
+    .evaluation-status span {
+      color: var(--muted);
+      font-size: 0.84rem;
+    }
+
+    .result-summary {
+      display: none;
+      margin-top: 18px;
+    }
+
+    .result-summary.visible {
+      display: block;
+      animation: summary-rise 0.58s cubic-bezier(.2,.8,.2,1) both;
+    }
+
+    .score-hero {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 17px;
+      align-items: center;
+      margin-bottom: 19px;
+    }
+
+    .score-circle {
+      width: 124px;
+      height: 124px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: conic-gradient(var(--primary) var(--score-angle, 0deg), #ebeef5 0deg);
+      position: relative;
+      box-shadow: 0 12px 28px rgba(98, 87, 217, 0.16);
+      flex: 0 0 auto;
+    }
+
+    .score-circle::after {
+      content: "";
+      position: absolute;
+      inset: 10px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: inset 0 0 0 1px rgba(98, 87, 217, 0.07);
+    }
+
+    .score-circle.celebrate {
+      animation: circle-celebrate 0.68s cubic-bezier(.2,.85,.25,1.25) both;
+    }
+
+    .score-number {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      font-size: 1.65rem;
+      font-weight: 850;
+      line-height: 1;
+    }
+
+    .score-number small {
+      display: block;
+      margin-top: 5px;
+      font-size: 0.67rem;
+      color: var(--muted);
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+
+    .score-title {
+      margin: 0 0 6px;
+      font-size: 1.35rem;
+    }
+
+    .score-subtitle {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .score-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .score-card {
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: #fff;
+    }
+
+    .score-card strong {
+      display: block;
+      margin-top: 5px;
+      font-size: 1.35rem;
+    }
+
+    .score-card span { color: var(--muted); font-size: 0.82rem; }
+
+    .detected-box {
+      display: none;
+      padding: 14px 15px;
+      border-radius: 14px;
+      background: var(--primary-soft);
+      margin-bottom: 15px;
+    }
+
+    .detected-box.visible {
+      display: block;
+      animation: feedback-arrive 0.38s ease both;
+    }
+
+    .detected-box h3 { margin: 0 0 8px; font-size: 1rem; }
+    .detected-box p { margin: 0; line-height: 1.55; }
+
+    .feedback-list {
+      display: grid;
+      gap: 9px;
+    }
+
+    .feedback-item {
+      display: grid;
+      grid-template-columns: 29px 1fr;
+      gap: 10px;
+      align-items: start;
+      padding: 12px 13px;
+      border-radius: 13px;
+      border: 1px solid var(--border);
+      background: #fff;
+      animation: feedback-arrive 0.42s cubic-bezier(.2,.8,.2,1) both;
+    }
+
+    .feedback-item.success { background: var(--success-soft); border-color: #c7eadc; }
+    .feedback-item.warning { background: var(--warning-soft); border-color: #f0d9a9; }
+    .feedback-item.danger { background: var(--danger-soft); border-color: #f3c4cc; }
+
+    .feedback-icon {
+      width: 27px;
+      height: 27px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      font-weight: 900;
+      background: rgba(255,255,255,0.75);
+    }
+
+    .feedback-item p { margin: 0; line-height: 1.48; }
+    .feedback-item strong { display: block; margin-bottom: 3px; }
+
+    .teacher-reveal {
+      margin-top: 15px;
+      padding: 14px;
+      border: 1px dashed var(--border);
+      border-radius: 13px;
+      background: #fbfbfe;
+    }
+
+    .teacher-reveal summary {
+      cursor: pointer;
+      font-weight: 800;
+      color: var(--primary-dark);
+    }
+
+    .teacher-reveal p { margin: 10px 0 0; line-height: 1.55; }
+
+    .footer-note {
+      margin-top: 16px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.45;
+    }
+
+    .hidden { display: none !important; }
+
+    .toast {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      max-width: min(390px, calc(100vw - 36px));
+      padding: 13px 15px;
+      border-radius: 13px;
+      color: #fff;
+      background: var(--text);
+      box-shadow: 0 14px 35px rgba(32,36,58,0.22);
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(12px);
+      transition: 0.22s ease;
+      z-index: 20;
+    }
+
+    .toast.visible { opacity: 1; transform: translateY(0); }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes feedback-arrive {
+      from { opacity: 0; transform: translateY(12px) scale(0.985); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    @keyframes summary-rise {
+      from { opacity: 0; transform: translateY(18px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes result-pop {
+      0% { transform: scale(0.65); }
+      70% { transform: scale(1.12); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes circle-celebrate {
+      0% { transform: scale(0.88); }
+      65% { transform: scale(1.07); }
+      100% { transform: scale(1); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+      .results-placeholder { min-height: 260px; }
+    }
+
+    @media (max-width: 620px) {
+      body { padding: 12px; }
+      .topbar { flex-direction: column; }
+      .round-pill { align-self: flex-start; }
+      .panel-body { padding: 18px; }
+      .meta-grid, .score-grid { grid-template-columns: 1fr; }
+      .timer-box, .score-hero { grid-template-columns: 1fr; }
+      .timer { min-width: 0; }
+      .timer-actions .btn, .main-actions .btn { flex: 1 1 135px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="title-wrap">
+        <h1>El reto del pasado</h1>
+        <p>Losuj kontekst, porozmawiaj, a następnie zapisz po hiszpańsku główne pytanie. Gra oceni jego formę oraz dopasowanie czasu przeszłego do sytuacji.</p>
+      </div>
+      <div class="round-pill" id="roundLabel">Runda 1</div>
+    </header>
+
+    <section class="layout">
+      <article class="panel">
+        <div class="panel-body">
+          <div class="eyebrow">Misja konwersacyjna B1</div>
+
+          <div class="mission-card">
+            <div class="mission-main">
+              <div class="meta-grid">
+                <div class="meta-item">
+                  <span class="meta-label">Tema</span>
+                  <span class="meta-value" id="topicText">Viajes</span>
+                </div>
+                <div class="meta-item">
+                  <span class="meta-label">Contexto temporal</span>
+                  <span class="meta-value" id="contextText">esta semana</span>
+                </div>
+              </div>
+              <p class="mission-text" id="missionText">Pregunta a tu compañero por una experiencia reciente relacionada con un viaje.</p>
+              <p class="context-note" id="contextNote">Najpierw porozmawiajcie. Po rozmowie zapisz tutaj główne pytanie, które zostało zadane.</p>
+            </div>
+
+            <div class="timer-box">
+              <div class="timer" id="timerDisplay" aria-live="polite">05:00</div>
+              <div>
+                <div class="timer-actions">
+                  <button class="btn btn-primary" id="startPauseBtn" type="button">Rozpocznij</button>
+                  <button class="btn btn-neutral" id="resetTimerBtn" type="button">Reset 5:00</button>
+                </div>
+                <p class="input-hint" id="timerHint">Po uruchomieniu macie 5 minut na rozmowę.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="input-section">
+            <label for="questionInput">
+              Zapisz pytanie po hiszpańsku
+              <span class="input-hint">Gra analizuje tekst, nie nagranie. Najlepiej wpisz jedno pełne pytanie.</span>
+            </label>
+            <textarea id="questionInput" maxlength="260" spellcheck="true" placeholder="Ej.: ¿Has hecho algo interesante esta semana?"></textarea>
+
+            <div class="char-row">
+              <div class="accent-buttons" aria-label="Znaki hiszpańskie">
+                <button type="button" class="accent-button" data-char="¿">¿</button>
+                <button type="button" class="accent-button" data-char="?">?</button>
+                <button type="button" class="accent-button" data-char="á">á</button>
+                <button type="button" class="accent-button" data-char="é">é</button>
+                <button type="button" class="accent-button" data-char="í">í</button>
+                <button type="button" class="accent-button" data-char="ó">ó</button>
+                <button type="button" class="accent-button" data-char="ú">ú</button>
+                <button type="button" class="accent-button" data-char="ñ">ñ</button>
+              </div>
+              <span><span id="charCount">0</span>/260</span>
+            </div>
+
+            <div class="main-actions">
+              <button class="btn btn-primary" id="analyzeBtn" type="button">Sprawdź pytanie</button>
+              <button class="btn btn-soft" id="nextBtn" type="button">Następna runda</button>
+              <button class="btn btn-danger-soft" id="clearBtn" type="button">Wyczyść</button>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <aside class="panel" aria-live="polite">
+        <div class="results-placeholder" id="resultsPlaceholder">
+          <div>
+            <div class="placeholder-icon">?</div>
+            <h2>Tu pojawi się analiza</h2>
+            <p>Gra sprawdzi zapis pytania, wykryte formy czasownikowe i zgodność użytego czasu z kontekstem.</p>
+          </div>
+        </div>
+
+        <div class="results" id="resultsPanel">
+          <div class="panel-body">
+            <div class="evaluation-status" id="evaluationStatus">
+              <div class="evaluation-spinner" id="evaluationSpinner">✓</div>
+              <div>
+                <strong id="evaluationStep">Rozpoczynam sprawdzanie…</strong>
+                <span id="evaluationProgress">Analiza zapisu, czasu i słownictwa</span>
+              </div>
+            </div>
+
+            <div class="detected-box" id="detectedBox">
+              <h3>Wykryte formy</h3>
+              <p id="detectedText">—</p>
+            </div>
+
+            <div class="feedback-list" id="feedbackList"></div>
+
+            <div class="result-summary" id="resultSummary">
+              <div class="score-hero">
+                <div class="score-circle" id="scoreCircle">
+                  <div class="score-number"><span id="scoreNumber">0</span><small>%</small></div>
+                </div>
+                <div>
+                  <h2 class="score-title" id="scoreTitle">Ocena gotowa</h2>
+                  <p class="score-subtitle" id="scoreSubtitle"></p>
+                </div>
+              </div>
+
+              <div class="score-grid">
+                <div class="score-card">
+                  <span>A) Zapis i forma pytania</span>
+                  <strong><span id="writingScore">0</span>/40</strong>
+                </div>
+                <div class="score-card">
+                  <span>B) Czas, temat i kontekst</span>
+                  <strong><span id="contextScore">0</span>/60</strong>
+                </div>
+              </div>
+
+              <details class="teacher-reveal">
+                <summary>Informacja dla nauczyciela</summary>
+                <p id="teacherInfo"></p>
+              </details>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <p class="footer-note">Analiza działa heurystycznie: dobrze rozpoznaje typowe pytania B1, ale nie zastępuje pełnej korekty nauczyciela.</p>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const missions = [
+      {
+        topic: "Viajes",
+        context: "esta semana",
+        mission: "Pregunta a tu compañero por una experiencia reciente relacionada con un viaje.",
+        expected: "perfecto",
+        reason: "Okres «esta semana» nadal trwa, dlatego naturalnie pasuje pretérito perfecto.",
+        topicKeywords: ["viaj", "vacacion", "hotel", "avion", "vuelo", "tren", "lugar", "ciudad", "pais", "maleta"],
+        timeMarkers: ["esta semana", "estos dias", "ultimamente", "hoy"],
+        example: "¿Has hecho algún viaje o alguna excursión interesante esta semana?"
+      },
+      {
+        topic: "Tecnología",
+        context: "últimamente",
+        mission: "Pregunta por una aplicación, página o dispositivo que tu compañero ha descubierto recientemente.",
+        expected: "perfecto",
+        reason: "«Últimamente» łączy niedawną przeszłość z teraźniejszością.",
+        topicKeywords: ["aplic", "pagina", "web", "movil", "telefono", "ordenador", "tecnolog", "dispositivo", "programa", "internet"],
+        timeMarkers: ["ultimamente", "recientemente", "estos dias"],
+        example: "¿Has descubierto últimamente alguna aplicación útil?"
+      },
+      {
+        topic: "Comida",
+        context: "hoy",
+        mission: "Pregunta qué ha comido o preparado hoy tu compañero.",
+        expected: "perfecto",
+        reason: "«Hoy» jest okresem niezakończonym w chwili mówienia.",
+        topicKeywords: ["com", "prepar", "cocin", "desayun", "almorz", "cen", "plato", "comida"],
+        timeMarkers: ["hoy", "esta mañana", "esta tarde"],
+        example: "¿Qué has comido hoy?"
+      },
+      {
+        topic: "Cine y series",
+        context: "este mes",
+        mission: "Pregunta por una película o serie que tu compañero ha visto este mes.",
+        expected: "perfecto",
+        reason: "«Este mes» jeszcze się nie zakończył.",
+        topicKeywords: ["pelicul", "serie", "cine", "capitulo", "temporada", "ver", "visto"],
+        timeMarkers: ["este mes", "estas semanas", "ultimamente"],
+        example: "¿Has visto alguna serie buena este mes?"
+      },
+      {
+        topic: "Aprendizaje",
+        context: "desde que empezó el curso",
+        mission: "Pregunta qué ha aprendido o mejorado tu compañero desde el inicio del curso.",
+        expected: "perfecto",
+        reason: "«Desde que...» wskazuje okres trwający aż do chwili obecnej.",
+        topicKeywords: ["aprend", "mejor", "curso", "clase", "idioma", "estudi", "espanol"],
+        timeMarkers: ["desde", "hasta ahora", "este curso"],
+        example: "¿Qué has aprendido desde que empezó el curso?"
+      },
+      {
+        topic: "Experiencias",
+        context: "alguna vez en tu vida",
+        mission: "Pregunta por una experiencia poco habitual que tu compañero haya vivido.",
+        expected: "perfecto",
+        reason: "Doświadczenia życiowe bez zamkniętego momentu zwykle wyraża się w pretérito perfecto.",
+        topicKeywords: ["vez", "experien", "viv", "hacer", "hecho", "probar", "estado"],
+        timeMarkers: ["alguna vez", "nunca", "en tu vida", "ya"],
+        example: "¿Has vivido alguna vez una experiencia realmente extraña?"
+      },
+      {
+        topic: "Salud y hábitos",
+        context: "en los últimos días",
+        mission: "Pregunta si tu compañero ha cambiado algún hábito relacionado con su salud.",
+        expected: "perfecto",
+        reason: "«En los últimos días» odnosi się do niedawnego okresu związanego z teraźniejszością.",
+        topicKeywords: ["salud", "habit", "dorm", "ejercicio", "deporte", "comer", "cambi"],
+        timeMarkers: ["ultimos dias", "ultimamente", "recientemente"],
+        example: "¿Has cambiado algún hábito saludable en los últimos días?"
+      },
+      {
+        topic: "Redes sociales",
+        context: "esta semana",
+        mission: "Pregunta por algo interesante o sorprendente que tu compañero ha visto en redes sociales.",
+        expected: "perfecto",
+        reason: "Tydzień jeszcze trwa, więc pasuje pretérito perfecto.",
+        topicKeywords: ["red", "instagram", "tiktok", "video", "publicacion", "internet", "visto"],
+        timeMarkers: ["esta semana", "estos dias", "hoy"],
+        example: "¿Has visto algo sorprendente en las redes sociales esta semana?"
+      },
+
+      {
+        topic: "Fin de semana",
+        context: "el fin de semana pasado",
+        mission: "Pregunta qué hizo tu compañero durante el fin de semana pasado.",
+        expected: "indefinido",
+        reason: "«El fin de semana pasado» jest zamkniętym okresem w przeszłości.",
+        topicKeywords: ["fin de semana", "sabado", "domingo", "hacer", "hic", "sal", "visit"],
+        timeMarkers: ["fin de semana pasado", "sabado", "domingo"],
+        example: "¿Qué hiciste el fin de semana pasado?"
+      },
+      {
+        topic: "Viajes",
+        context: "las últimas vacaciones",
+        mission: "Pregunta por un problema inesperado que ocurrió durante las últimas vacaciones.",
+        expected: "indefinido",
+        reason: "Ostatnie wakacje są zakończonym wydarzeniem.",
+        topicKeywords: ["vacacion", "viaj", "problema", "pas", "ocurr", "hotel", "vuelo", "maleta"],
+        timeMarkers: ["ultimas vacaciones", "el verano pasado", "durante el viaje"],
+        example: "¿Tuviste algún problema durante tus últimas vacaciones?"
+      },
+      {
+        topic: "Un día especial",
+        context: "ayer",
+        mission: "Pregunta por el momento más interesante o difícil del día de ayer.",
+        expected: "indefinido",
+        reason: "«Ayer» to zakończony moment przeszłości.",
+        topicKeywords: ["ayer", "momento", "pas", "ocurr", "dia", "difícil", "interesante"],
+        timeMarkers: ["ayer", "anoche"],
+        example: "¿Qué fue lo más interesante que te pasó ayer?"
+      },
+      {
+        topic: "Educación",
+        context: "el último examen",
+        mission: "Pregunta cómo fue el último examen o una prueba importante.",
+        expected: "indefinido",
+        reason: "Mowa o konkretnym, zakończonym egzaminie.",
+        topicKeywords: ["examen", "prueba", "nota", "pregunta", "aprobar", "suspender", "fue"],
+        timeMarkers: ["ultimo examen", "la semana pasada", "ayer"],
+        example: "¿Cómo fue tu último examen?"
+      },
+      {
+        topic: "Compras",
+        context: "la última vez que fuiste de compras",
+        mission: "Pregunta qué compró tu compañero y por qué lo eligió.",
+        expected: "indefinido",
+        reason: "«La última vez» wyznacza konkretne zakończone zdarzenie.",
+        topicKeywords: ["compr", "tienda", "precio", "eleg", "ropa", "producto"],
+        timeMarkers: ["ultima vez", "ayer", "semana pasada"],
+        example: "¿Qué compraste la última vez que fuiste de compras?"
+      },
+      {
+        topic: "Celebraciones",
+        context: "tu último cumpleaños",
+        mission: "Pregunta cómo celebró tu compañero su último cumpleaños.",
+        expected: "indefinido",
+        reason: "Ostatnie urodziny są konkretnym, zakończonym wydarzeniem.",
+        topicKeywords: ["cumple", "celebr", "fiesta", "regalo", "invit", "familia", "amigos"],
+        timeMarkers: ["ultimo cumpleaños", "el año pasado"],
+        example: "¿Cómo celebraste tu último cumpleaños?"
+      },
+      {
+        topic: "Una decisión",
+        context: "el año pasado",
+        mission: "Pregunta por una decisión importante que tomó tu compañero el año pasado.",
+        expected: "indefinido",
+        reason: "«El año pasado» jest zamkniętym okresem.",
+        topicKeywords: ["decision", "decid", "cambi", "eleg", "trabajo", "estudio"],
+        timeMarkers: ["año pasado", "en 2025", "entonces"],
+        example: "¿Tomaste alguna decisión importante el año pasado?"
+      },
+      {
+        topic: "Una sorpresa",
+        context: "la última vez",
+        mission: "Pregunta por la última situación que sorprendió mucho a tu compañero.",
+        expected: "indefinido",
+        reason: "Pytanie dotyczy jednego konkretnego zdarzenia.",
+        topicKeywords: ["sorpr", "pas", "ocurr", "noticia", "situacion", "vez"],
+        timeMarkers: ["ultima vez", "cuando", "ayer"],
+        example: "¿Qué ocurrió la última vez que te sorprendiste mucho?"
+      },
+
+      {
+        topic: "Infancia",
+        context: "cuando eras niño/a",
+        mission: "Pregunta por una costumbre o actividad habitual de la infancia.",
+        expected: "imperfecto",
+        reason: "Zwyczaje i powtarzające się czynności w przeszłości opisuje imperfecto.",
+        topicKeywords: ["niñ", "infancia", "jug", "sol", "costumbre", "hacer", "gust"],
+        timeMarkers: ["cuando eras", "de pequeño", "en tu infancia", "normalmente"],
+        example: "¿Qué hacías normalmente cuando eras niño?"
+      },
+      {
+        topic: "Escuela",
+        context: "cuando ibas a primaria",
+        mission: "Pregunta cómo era la escuela o qué asignaturas le gustaban a tu compañero.",
+        expected: "imperfecto",
+        reason: "Opis tła, miejsca i dawnych upodobań wymaga imperfecto.",
+        topicKeywords: ["escuela", "colegio", "primaria", "asignatura", "profesor", "gust", "era", "ibas"],
+        timeMarkers: ["cuando ibas", "en primaria", "de pequeño"],
+        example: "¿Qué asignatura te gustaba más cuando ibas a primaria?"
+      },
+      {
+        topic: "Vacaciones de antes",
+        context: "todos los veranos",
+        mission: "Pregunta qué hacía normalmente tu compañero durante los veranos de su infancia.",
+        expected: "imperfecto",
+        reason: "«Todos los veranos» wskazuje powtarzalność.",
+        topicKeywords: ["verano", "vacacion", "playa", "pueblo", "viaj", "sol", "iba", "hacia"],
+        timeMarkers: ["todos los veranos", "cada verano", "normalmente"],
+        example: "¿Qué hacías todos los veranos cuando eras pequeño?"
+      },
+      {
+        topic: "Casa de la infancia",
+        context: "cuando vivías con tu familia",
+        mission: "Pide una descripción de la casa, el barrio o la habitación de tu compañero.",
+        expected: "imperfecto",
+        reason: "Opisy miejsc i tła w przeszłości tworzymy w imperfecto.",
+        topicKeywords: ["casa", "habitacion", "barrio", "viv", "era", "tenia", "familia"],
+        timeMarkers: ["cuando vivias", "antes", "en aquella epoca"],
+        example: "¿Cómo era la casa donde vivías con tu familia?"
+      },
+      {
+        topic: "Tecnología de antes",
+        context: "antes de tener un smartphone",
+        mission: "Pregunta cómo se comunicaba o entretenía tu compañero antes de usar un smartphone.",
+        expected: "imperfecto",
+        reason: "Dawne zwyczaje i sposoby działania wymagają imperfecto.",
+        topicKeywords: ["smartphone", "movil", "telefono", "comunic", "entreten", "internet", "usab"],
+        timeMarkers: ["antes", "cuando no tenias", "en aquella epoca"],
+        example: "¿Cómo te comunicabas antes de tener un smartphone?"
+      },
+      {
+        topic: "Amistades",
+        context: "cuando tenías 12 años",
+        mission: "Pregunta cómo era el mejor amigo o la mejor amiga de tu compañero.",
+        expected: "imperfecto",
+        reason: "Opis osoby i relacji w przeszłości wyrażamy w imperfecto.",
+        topicKeywords: ["amig", "persona", "caracter", "era", "tenia", "conoc"],
+        timeMarkers: ["cuando tenias", "a los 12 años", "de pequeño"],
+        example: "¿Cómo era tu mejor amigo cuando tenías doce años?"
+      },
+      {
+        topic: "Rutina",
+        context: "en aquella época",
+        mission: "Pregunta cómo era un día normal de tu compañero en una etapa anterior de su vida.",
+        expected: "imperfecto",
+        reason: "Rutynę i powtarzalność w przeszłości opisuje imperfecto.",
+        topicKeywords: ["dia", "rutina", "normal", "levant", "trabaj", "estudi", "solia"],
+        timeMarkers: ["en aquella epoca", "normalmente", "cada dia", "antes"],
+        example: "¿Cómo era un día normal para ti en aquella época?"
+      },
+      {
+        topic: "Profesores",
+        context: "cuando estudiabas en el instituto",
+        mission: "Pregunta cómo eran las clases o los profesores de tu compañero.",
+        expected: "imperfecto",
+        reason: "Opis ludzi, zajęć i regularnych doświadczeń w przeszłości wymaga imperfecto.",
+        topicKeywords: ["profesor", "clase", "instituto", "estudi", "era", "explic", "asignatura"],
+        timeMarkers: ["cuando estudiabas", "en el instituto", "antes"],
+        example: "¿Cómo eran tus profesores cuando estudiabas en el instituto?"
+      }
+    ];
+
+    const topicLexicons = {
+      "Viajes": {
+        phrases: ["medio de transporte", "hacer una excursión", "hacer turismo", "ir de viaje"],
+        stems: ["viaj", "excursion", "vacacion", "turis", "visit", "hotel", "hostal", "aloj", "avion", "vuelo", "aeropuert", "tren", "autobus", "malet", "equipaj", "destin", "playa", "montan", "ciudad", "pais"]
+      },
+      "Tecnología": {
+        phrases: ["red social", "página web", "inteligencia artificial"],
+        stems: ["tecnolog", "aplic", "program", "web", "internet", "movil", "telefono", "smartphone", "ordenador", "portatil", "tablet", "disposit", "descarg", "instal", "descubr", "usar", "util"]
+      },
+      "Comida": {
+        phrases: ["comida rápida", "plato típico"],
+        stems: ["com", "beb", "cocin", "prepar", "desayun", "almorz", "cen", "merend", "recet", "plato", "aliment", "restaur", "ingred", "sab", "prob"]
+      },
+      "Cine y series": {
+        phrases: ["película de terror", "serie de televisión"],
+        stems: ["pelicul", "serie", "cine", "capitul", "temporad", "actor", "actriz", "director", "personaj", "trama", "episod", "documental", "ver", "visto"]
+      },
+      "Aprendizaje": {
+        phrases: ["aprender español", "curso de idiomas"],
+        stems: ["aprend", "mejor", "estudi", "curso", "clase", "idiom", "espanol", "vocabular", "gramatic", "pronunci", "habilid", "conocim", "practic"]
+      },
+      "Experiencias": {
+        phrases: ["alguna vez", "experiencia extraña", "por primera vez"],
+        stems: ["experien", "viv", "prob", "conoc", "visit", "particip", "aventur", "arriesg", "inolvid", "extrano", "sorprend", "hecho", "estado"]
+      },
+      "Salud y hábitos": {
+        phrases: ["hacer ejercicio", "vida sana", "dormir bien", "comer sano"],
+        stems: ["salud", "habit", "ejerc", "deport", "entren", "dorm", "descans", "aliment", "diet", "cambi", "caminar", "correr", "medic", "estres", "san"]
+      },
+      "Redes sociales": {
+        phrases: ["redes sociales", "vídeo viral"],
+        stems: ["red", "instagram", "tiktok", "facebook", "youtube", "video", "public", "foto", "perfil", "seguidor", "coment", "viral", "internet", "visto"]
+      },
+      "Fin de semana": {
+        phrases: ["fin de semana"],
+        stems: ["sabad", "doming", "descans", "sal", "qued", "visit", "pase", "fiesta", "amig", "famil", "plan", "hic"]
+      },
+      "Un día especial": {
+        phrases: ["lo más interesante", "lo más difícil"],
+        stems: ["ayer", "anoche", "dia", "moment", "pas", "ocurr", "interes", "dific", "mejor", "peor", "especial", "record"]
+      },
+      "Educación": {
+        phrases: ["hacer un examen", "sacar una nota"],
+        stems: ["examen", "prueb", "not", "pregunt", "ejerc", "aproba", "suspend", "estudi", "profesor", "asignatur", "resultado"]
+      },
+      "Compras": {
+        phrases: ["ir de compras", "centro comercial"],
+        stems: ["compr", "tiend", "precio", "cost", "eleg", "ropa", "producto", "ofert", "descuent", "pagar", "tarjet", "efectiv"]
+      },
+      "Celebraciones": {
+        phrases: ["fiesta de cumpleaños", "celebrar el cumpleaños"],
+        stems: ["cumple", "celebr", "fiesta", "regal", "invit", "famil", "amig", "tart", "sorpres", "reun", "cen"]
+      },
+      "Una decisión": {
+        phrases: ["tomar una decisión", "cambiar de trabajo"],
+        stems: ["decision", "decid", "eleg", "escog", "cambi", "trabaj", "estudi", "mud", "empez", "dej", "important", "motivo"]
+      },
+      "Una sorpresa": {
+        phrases: ["la última vez", "noticia inesperada"],
+        stems: ["sorpr", "inesper", "notici", "situacion", "ocurr", "pas", "reaccion", "enter", "descubr", "impresion"]
+      },
+      "Infancia": {
+        phrases: ["de pequeño", "cuando eras niño", "en tu infancia"],
+        stems: ["nino", "infanci", "jug", "juguet", "parque", "costumbr", "gust", "sol", "hac", "famil", "amig", "dibuj", "coleccion"]
+      },
+      "Escuela": {
+        phrases: ["escuela primaria", "ir al colegio"],
+        stems: ["escuel", "colegi", "primari", "asignatur", "profesor", "alumn", "clase", "recre", "deber", "gust", "era", "iba"]
+      },
+      "Vacaciones de antes": {
+        phrases: ["todos los veranos", "vacaciones de verano"],
+        stems: ["veran", "vacacion", "playa", "puebl", "viaj", "camp", "piscin", "famil", "iba", "hac", "sol", "pas"]
+      },
+      "Casa de la infancia": {
+        phrases: ["casa de la infancia", "habitación propia"],
+        stems: ["casa", "habitacion", "barri", "edific", "jardin", "cocin", "salon", "dormitori", "viv", "famil", "era", "teni", "grande", "pequen"]
+      },
+      "Tecnología de antes": {
+        phrases: ["antes de tener un smartphone", "teléfono fijo"],
+        stems: ["smartphone", "movil", "telefono", "comunic", "entreten", "internet", "ordenador", "mensaje", "llam", "carta", "television", "radio", "usab"]
+      },
+      "Amistades": {
+        phrases: ["mejor amigo", "mejor amiga"],
+        stems: ["amig", "persona", "caracter", "simpatic", "timid", "divertid", "generos", "conoc", "jug", "junt", "era", "teni"]
+      },
+      "Rutina": {
+        phrases: ["día normal", "todos los días"],
+        stems: ["rutin", "normal", "levant", "despert", "desayun", "trabaj", "estudi", "volv", "cen", "dorm", "soli", "cada", "dia"]
+      },
+      "Profesores": {
+        phrases: ["profesor de", "clases de"],
+        stems: ["profesor", "maestr", "clase", "institut", "estudi", "explic", "ensen", "asignatur", "exigent", "simpatic", "aburr", "interes", "era"]
+      }
+    };
+
+    const lexicalStopWords = new Set([
+      "como", "cuando", "donde", "quien", "quienes", "cual", "cuales", "cuanto", "cuanta",
+      "cuantos", "cuantas", "que", "porque", "para", "pero", "esta", "este", "estos", "estas"
+    ]);
+
+    const weakVocabularyStems = new Set([
+      "hacer", "hecho", "hac", "pas", "ocurr", "fue", "era", "eran", "iba", "ibas", "teni",
+      "sol", "persona", "dia", "moment", "normal", "interes", "dific", "mejor", "peor", "vez",
+      "estado", "visto", "ver", "usar", "util", "cambi", "famil", "amig", "pregunt", "not"
+    ]);
+
+    const tenseLabels = {
+      perfecto: "pretérito perfecto",
+      indefinido: "pretérito indefinido",
+      imperfecto: "pretérito imperfecto"
+    };
+
+    const strongQuestionWords = [
+      "qué", "que", "quién", "quien", "quiénes", "quienes", "cómo", "como",
+      "cuándo", "cuando", "dónde", "donde", "adónde", "adonde", "cuál", "cual",
+      "cuáles", "cuales", "cuánto", "cuanto", "cuánta", "cuanta", "cuántos", "cuantos",
+      "cuántas", "cuantas", "por qué", "por que"
+    ];
+
+    const yesNoStarters = [
+      "has", "ha", "han", "habéis", "habeis", "hiciste", "fuiste", "tuviste", "estuviste",
+      "viste", "dijiste", "pudiste", "quisiste", "viniste", "compraste", "viajaste", "comiste",
+      "eras", "ibas", "tenías", "tenias", "hacías", "hacias", "solías", "solias", "te", "os"
+    ];
+
+    const irregularParticiples = [
+      "abierto", "cubierto", "dicho", "escrito", "frito", "hecho", "muerto", "puesto",
+      "resuelto", "roto", "visto", "vuelto", "descubierto", "impreso", "satisfecho"
+    ];
+
+    const imperfectIrregular = [
+      "era", "eras", "éramos", "eramos", "erais", "eran",
+      "iba", "ibas", "íbamos", "ibamos", "ibais", "iban",
+      "veía", "veia", "veías", "veias", "veíamos", "veiamos", "veíais", "veiais", "veían", "veian"
+    ];
+
+    const indefinidoIrregular = [
+      "fui", "fuiste", "fue", "fuimos", "fuisteis", "fueron",
+      "tuve", "tuviste", "tuvo", "tuvimos", "tuvisteis", "tuvieron",
+      "estuve", "estuviste", "estuvo", "estuvimos", "estuvisteis", "estuvieron",
+      "hice", "hiciste", "hizo", "hicimos", "hicisteis", "hicieron",
+      "pude", "pudiste", "pudo", "pudimos", "pudisteis", "pudieron",
+      "puse", "pusiste", "puso", "pusimos", "pusisteis", "pusieron",
+      "supe", "supiste", "supo", "supimos", "supisteis", "supieron",
+      "quise", "quisiste", "quiso", "quisimos", "quisisteis", "quisieron",
+      "vine", "viniste", "vino", "vinimos", "vinisteis", "vinieron",
+      "dije", "dijiste", "dijo", "dijimos", "dijisteis", "dijeron",
+      "traje", "trajiste", "trajo", "trajimos", "trajisteis", "trajeron",
+      "anduve", "anduviste", "anduvo", "anduvimos", "anduvisteis", "anduvieron",
+      "di", "diste", "dio", "dimos", "disteis", "dieron",
+      "vi", "viste", "vio", "vimos", "visteis", "vieron",
+      "leí", "lei", "leíste", "leiste", "leyó", "leyo", "leímos", "leimos", "leísteis", "leisteis", "leyeron",
+      "oí", "oi", "oíste", "oiste", "oyó", "oyo", "oímos", "oimos", "oísteis", "oisteis", "oyeron"
+    ];
+
+    const falseImperfectWords = new Set([
+      "día", "dia", "policía", "policia", "geografía", "geografia", "biología", "biologia",
+      "tecnología", "tecnologia", "energía", "energia", "fotografía", "fotografia", "familia",
+      "historia", "comida", "vida", "noticia", "experiencia", "vacaciones"
+    ]);
+
+    const falseIndefiniteWords = new Set([
+      "qué", "que", "sí", "si", "aquí", "aqui", "allí", "alli", "país", "pais", "día", "dia",
+      "café", "cafe", "menú", "menu", "sofá", "sofa", "mamá", "mama", "papá", "papa"
+    ]);
+
+    let currentMission = null;
+    let lastMissionIndex = -1;
+    let round = 1;
+    let remainingSeconds = 300;
+    let timerId = null;
+    let timerRunning = false;
+    let resultAnimationToken = 0;
+
+    const topicText = document.getElementById("topicText");
+    const contextText = document.getElementById("contextText");
+    const missionText = document.getElementById("missionText");
+    const roundLabel = document.getElementById("roundLabel");
+    const timerDisplay = document.getElementById("timerDisplay");
+    const timerHint = document.getElementById("timerHint");
+    const startPauseBtn = document.getElementById("startPauseBtn");
+    const resetTimerBtn = document.getElementById("resetTimerBtn");
+    const questionInput = document.getElementById("questionInput");
+    const charCount = document.getElementById("charCount");
+    const analyzeBtn = document.getElementById("analyzeBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const clearBtn = document.getElementById("clearBtn");
+    const resultsPlaceholder = document.getElementById("resultsPlaceholder");
+    const resultsPanel = document.getElementById("resultsPanel");
+    const evaluationStatus = document.getElementById("evaluationStatus");
+    const evaluationStep = document.getElementById("evaluationStep");
+    const evaluationProgress = document.getElementById("evaluationProgress");
+    const detectedBox = document.getElementById("detectedBox");
+    const resultSummary = document.getElementById("resultSummary");
+    const scoreCircle = document.getElementById("scoreCircle");
+    const scoreNumber = document.getElementById("scoreNumber");
+    const scoreTitle = document.getElementById("scoreTitle");
+    const scoreSubtitle = document.getElementById("scoreSubtitle");
+    const writingScore = document.getElementById("writingScore");
+    const contextScore = document.getElementById("contextScore");
+    const detectedText = document.getElementById("detectedText");
+    const feedbackList = document.getElementById("feedbackList");
+    const teacherInfo = document.getElementById("teacherInfo");
+    const toast = document.getElementById("toast");
+
+    function normalizeText(text) {
+      return text
+        .toLowerCase()
+        .replace(/[“”«»]/g, '"')
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+
+    function removeAccents(text) {
+      return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    }
+
+    function tokenize(text) {
+      return normalizeText(text)
+        .replace(/[¿?¡!.,;:()\[\]{}"']/g, " ")
+        .split(/\s+/)
+        .filter(Boolean);
+    }
+
+    function formatTime(seconds) {
+      const minutes = Math.floor(seconds / 60).toString().padStart(2, "0");
+      const secs = (seconds % 60).toString().padStart(2, "0");
+      return `${minutes}:${secs}`;
+    }
+
+    function updateTimerUI() {
+      timerDisplay.textContent = formatTime(remainingSeconds);
+      timerDisplay.classList.toggle("warning", remainingSeconds <= 60 && remainingSeconds > 0);
+      timerDisplay.classList.toggle("finished", remainingSeconds === 0);
+
+      if (remainingSeconds === 0) {
+        timerHint.textContent = "¡Se acabó el tiempo! Zapisz teraz główne pytanie.";
+      } else if (remainingSeconds <= 60) {
+        timerHint.textContent = "¡Último minuto! Dokończcie rozmowę i wybierzcie główne pytanie.";
+      } else if (timerRunning) {
+        timerHint.textContent = "Rozmowa trwa. Zadaj pytania dodatkowe i słuchaj odpowiedzi partnera.";
+      } else {
+        timerHint.textContent = "Po uruchomieniu macie 5 minut na rozmowę.";
+      }
+    }
+
+    function stopTimer() {
+      if (timerId) clearInterval(timerId);
+      timerId = null;
+      timerRunning = false;
+      startPauseBtn.textContent = remainingSeconds === 300 ? "Rozpocznij" : "Wznów";
+      updateTimerUI();
+    }
+
+    function toggleTimer() {
+      if (timerRunning) {
+        stopTimer();
+        return;
+      }
+
+      if (remainingSeconds === 0) remainingSeconds = 300;
+      timerRunning = true;
+      startPauseBtn.textContent = "Pauza";
+      updateTimerUI();
+
+      timerId = setInterval(() => {
+        remainingSeconds -= 1;
+        updateTimerUI();
+        if (remainingSeconds <= 0) {
+          remainingSeconds = 0;
+          clearInterval(timerId);
+          timerId = null;
+          timerRunning = false;
+          startPauseBtn.textContent = "Uruchom ponownie";
+          updateTimerUI();
+          showToast("Czas minął. Zapiszcie teraz główne pytanie.");
+        }
+      }, 1000);
+    }
+
+    function resetTimer() {
+      stopTimer();
+      remainingSeconds = 300;
+      startPauseBtn.textContent = "Rozpocznij";
+      updateTimerUI();
+    }
+
+    function pickMission() {
+      let index;
+      do {
+        index = Math.floor(Math.random() * missions.length);
+      } while (index === lastMissionIndex && missions.length > 1);
+
+      lastMissionIndex = index;
+      currentMission = missions[index];
+      topicText.textContent = currentMission.topic;
+      contextText.textContent = currentMission.context;
+      missionText.textContent = currentMission.mission;
+      roundLabel.textContent = `Runda ${round}`;
+      questionInput.value = "";
+      charCount.textContent = "0";
+      resetTimer();
+      hideResults();
+      questionInput.focus();
+    }
+
+    function hideResults() {
+      resultAnimationToken += 1;
+      resultsPanel.classList.remove("visible");
+      resultsPlaceholder.classList.remove("hidden");
+      detectedBox.classList.remove("visible");
+      resultSummary.classList.remove("visible");
+      evaluationStatus.classList.remove("done");
+      feedbackList.innerHTML = "";
+      scoreCircle.classList.remove("celebrate");
+      scoreCircle.style.setProperty("--score-angle", "0deg");
+      scoreNumber.textContent = "0";
+      writingScore.textContent = "0";
+      contextScore.textContent = "0";
+      analyzeBtn.disabled = false;
+    }
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add("visible");
+      setTimeout(() => toast.classList.remove("visible"), 2400);
+    }
+
+    function detectPerfect(tokens) {
+      const auxiliaries = new Set(["he", "has", "ha", "hemos", "habéis", "habeis", "han"]);
+      const detections = [];
+
+      for (let i = 0; i < tokens.length; i++) {
+        if (!auxiliaries.has(tokens[i])) continue;
+
+        const lookAhead = tokens.slice(i + 1, i + 5);
+        const participle = lookAhead.find(token =>
+          /(?:ado|ido)$/.test(token) || irregularParticiples.includes(token)
+        );
+
+        if (participle) {
+          detections.push(`${tokens[i]} ${participle}`);
+        } else {
+          detections.push(`${tokens[i]} (…)`);
+        }
+      }
+
+      return [...new Set(detections)];
+    }
+
+    function detectImperfect(tokens) {
+      const detections = [];
+      const imperfectPattern = /(?:aba|abas|ábamos|abamos|abais|aban|ía|ia|ías|ias|íamos|iamos|íais|iais|ían|ian)$/;
+
+      tokens.forEach(token => {
+        if (falseImperfectWords.has(token)) return;
+        if (imperfectIrregular.includes(token) || imperfectPattern.test(token)) {
+          detections.push(token);
+        }
+      });
+
+      return [...new Set(detections)];
+    }
+
+    function detectIndefinido(tokens) {
+      const detections = [];
+      const strongPattern = /(?:aste|iste|ó|io|ió|aron|ieron|asteis|isteis)$/;
+      const firstPersonPattern = /(?:é|í)$/;
+
+      tokens.forEach(token => {
+        if (falseIndefiniteWords.has(token)) return;
+
+        if (indefinidoIrregular.includes(token)) {
+          detections.push(token);
+          return;
+        }
+
+        if (strongPattern.test(token)) {
+          detections.push(token);
+          return;
+        }
+
+        if (firstPersonPattern.test(token) && token.length >= 4) {
+          detections.push(token);
+        }
+      });
+
+      return [...new Set(detections)];
+    }
+
+    function findPotentialInfinitives(tokens) {
+      const infinitives = tokens.filter(token => /(?:ar|er|ir)$/.test(token) && token.length > 3);
+      return [...new Set(infinitives)];
+    }
+
+    function detectTenses(text) {
+      const tokens = tokenize(text);
+      return {
+        tokens,
+        perfecto: detectPerfect(tokens),
+        indefinido: detectIndefinido(tokens),
+        imperfecto: detectImperfect(tokens),
+        infinitives: findPotentialInfinitives(tokens)
+      };
+    }
+
+    function containsAny(text, fragments) {
+      const normalized = ` ${removeAccents(normalizeText(text)).replace(/[^a-zñ0-9]+/g, " ")} `;
+      return fragments.some(fragment => {
+        const clean = removeAccents(fragment.toLowerCase()).trim();
+        return clean.includes(" ")
+          ? normalized.includes(` ${clean} `)
+          : normalized.split(/\s+/).some(token => token === clean || (clean.length >= 4 && token.startsWith(clean)));
+      });
+    }
+
+    function findTopicVocabulary(text, mission) {
+      const normalized = removeAccents(normalizeText(text)).replace(/[^a-zñ0-9]+/g, " ").trim();
+      const tokens = normalized.split(/\s+/).filter(Boolean);
+      const lexicon = topicLexicons[mission.topic] || { phrases: [], stems: [] };
+      const phraseMatches = [];
+      const strongWordMatches = [];
+      const weakWordMatches = [];
+
+      for (const phrase of lexicon.phrases) {
+        const clean = removeAccents(phrase.toLowerCase());
+        if (` ${normalized} `.includes(` ${clean} `)) phraseMatches.push(phrase);
+      }
+
+      const stems = [
+        ...lexicon.stems,
+        ...mission.topicKeywords.filter(keyword => !keyword.includes(" ") && keyword.length >= 3)
+      ].map(item => removeAccents(item.toLowerCase()));
+
+      for (const token of tokens) {
+        if (lexicalStopWords.has(token)) continue;
+        const matchedStem = stems.find(stem => {
+          if (stem.length <= 3) return token.startsWith(stem) && token.length > stem.length;
+          return token === stem || token.startsWith(stem);
+        });
+        if (matchedStem) {
+          const weak = [...weakVocabularyStems].some(stem => matchedStem === stem || matchedStem.startsWith(stem));
+          (weak ? weakWordMatches : strongWordMatches).push(token);
+        }
+      }
+
+      for (const keyword of mission.topicKeywords.filter(item => item.includes(" "))) {
+        const clean = removeAccents(keyword.toLowerCase());
+        if (` ${normalized} `.includes(` ${clean} `)) phraseMatches.push(keyword);
+      }
+
+      const strongMatches = [...new Set([...phraseMatches, ...strongWordMatches])];
+      const weakMatches = [...new Set(weakWordMatches)];
+      const matches = [...new Set([...strongMatches, ...weakMatches])];
+      return {
+        matches,
+        strongMatches,
+        weakMatches,
+        partial: weakMatches.length >= 1,
+        strong: strongMatches.length >= 1 || weakMatches.length >= 2,
+        rich: strongMatches.length >= 2 || (strongMatches.length >= 1 && weakMatches.length >= 1)
+      };
+    }
+
+    function startsLikeQuestion(text) {
+      const normalized = normalizeText(text).replace(/^¿\s*/, "");
+      return strongQuestionWords.some(word => normalized.startsWith(`${word} `) || normalized === word) ||
+        yesNoStarters.some(word => normalized.startsWith(`${word} `) || normalized === word);
+    }
+
+    function findMissingQuestionAccent(text) {
+      const normalized = normalizeText(text).replace(/^¿\s*/, "");
+      const accentPairs = [
+        ["que ", "qué"], ["como ", "cómo"], ["cuando ", "cuándo"], ["donde ", "dónde"],
+        ["quien ", "quién"], ["cual ", "cuál"], ["cuanto ", "cuánto"], ["cuanta ", "cuánta"],
+        ["cuantos ", "cuántos"], ["cuantas ", "cuántas"]
+      ];
+      const found = accentPairs.find(([plain]) => normalized.startsWith(plain));
+      return found ? found[1] : null;
+    }
+
+    function addFeedback(items, type, title, message) {
+      items.push({ type, title, message });
+    }
+
+    function analyzeQuestion() {
+      const raw = questionInput.value.trim();
+      if (!raw) {
+        showToast("Najpierw wpisz pytanie po hiszpańsku.");
+        questionInput.focus();
+        return;
+      }
+
+      const analysis = detectTenses(raw);
+      const normalized = normalizeText(raw);
+      const wordCount = analysis.tokens.length;
+      const feedback = [];
+      let formScore = 0;
+      let useScore = 0;
+
+      const hasOpeningMark = normalized.startsWith("¿");
+      const hasClosingMark = normalized.endsWith("?");
+      const hasAnyQuestionMark = normalized.includes("?");
+      const questionStart = startsLikeQuestion(raw);
+      const missingAccent = findMissingQuestionAccent(raw);
+
+      if (hasOpeningMark && hasClosingMark) {
+        formScore += 10;
+        addFeedback(feedback, "success", "Znaki zapytania", "Pytanie ma poprawne hiszpańskie znaki ¿ ... ?.");
+      } else if (hasAnyQuestionMark) {
+        formScore += 6;
+        addFeedback(feedback, "warning", "Znaki zapytania", "Pytanie jest czytelne, ale po hiszpańsku najlepiej użyć obu znaków: ¿ ... ?.");
+      } else {
+        addFeedback(feedback, "danger", "Znaki zapytania", "Brakuje znaku zapytania. Zapisz pełne pytanie, najlepiej w formacie ¿ ... ?.");
+      }
+
+      if (wordCount >= 5) {
+        formScore += 8;
+        addFeedback(feedback, "success", "Pełne zdanie", `Pytanie ma ${wordCount} słów i wygląda na rozwiniętą wypowiedź.`);
+      } else if (wordCount >= 3) {
+        formScore += 5;
+        addFeedback(feedback, "warning", "Długość pytania", "Pytanie jest bardzo krótkie. Może być poprawne, ale warto dodać kontekst lub szczegół.");
+      } else {
+        addFeedback(feedback, "danger", "Pełne zdanie", "Wpis jest zbyt krótki, aby wiarygodnie ocenić pytanie.");
+      }
+
+      if (questionStart) {
+        formScore += 10;
+        addFeedback(feedback, "success", "Budowa pytania", "Początek zdania pasuje do pytania otwartego lub pytania typu sí/no.");
+      } else if (hasAnyQuestionMark && wordCount >= 4) {
+        formScore += 6;
+        addFeedback(feedback, "warning", "Budowa pytania", "Zdanie wygląda jak pytanie, ale gra nie rozpoznała typowego początku. Sprawdź szyk i formę czasownika.");
+      } else {
+        addFeedback(feedback, "danger", "Budowa pytania", "Gra nie rozpoznaje typowej konstrukcji pytającej.");
+      }
+
+      const allDetectedForms = [
+        ...analysis.perfecto,
+        ...analysis.indefinido,
+        ...analysis.imperfecto
+      ];
+
+      if (allDetectedForms.length > 0) {
+        formScore += 8;
+        addFeedback(feedback, "success", "Forma czasownikowa", "W pytaniu wykryto co najmniej jedną odmienioną formę czasu przeszłego.");
+      } else if (analysis.infinitives.length > 0) {
+        formScore += 3;
+        addFeedback(feedback, "danger", "Forma czasownikowa", `Wykryto bezokolicznik (${analysis.infinitives.join(", ")}), ale nie znaleziono wyraźnej odmienionej formy badanego czasu.`);
+      } else {
+        addFeedback(feedback, "danger", "Forma czasownikowa", "Nie wykryto wyraźnej formy pretérito perfecto, indefinido ani imperfecto.");
+      }
+
+      if (missingAccent) {
+        formScore = Math.max(0, formScore - 3);
+        addFeedback(feedback, "warning", "Akcent w słowie pytającym", `Na początku pytania prawdopodobnie potrzebny jest akcent: „${missingAccent}”.`);
+      } else if (strongQuestionWords.some(word => normalizeText(raw).replace(/^¿\s*/, "").startsWith(word))) {
+        formScore += 4;
+        addFeedback(feedback, "success", "Słowo pytające", "Słowo pytające jest zapisane poprawnie.");
+      } else {
+        formScore += 2;
+      }
+
+      formScore = Math.min(40, formScore);
+
+      const expectedForms = analysis[currentMission.expected];
+      const otherTenses = Object.keys(tenseLabels).filter(key => key !== currentMission.expected && analysis[key].length > 0);
+
+      if (expectedForms.length > 0) {
+        useScore += 35;
+        addFeedback(
+          feedback,
+          "success",
+          "Dobór czasu",
+          `Wykryto oczekiwany ${tenseLabels[currentMission.expected]}: ${expectedForms.join(", ")}.`
+        );
+      } else {
+        const detectedNames = Object.keys(tenseLabels)
+          .filter(key => analysis[key].length > 0)
+          .map(key => tenseLabels[key]);
+        addFeedback(
+          feedback,
+          "danger",
+          "Dobór czasu",
+          detectedNames.length
+            ? `W tym kontekście oczekiwany jest ${tenseLabels[currentMission.expected]}, ale wykryto: ${detectedNames.join(" i ")}.`
+            : `W tym kontekście oczekiwany jest ${tenseLabels[currentMission.expected]}, ale gra nie znalazła jego wyraźnej formy.`
+        );
+      }
+
+      if (otherTenses.length === 0) {
+        useScore += 8;
+        addFeedback(feedback, "success", "Spójność gramatyczna", "Nie wykryto konkurencyjnego czasu przeszłego, który zmieniałby główny sens pytania.");
+      } else if (expectedForms.length > 0) {
+        useScore += 4;
+        addFeedback(
+          feedback,
+          "warning",
+          "Więcej niż jeden czas",
+          `W pytaniu pojawia się też ${otherTenses.map(key => tenseLabels[key]).join(" i ")}. To może być poprawne, ale sprawdź, czy czas głównego pytania nadal odpowiada misji.`
+        );
+      } else {
+        addFeedback(feedback, "danger", "Spójność gramatyczna", "Wykryty czas nie odpowiada czasowi oczekiwanemu w tej misji.");
+      }
+
+      const topicVocabulary = findTopicVocabulary(raw, currentMission);
+      if (topicVocabulary.rich) {
+        useScore += 9;
+        addFeedback(
+          feedback,
+          "success",
+          "Zgodność z tematem",
+          `Pytanie wyraźnie realizuje temat „${currentMission.topic}”. Rozpoznane słownictwo: ${topicVocabulary.matches.slice(0, 4).join(", ")}.`
+        );
+      } else if (topicVocabulary.strong) {
+        useScore += 8;
+        addFeedback(
+          feedback,
+          "success",
+          "Zgodność z tematem",
+          `Rozpoznano słownictwo pasujące do tematu „${currentMission.topic}”: ${topicVocabulary.matches.join(", ")}.`
+        );
+      } else if (topicVocabulary.partial) {
+        useScore += 5;
+        addFeedback(
+          feedback,
+          "warning",
+          "Zgodność z tematem",
+          `Rozpoznano jedynie ogólne słowo („${topicVocabulary.weakMatches.join(", ")}”). Dodaj bardziej charakterystyczne słownictwo dla tematu „${currentMission.topic}”.`
+        );
+      } else if (wordCount >= 7) {
+        useScore += 4;
+        addFeedback(feedback, "warning", "Zgodność z tematem", "Pytanie jest rozwinięte, ale używa mniej oczywistego słownictwa niż przewiduje karta. Sens warto potwierdzić ręcznie.");
+      } else {
+        addFeedback(feedback, "warning", "Zgodność z tematem", `Nie znaleziono jednoznacznego słownictwa związanego z tematem „${currentMission.topic}”. Dodaj konkretny rzeczownik lub czasownik z tego obszaru.`);
+      }
+
+      const markerMatch = containsAny(raw, currentMission.timeMarkers);
+      if (markerMatch) {
+        useScore += 8;
+        addFeedback(feedback, "success", "Kontekst czasowy", "Pytanie wyraźnie zawiera określenie czasu pasujące do karty.");
+      } else if (expectedForms.length > 0) {
+        useScore += 5;
+        addFeedback(feedback, "warning", "Kontekst czasowy", "Czas gramatyczny pasuje, ale warto dodać określenie czasu, aby pytanie było bardziej jednoznaczne.");
+      } else {
+        addFeedback(feedback, "danger", "Kontekst czasowy", "Brakuje zarówno oczekiwanego czasu, jak i wyraźnego określenia temporalnego z karty.");
+      }
+
+      const perfectAuxWithoutParticiple = analysis.perfecto.some(form => form.includes("(…)"));
+      if (perfectAuxWithoutParticiple) {
+        useScore = Math.max(0, useScore - 8);
+        addFeedback(feedback, "danger", "Konstrukcja perfecto", "Wykryto formę haber, ale nie znaleziono po niej imiesłowu typu -ado/-ido lub formy nieregularnej, np. hecho, visto, dicho.");
+      }
+
+      const incompatiblePerfectPair = /\b(?:he|has|ha|hemos|hab[eé]is|han)\s+(?:fui|fuiste|fue|hiciste|hizo|tuviste|tuvo|estuve|estuvo|dijiste|dijo)\b/i.test(normalized);
+      if (incompatiblePerfectPair) {
+        useScore = Math.max(0, useScore - 12);
+        addFeedback(feedback, "danger", "Połączenie form", "Po haber powinien wystąpić participio, np. has hecho, a nie forma indefinido.");
+      }
+
+      useScore = Math.max(0, Math.min(60, useScore));
+      const totalScore = Math.min(100, formScore + useScore);
+
+      renderResults({
+        totalScore,
+        formScore,
+        useScore,
+        analysis,
+        feedback,
+        raw,
+        topicVocabulary
+      });
+    }
+
+    function wait(milliseconds) {
+      return new Promise(resolve => setTimeout(resolve, milliseconds));
+    }
+
+    function createFeedbackElement(item) {
+      const icon = item.type === "success" ? "✓" : item.type === "warning" ? "!" : "×";
+      const element = document.createElement("div");
+      element.className = `feedback-item ${item.type}`;
+      element.innerHTML = `
+        <div class="feedback-icon">${icon}</div>
+        <p><strong>${escapeHtml(item.title)}</strong>${escapeHtml(item.message)}</p>
+      `;
+      return element;
+    }
+
+    function animateScore(targetScore, token) {
+      const duration = 1050;
+      const startTime = performance.now();
+
+      function frame(now) {
+        if (token !== resultAnimationToken) return;
+        const progress = Math.min(1, (now - startTime) / duration);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        const value = Math.round(targetScore * eased);
+        scoreNumber.textContent = value;
+        scoreCircle.style.setProperty("--score-angle", `${value * 3.6}deg`);
+
+        if (progress < 1) {
+          requestAnimationFrame(frame);
+        } else {
+          scoreCircle.classList.add("celebrate");
+        }
+      }
+
+      requestAnimationFrame(frame);
+    }
+
+    async function renderResults(result) {
+      const token = ++resultAnimationToken;
+      analyzeBtn.disabled = true;
+      resultsPlaceholder.classList.add("hidden");
+      resultsPanel.classList.add("visible");
+      feedbackList.innerHTML = "";
+      detectedBox.classList.remove("visible");
+      resultSummary.classList.remove("visible");
+      evaluationStatus.classList.remove("done");
+      scoreCircle.classList.remove("celebrate");
+      scoreCircle.style.setProperty("--score-angle", "0deg");
+      scoreNumber.textContent = "0";
+      writingScore.textContent = "0";
+      contextScore.textContent = "0";
+      evaluationStep.textContent = "Czytam zapis pytania…";
+      evaluationProgress.textContent = "Sprawdzam znaki, długość i budowę zdania";
+
+      const groups = [];
+      Object.keys(tenseLabels).forEach(key => {
+        if (result.analysis[key].length > 0) {
+          groups.push(`<strong>${tenseLabels[key]}:</strong> ${escapeHtml(result.analysis[key].join(", "))}`);
+        }
+      });
+      if (result.analysis.infinitives.length > 0) {
+        groups.push(`<strong>bezokoliczniki:</strong> ${escapeHtml(result.analysis.infinitives.join(", "))}`);
+      }
+      detectedText.innerHTML = groups.length ? groups.join("<br>") : "Nie wykryto jednoznacznej formy badanego czasu.";
+
+      if (result.totalScore >= 85) {
+        scoreTitle.textContent = "¡Excelente! Bardzo dobre pytanie";
+        scoreSubtitle.textContent = "Forma, słownictwo i dobór czasu bardzo dobrze pasują do misji.";
+      } else if (result.totalScore >= 70) {
+        scoreTitle.textContent = "¡Muy bien! Dobra odpowiedź";
+        scoreSubtitle.textContent = "Pytanie jest komunikatywne, choć jeden lub dwa elementy można dopracować.";
+      } else if (result.totalScore >= 50) {
+        scoreTitle.textContent = "Dobry kierunek";
+        scoreSubtitle.textContent = "Sens jest widoczny, lecz forma pytania albo użyty czas wymagają korekty.";
+      } else {
+        scoreTitle.textContent = "Spróbuj jeszcze raz";
+        scoreSubtitle.textContent = "Przeczytaj kontekst i przebuduj pytanie, zwracając uwagę na czasownik i słownictwo.";
+      }
+
+      teacherInfo.innerHTML = `
+        Oczekiwany czas: <strong>${tenseLabels[currentMission.expected]}</strong>.<br>
+        Uzasadnienie: ${escapeHtml(currentMission.reason)}<br>
+        Przykładowe poprawne pytanie: <strong>${escapeHtml(currentMission.example)}</strong><br>
+        Rozpoznane słownictwo tematyczne: <strong>${escapeHtml(result.topicVocabulary.matches.join(", ") || "brak jednoznacznego dopasowania")}</strong>.<br><br>
+        Ocena jest heurystyczna. Pytanie złożone może poprawnie zawierać więcej niż jeden czas, dlatego ostateczna decyzja należy do nauczyciela.
+      `;
+
+      await wait(380);
+      if (token !== resultAnimationToken) return;
+      evaluationStep.textContent = "Rozpoznaję czasowniki…";
+      evaluationProgress.textContent = "Perfecto, indefinido czy imperfecto?";
+      detectedBox.classList.add("visible");
+
+      await wait(480);
+      if (token !== resultAnimationToken) return;
+
+      for (let index = 0; index < result.feedback.length; index += 1) {
+        const item = result.feedback[index];
+        evaluationStep.textContent = item.title;
+        evaluationProgress.textContent = `Kryterium ${index + 1} z ${result.feedback.length}`;
+        feedbackList.appendChild(createFeedbackElement(item));
+        await wait(265);
+        if (token !== resultAnimationToken) return;
+      }
+
+      evaluationStatus.classList.add("done");
+      evaluationStep.textContent = "Ocena zakończona!";
+      evaluationProgress.textContent = "Podsumowuję wynik punktowy";
+
+      await wait(420);
+      if (token !== resultAnimationToken) return;
+      writingScore.textContent = result.formScore;
+      contextScore.textContent = result.useScore;
+      resultSummary.classList.add("visible");
+      animateScore(result.totalScore, token);
+      analyzeBtn.disabled = false;
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function insertAtCursor(character) {
+      const start = questionInput.selectionStart;
+      const end = questionInput.selectionEnd;
+      const value = questionInput.value;
+      questionInput.value = value.slice(0, start) + character + value.slice(end);
+      const nextPosition = start + character.length;
+      questionInput.setSelectionRange(nextPosition, nextPosition);
+      questionInput.focus();
+      charCount.textContent = questionInput.value.length;
+    }
+
+    startPauseBtn.addEventListener("click", toggleTimer);
+    resetTimerBtn.addEventListener("click", resetTimer);
+    analyzeBtn.addEventListener("click", analyzeQuestion);
+
+    nextBtn.addEventListener("click", () => {
+      round += 1;
+      pickMission();
+    });
+
+    clearBtn.addEventListener("click", () => {
+      questionInput.value = "";
+      charCount.textContent = "0";
+      hideResults();
+      questionInput.focus();
+    });
+
+    questionInput.addEventListener("input", () => {
+      charCount.textContent = questionInput.value.length;
+    });
+
+    questionInput.addEventListener("keydown", event => {
+      if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+        event.preventDefault();
+        analyzeQuestion();
+      }
+    });
+
+    document.querySelectorAll("[data-char]").forEach(button => {
+      button.addEventListener("click", () => insertAtCursor(button.dataset.char));
+    });
+
+    pickMission();
+  </script>
+</body>
+</html>
