@@ -702,8 +702,8 @@
                   <span class="meta-value" id="contextText">esta semana</span>
                 </div>
               </div>
-              <div class="situation-box"><strong>Situación</strong><span id="situationText">Tu compañero ha hecho algo relacionado con viajes durante una semana que todavía no ha terminado.</span></div>
-              <p class="mission-text" id="missionText">Pregúntale qué viaje o excursión ha hecho y qué lugar ha visitado.</p>
+              <div class="situation-box"><strong>Situación</strong><span id="situationText">Hablad sobre el tema y relacionad la conversación con el contexto temporal de la tarjeta.</span></div>
+              <p class="mission-text" id="missionText">Consigue dos informaciones relacionadas con el tema.</p>
               <p class="context-note" id="contextNote">Najpierw porozmawiajcie. Po rozmowie zapisz jedno główne pytanie odpowiadające całemu poleceniu.</p>
             </div>
 
@@ -724,7 +724,7 @@
               Zapisz pytanie po hiszpańsku
               <span class="input-hint">Gra analizuje tekst, nie nagranie. Najlepiej wpisz jedno pełne pytanie.</span>
             </label>
-            <textarea id="questionInput" maxlength="260" spellcheck="true" placeholder="Ej.: ¿Has hecho algo interesante esta semana?"></textarea>
+            <textarea id="questionInput" maxlength="260" spellcheck="true" placeholder="Escribe aquí una pregunta completa en español..."></textarea>
 
             <div class="char-row">
               <div class="accent-buttons" aria-label="Znaki hiszpańskie">
@@ -2537,6 +2537,115 @@ function resetTimer() {
   startPauseBtn.textContent = "Rozpocznij";
   updateTimerUI();
 }
+function neutralRequirementLabel(requirement, index) {
+  const verbs = new Set((requirement.verbs || []).map(removeAccents));
+  const hasAnyVerb = (...items) => items.some(item => verbs.has(removeAccents(item)));
+
+  if (requirement.cue === "purpose") return "la utilidad o finalidad";
+  if (requirement.cue === "reason") return "el motivo";
+  if (requirement.cue === "withPerson") return "la compañía";
+  if (requirement.cue === "destination") return "el destino";
+  if (requirement.cue === "whereOrWith") return "el lugar o la compañía";
+
+  if (requirement.cue === "yesNo") {
+    if (hasAnyVerb("gustar", "encantar", "parecer", "disfrutar")) return "la opinión o valoración";
+    return "una confirmación";
+  }
+
+  if (requirement.cue === "manner") {
+    if (hasAnyVerb("sentirse", "reaccionar", "estar", "encontrarse")) return "las sensaciones o la reacción";
+    if (hasAnyVerb("solucionar", "resolver", "arreglar")) return "la solución";
+    if (hasAnyVerb("practicar", "repasar", "aplicar")) return "la forma de práctica";
+    if (hasAnyVerb("comunicarse", "hablar", "llamar", "escribir")) return "la forma de comunicación";
+    if (hasAnyVerb("entretenerse", "divertirse", "escuchar")) return "la forma de entretenimiento";
+    if (hasAnyVerb("celebrar", "organizar")) return "la forma de celebración";
+    if (hasAnyVerb("ser", "parecer", "resultar")) return "la descripción o valoración";
+    return "la manera o descripción";
+  }
+
+  if (requirement.cue === "what") {
+    if (hasAnyVerb("pasar", "ocurrir", "suceder")) return "lo ocurrido";
+    if (hasAnyVerb("parecer", "gustar", "encantar", "recomendar")) return "la opinión o valoración";
+    if (hasAnyVerb("aprender", "mejorar", "desarrollar")) return "el aprendizaje o progreso";
+    if (hasAnyVerb("decidir", "elegir", "tomar")) return "la decisión";
+  }
+
+  const cueLabels = {
+    what: "una información concreta",
+    manner: "la manera o descripción"
+  };
+
+  const anchorLabels = {
+    viaje: "el viaje",
+    excursion: "la excursión",
+    lugar: "el lugar",
+    ciudad: "la ciudad",
+    pais: "el país",
+    destino: "el destino",
+    aplicacion: "la aplicación",
+    dispositivo: "el dispositivo",
+    programa: "el programa",
+    comida: "la comida",
+    plato: "el plato",
+    receta: "la receta",
+    pelicula: "la película",
+    serie: "la serie",
+    curso: "el aprendizaje",
+    idioma: "el idioma",
+    experiencia: "la experiencia",
+    habito: "el hábito",
+    rutina: "la rutina",
+    salud: "la salud",
+    redes: "las redes sociales",
+    video: "el vídeo",
+    publicacion: "la publicación",
+    problema: "el problema",
+    imprevisto: "el imprevisto",
+    examen: "el examen",
+    prueba: "la prueba",
+    producto: "el producto",
+    ropa: "la compra",
+    cumpleanos: "la celebración",
+    decision: "la decisión",
+    sorpresa: "la sorpresa",
+    infancia: "la infancia",
+    costumbre: "la costumbre",
+    asignatura: "la asignatura",
+    materia: "la materia",
+    playa: "el destino de vacaciones",
+    pueblo: "el lugar",
+    casa: "la casa",
+    barrio: "el barrio",
+    telefono: "la forma de comunicación",
+    amigo: "la amistad",
+    caracter: "el carácter",
+    dia: "el día normal",
+    profesor: "el profesor",
+    clase: "la clase"
+  };
+
+  const ignoredAnchors = new Set(["lo", "la", "te", "le", "eso", "alli", "despues", "porque", "vez", "algo"]);
+  const anchors = (requirement.anchors || [])
+    .map(anchor => removeAccents(anchor))
+    .filter(anchor => !ignoredAnchors.has(anchor))
+    .map(anchor => anchorLabels[anchor])
+    .filter(Boolean);
+
+  const uniqueAnchors = [...new Set(anchors)].slice(0, 2);
+  if (uniqueAnchors.length === 1) return uniqueAnchors[0];
+  if (uniqueAnchors.length === 2) return `${uniqueAnchors[0]} y ${uniqueAnchors[1]}`;
+  return cueLabels[requirement.cue] || `la información ${index + 1}`;
+}
+
+function buildStudentMission(mission) {
+  const goals = (mission.requirements || []).map((requirement, index) =>
+    `<span><strong>${index + 1}.</strong> ${escapeHtml(neutralRequirementLabel(requirement, index))}</span>`
+  );
+
+  if (!goals.length) return "Formula una pregunta relacionada con el tema y el contexto temporal.";
+  return `Consigue ${goals.length === 1 ? "esta información" : "estas informaciones"}:<br>${goals.join("<br>")}`;
+}
+
 function chooseMission() {
   let index;
   do index = Math.floor(Math.random() * missions.length); while (index === lastMissionIndex && missions.length > 1);
@@ -2544,9 +2653,9 @@ function chooseMission() {
   currentMission = missions[index];
   topicText.textContent = currentMission.topic;
   contextText.textContent = currentMission.context;
-  situationText.textContent = currentMission.situation;
-  missionText.textContent = currentMission.prompt;
-  questionInput.placeholder = `Ej.: ${currentMission.example}`;
+  situationText.textContent = `Hablad sobre «${currentMission.topic}» y relacionad la conversación con «${currentMission.context}».`;
+  missionText.innerHTML = buildStudentMission(currentMission);
+  questionInput.placeholder = "Escribe aquí una pregunta completa en español...";
   updateTenseHelp();
 }
 function resetRoundView(clearInput = true) {
