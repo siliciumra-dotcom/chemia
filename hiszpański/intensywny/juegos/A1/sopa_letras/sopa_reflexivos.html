@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Interaktywna wykreślanka z 20 hiszpańskimi czasownikami zwrotnymi i tłumaczeniami na polski.">
+  <title>La sopa reflexiva</title>
+  <style>
+    :root {
+      --bg-1:#f5f7ff;
+      --bg-2:#eefaf8;
+      --card:rgba(255,255,255,.92);
+      --text:#1d2742;
+      --muted:#69748b;
+      --primary:#5b63e6;
+      --primary-dark:#4348bb;
+      --secondary:#15a89f;
+      --success:#18895c;
+      --warning:#d99524;
+      --danger:#d95368;
+      --line:rgba(91,99,230,.14);
+      --shadow:0 24px 70px rgba(31,42,82,.12);
+      --cell-size:34px;
+    }
+
+    * { box-sizing:border-box; }
+
+    html { min-height:100%; }
+
+    body {
+      margin:0;
+      min-height:100vh;
+      padding:22px;
+      font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at 8% 8%,rgba(91,99,230,.16),transparent 27%),
+        radial-gradient(circle at 94% 12%,rgba(21,168,159,.14),transparent 24%),
+        radial-gradient(circle at 88% 92%,rgba(242,176,57,.11),transparent 23%),
+        linear-gradient(145deg,var(--bg-1),var(--bg-2));
+    }
+
+    button { font:inherit; cursor:pointer; }
+
+    .app {
+      width:min(1240px,100%);
+      margin:0 auto;
+    }
+
+    .hero {
+      display:flex;
+      justify-content:space-between;
+      gap:24px;
+      align-items:flex-start;
+      margin-bottom:18px;
+      padding:26px 28px;
+      border:1px solid rgba(255,255,255,.78);
+      border-radius:30px;
+      background:linear-gradient(135deg,rgba(255,255,255,.90),rgba(255,255,255,.72));
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(14px);
+      overflow:hidden;
+      position:relative;
+    }
+
+    .hero::after {
+      content:"";
+      position:absolute;
+      width:300px;
+      height:300px;
+      right:-150px;
+      top:-170px;
+      border-radius:50%;
+      background:radial-gradient(circle,rgba(91,99,230,.14),transparent 68%);
+      pointer-events:none;
+    }
+
+    .eyebrow {
+      margin:0 0 9px;
+      color:var(--primary);
+      font-size:.77rem;
+      font-weight:950;
+      text-transform:uppercase;
+      letter-spacing:.15em;
+    }
+
+    h1 {
+      margin:0;
+      font-size:clamp(2rem,5vw,3.65rem);
+      line-height:.98;
+      letter-spacing:-.05em;
+      background:linear-gradient(90deg,var(--primary-dark),var(--primary),var(--secondary));
+      -webkit-background-clip:text;
+      background-clip:text;
+      color:transparent;
+    }
+
+    .hero p.description {
+      margin:13px 0 0;
+      max-width:760px;
+      color:var(--muted);
+      line-height:1.58;
+    }
+
+    .stats {
+      display:grid;
+      grid-template-columns:repeat(2,minmax(100px,1fr));
+      gap:10px;
+      min-width:250px;
+      position:relative;
+      z-index:1;
+    }
+
+    .stat {
+      padding:14px 15px;
+      border-radius:18px;
+      background:rgba(255,255,255,.84);
+      border:1px solid rgba(91,99,230,.10);
+      box-shadow:0 12px 28px rgba(31,42,82,.06);
+    }
+
+    .stat span {
+      display:block;
+      color:var(--muted);
+      font-size:.75rem;
+      font-weight:850;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+    }
+
+    .stat strong {
+      display:block;
+      margin-top:4px;
+      font-size:1.6rem;
+      line-height:1;
+    }
+
+    .toolbar {
+      display:flex;
+      flex-wrap:wrap;
+      align-items:center;
+      gap:10px;
+      margin-bottom:18px;
+      padding:14px;
+      border:1px solid rgba(255,255,255,.8);
+      border-radius:22px;
+      background:rgba(255,255,255,.78);
+      box-shadow:0 16px 36px rgba(31,42,82,.08);
+      backdrop-filter:blur(12px);
+    }
+
+    .btn {
+      border:0;
+      border-radius:14px;
+      padding:11px 16px;
+      font-weight:900;
+      transition:transform .16s ease,filter .16s ease,opacity .16s ease;
+    }
+
+    .btn:hover:not(:disabled) { transform:translateY(-2px); filter:brightness(1.02); }
+    .btn:disabled { opacity:.42; cursor:not-allowed; }
+    .btn-primary { color:#fff; background:linear-gradient(135deg,var(--primary),var(--primary-dark)); }
+    .btn-secondary { color:var(--primary-dark); background:#edf0ff; }
+    .btn-warning { color:#7d5312; background:#fff3d8; }
+
+    .toolbar-note {
+      margin-left:auto;
+      color:var(--muted);
+      font-size:.88rem;
+      font-weight:700;
+    }
+
+    .layout {
+      display:grid;
+      grid-template-columns:minmax(550px,1.12fr) minmax(340px,.88fr);
+      gap:18px;
+      align-items:start;
+    }
+
+    .panel {
+      border:1px solid rgba(255,255,255,.82);
+      border-radius:28px;
+      background:var(--card);
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(14px);
+    }
+
+    .board-panel {
+      padding:22px;
+      overflow:auto;
+    }
+
+    .board-shell {
+      width:max-content;
+      margin:auto;
+      padding:13px;
+      border-radius:24px;
+      background:linear-gradient(145deg,#edf0ff,#e9fbf7);
+      border:1px solid rgba(91,99,230,.10);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.9);
+      touch-action:none;
+      user-select:none;
+    }
+
+    .board {
+      display:grid;
+      grid-template-columns:repeat(18,var(--cell-size));
+      grid-template-rows:repeat(18,var(--cell-size));
+      gap:3px;
+    }
+
+    .cell {
+      width:var(--cell-size);
+      height:var(--cell-size);
+      display:grid;
+      place-items:center;
+      border-radius:9px;
+      background:rgba(255,255,255,.94);
+      border:1px solid rgba(91,99,230,.08);
+      color:#34405e;
+      font-size:.92rem;
+      font-weight:900;
+      text-transform:uppercase;
+      transition:background .12s ease,color .12s ease,transform .12s ease,box-shadow .12s ease;
+      cursor:crosshair;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    .cell:active { transform:scale(.96); }
+
+    .cell.preview {
+      color:#fff;
+      background:linear-gradient(135deg,#7e85ef,#6067df);
+      transform:scale(1.05);
+      box-shadow:0 7px 15px rgba(91,99,230,.23);
+    }
+
+    .cell.found {
+      color:#fff;
+      background:linear-gradient(135deg,#27b67d,#138c60);
+      border-color:transparent;
+      box-shadow:0 6px 14px rgba(24,137,92,.22);
+    }
+
+    .cell.hint {
+      animation:hintPulse .85s ease-in-out 3;
+    }
+
+    @keyframes hintPulse {
+      0%,100% { box-shadow:0 0 0 0 rgba(217,149,36,0); }
+      50% { color:#7a4b08; background:#ffe9b7; box-shadow:0 0 0 6px rgba(217,149,36,.16); }
+    }
+
+    .side-panel {
+      padding:22px;
+    }
+
+    .side-title {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:14px;
+    }
+
+    .side-title h2 {
+      margin:0;
+      font-size:1.25rem;
+      letter-spacing:-.025em;
+    }
+
+    .progress-pill {
+      padding:8px 12px;
+      border-radius:999px;
+      color:var(--primary-dark);
+      background:#eef0ff;
+      font-size:.82rem;
+      font-weight:900;
+    }
+
+    .word-list {
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:9px;
+    }
+
+    .word-item {
+      min-height:67px;
+      padding:11px 12px;
+      border-radius:16px;
+      background:#fff;
+      border:1px solid var(--line);
+      transition:transform .18s ease,border-color .18s ease,background .18s ease;
+    }
+
+    .word-item:hover {
+      transform:translateY(-1px);
+      border-color:rgba(91,99,230,.3);
+    }
+
+    .word-es {
+      display:block;
+      color:#34405e;
+      font-weight:900;
+      font-size:.92rem;
+      line-height:1.25;
+      text-transform:lowercase;
+    }
+
+    .word-pl {
+      display:block;
+      margin-top:5px;
+      color:transparent;
+      font-size:.79rem;
+      line-height:1.25;
+      user-select:none;
+      transition:color .2s ease;
+    }
+
+    .word-item.found {
+      background:linear-gradient(145deg,#f0fbf6,#fff);
+      border-color:rgba(24,137,92,.22);
+    }
+
+    .word-item.found .word-es {
+      color:#687385;
+      text-decoration:line-through;
+      text-decoration-thickness:2px;
+    }
+
+    .word-item.found .word-pl {
+      color:var(--success);
+      font-weight:850;
+      user-select:text;
+    }
+
+    .feedback {
+      margin-top:16px;
+      min-height:82px;
+      padding:14px 15px;
+      border-radius:17px;
+      background:#f9faff;
+      border:1px solid var(--line);
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      gap:4px;
+    }
+
+    .feedback strong { font-size:.95rem; }
+    .feedback span { color:var(--muted); line-height:1.4; font-size:.88rem; }
+    .feedback.success { background:#f1fbf6; border-color:rgba(24,137,92,.23); }
+    .feedback.error { background:#fff4f5; border-color:rgba(217,83,104,.23); }
+
+    .finish-overlay {
+      position:fixed;
+      inset:0;
+      z-index:50;
+      display:grid;
+      place-items:center;
+      padding:20px;
+      background:rgba(24,31,54,.48);
+      backdrop-filter:blur(7px);
+    }
+
+    .finish-overlay.hidden { display:none; }
+
+    .finish-card {
+      width:min(520px,100%);
+      padding:30px;
+      border-radius:28px;
+      text-align:center;
+      background:linear-gradient(145deg,#fff,#f2f5ff);
+      box-shadow:0 30px 90px rgba(19,27,52,.28);
+    }
+
+    .finish-mark {
+      width:78px;
+      height:78px;
+      display:grid;
+      place-items:center;
+      margin:0 auto 12px;
+      border-radius:24px;
+      color:#fff;
+      background:linear-gradient(135deg,var(--secondary),var(--primary));
+      font-size:2.3rem;
+      font-weight:950;
+      transform:rotate(-4deg);
+    }
+
+    .finish-card h2 { margin:0 0 8px; font-size:2rem; }
+    .finish-card p { margin:0 0 20px; color:var(--muted); line-height:1.55; }
+
+    @media (max-width:1000px) {
+      .layout { grid-template-columns:1fr; }
+      .side-panel { order:-1; }
+      .word-list { grid-template-columns:repeat(4,1fr); }
+    }
+
+    @media (max-width:760px) {
+      :root { --cell-size:29px; }
+      body { padding:12px; }
+      .hero { flex-direction:column; padding:21px; }
+      .stats { width:100%; }
+      .toolbar-note { width:100%; margin-left:0; }
+      .word-list { grid-template-columns:1fr 1fr; }
+      .board-panel { padding:12px; }
+      .board-shell { padding:8px; }
+      .board { gap:2px; }
+      .cell { border-radius:7px; font-size:.8rem; }
+    }
+
+    @media (max-width:560px) {
+      :root { --cell-size:25px; }
+      .word-list { grid-template-columns:1fr; }
+      .side-panel { padding:17px; }
+      .board-panel { padding:8px; }
+      .board-shell { transform-origin:top left; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">Vocabulario · Verbos reflexivos</p>
+        <h1>La sopa reflexiva</h1>
+        <p class="description">Znajdź 20 hiszpańskich czasowników zwrotnych. Hasła mogą być zapisane poziomo, pionowo i po skosie — w obu kierunkach. Po odnalezieniu czasownik zostanie skreślony, a obok pojawi się jego polskie tłumaczenie.</p>
+      </div>
+      <div class="stats">
+        <div class="stat"><span>Znalezione</span><strong><span id="foundCount">0</span>/20</strong></div>
+        <div class="stat"><span>Czas</span><strong id="timeDisplay">00:00</strong></div>
+      </div>
+    </header>
+
+    <section class="toolbar">
+      <button class="btn btn-primary" id="newBoardBtn" type="button">Nowa plansza</button>
+      <button class="btn btn-warning" id="hintBtn" type="button">Podpowiedź</button>
+      <button class="btn btn-secondary" id="resetSelectionBtn" type="button">Wyczyść zaznaczenie</button>
+      <span class="toolbar-note">Kliknij pierwszą i ostatnią literę albo przeciągnij po całym haśle. Możesz zaznaczać także od końca.</span>
+    </section>
+
+    <section class="layout">
+      <article class="panel board-panel">
+        <div class="board-shell" id="boardShell">
+          <div class="board" id="board" aria-label="Wykreślanka z czasownikami zwrotnymi"></div>
+        </div>
+      </article>
+
+      <aside class="panel side-panel">
+        <div class="side-title">
+          <h2>Czasowniki do znalezienia</h2>
+          <span class="progress-pill" id="progressText">0 z 20</span>
+        </div>
+        <div class="word-list" id="wordList"></div>
+        <div class="feedback" id="feedbackBox" aria-live="polite">
+          <strong id="feedbackTitle">Zacznij szukać</strong>
+          <span id="feedbackText">Kliknij pierwszą i ostatnią literę albo przeciągnij po słowie.</span>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <div class="finish-overlay hidden" id="finishOverlay">
+    <div class="finish-card">
+      <div class="finish-mark">20</div>
+      <h2>¡Muy bien!</h2>
+      <p id="finishText">Udało Ci się znaleźć wszystkie czasowniki.</p>
+      <button class="btn btn-primary" id="playAgainBtn" type="button">Zagraj ponownie</button>
+    </div>
+  </div>
+
+  <script>
+    "use strict";
+
+    const GRID_SIZE = 18;
+    const DIRECTIONS = [
+      { name:"prawo", dr:0, dc:1 },
+      { name:"lewo", dr:0, dc:-1 },
+      { name:"dół", dr:1, dc:0 },
+      { name:"góra", dr:-1, dc:0 },
+      { name:"dół-prawo", dr:1, dc:1 },
+      { name:"dół-lewo", dr:1, dc:-1 },
+      { name:"góra-prawo", dr:-1, dc:1 },
+      { name:"góra-lewo", dr:-1, dc:-1 }
+    ];
+
+    const WORDS = [
+      { word:"despertarse", pl:"budzić się" },
+      { word:"levantarse", pl:"wstawać" },
+      { word:"ducharse", pl:"brać prysznic" },
+      { word:"bañarse", pl:"kąpać się" },
+      { word:"lavarse", pl:"myć się" },
+      { word:"afeitarse", pl:"golić się" },
+      { word:"maquillarse", pl:"malować się" },
+      { word:"peinarse", pl:"czesać się" },
+      { word:"vestirse", pl:"ubierać się" },
+      { word:"ponerse", pl:"zakładać na siebie" },
+      { word:"quitarse", pl:"zdejmować z siebie" },
+      { word:"acostarse", pl:"kłaść się spać" },
+      { word:"dormirse", pl:"zasypiać" },
+      { word:"sentarse", pl:"siadać" },
+      { word:"llamarse", pl:"nazywać się" },
+      { word:"sentirse", pl:"czuć się" },
+      { word:"divertirse", pl:"dobrze się bawić" },
+      { word:"preocuparse", pl:"martwić się" },
+      { word:"relajarse", pl:"relaksować się" },
+      { word:"prepararse", pl:"przygotowywać się" }
+    ];
+
+    const LETTERS = "abcdefghijklmnñopqrstuvwxyz";
+
+    const els = {
+      board:document.getElementById("board"),
+      boardShell:document.getElementById("boardShell"),
+      wordList:document.getElementById("wordList"),
+      foundCount:document.getElementById("foundCount"),
+      progressText:document.getElementById("progressText"),
+      timeDisplay:document.getElementById("timeDisplay"),
+      feedbackBox:document.getElementById("feedbackBox"),
+      feedbackTitle:document.getElementById("feedbackTitle"),
+      feedbackText:document.getElementById("feedbackText"),
+      newBoardBtn:document.getElementById("newBoardBtn"),
+      hintBtn:document.getElementById("hintBtn"),
+      resetSelectionBtn:document.getElementById("resetSelectionBtn"),
+      finishOverlay:document.getElementById("finishOverlay"),
+      finishText:document.getElementById("finishText"),
+      playAgainBtn:document.getElementById("playAgainBtn")
+    };
+
+    const state = {
+      grid:[],
+      placements:[],
+      found:new Set(),
+      selecting:false,
+      start:null,
+      preview:[],
+      startedAt:0,
+      timerId:null,
+      completed:false,
+      clickAnchor:null,
+      pointerDownCell:null,
+      pointerMoved:false
+    };
+
+    function normalizeWord(word) {
+      return word
+        .toLowerCase()
+        .replace(/ñ/g,"__enie__")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g,"")
+        .replace(/__enie__/g,"ñ");
+    }
+
+    function createEmptyGrid() {
+      return Array.from({length:GRID_SIZE},()=>Array(GRID_SIZE).fill(""));
+    }
+
+    function inside(row,col) {
+      return row >= 0 && row < GRID_SIZE && col >= 0 && col < GRID_SIZE;
+    }
+
+    function getCoordinates(row,col,direction,length) {
+      const coords = [];
+      for (let i=0;i<length;i+=1) {
+        const r = row + direction.dr * i;
+        const c = col + direction.dc * i;
+        if (!inside(r,c)) return null;
+        coords.push({row:r,col:c});
+      }
+      return coords;
+    }
+
+    function canPlace(grid,letters,coords) {
+      return coords.every((pos,index)=>!grid[pos.row][pos.col] || grid[pos.row][pos.col] === letters[index]);
+    }
+
+    function tryPlaceWord(grid,item,direction) {
+      const letters = [...normalizeWord(item.word)];
+      const candidates = [];
+
+      for (let row=0;row<GRID_SIZE;row+=1) {
+        for (let col=0;col<GRID_SIZE;col+=1) {
+          const coords = getCoordinates(row,col,direction,letters.length);
+          if (coords && canPlace(grid,letters,coords)) candidates.push(coords);
+        }
+      }
+
+      if (!candidates.length) return null;
+      const coords = candidates[Math.floor(Math.random()*candidates.length)];
+      coords.forEach((pos,index)=>{ grid[pos.row][pos.col] = letters[index]; });
+      return { ...item, normalized:letters.join(""), direction:direction.name, coords };
+    }
+
+    function generatePuzzle() {
+      for (let fullAttempt=0;fullAttempt<250;fullAttempt+=1) {
+        const grid = createEmptyGrid();
+        const placements = [];
+        const ordered = [...WORDS].sort((a,b)=>normalizeWord(b.word).length-normalizeWord(a.word).length);
+        let failed = false;
+
+        for (let i=0;i<ordered.length;i+=1) {
+          const forcedDirection = DIRECTIONS[i % DIRECTIONS.length];
+          const directionOrder = [
+            forcedDirection,
+            ...shuffle(DIRECTIONS.filter(dir=>dir !== forcedDirection))
+          ];
+          let placed = null;
+
+          for (const direction of directionOrder) {
+            placed = tryPlaceWord(grid,ordered[i],direction);
+            if (placed) break;
+          }
+
+          if (!placed) {
+            failed = true;
+            break;
+          }
+          placements.push(placed);
+        }
+
+        if (failed) continue;
+        const usedDirections = new Set(placements.map(item=>item.direction));
+        if (usedDirections.size < DIRECTIONS.length) continue;
+
+        for (let r=0;r<GRID_SIZE;r+=1) {
+          for (let c=0;c<GRID_SIZE;c+=1) {
+            if (!grid[r][c]) grid[r][c] = LETTERS[Math.floor(Math.random()*LETTERS.length)];
+          }
+        }
+
+        return {grid,placements};
+      }
+      throw new Error("Nie udało się wygenerować planszy ze wszystkimi kierunkami.");
+    }
+
+    function shuffle(array) {
+      const copy = [...array];
+      for (let i=copy.length-1;i>0;i-=1) {
+        const j = Math.floor(Math.random()*(i+1));
+        [copy[i],copy[j]] = [copy[j],copy[i]];
+      }
+      return copy;
+    }
+
+    function coordKey(pos) {
+      return `${pos.row}:${pos.col}`;
+    }
+
+    function pathKey(coords) {
+      return coords.map(coordKey).join("|");
+    }
+
+    function buildStraightPath(start,end) {
+      const drRaw = end.row-start.row;
+      const dcRaw = end.col-start.col;
+      const absR = Math.abs(drRaw);
+      const absC = Math.abs(dcRaw);
+
+      if (!(drRaw === 0 || dcRaw === 0 || absR === absC)) return [];
+
+      const dr = Math.sign(drRaw);
+      const dc = Math.sign(dcRaw);
+      const length = Math.max(absR,absC)+1;
+      const path = [];
+      for (let i=0;i<length;i+=1) path.push({row:start.row+dr*i,col:start.col+dc*i});
+      return path;
+    }
+
+    function renderBoard() {
+      els.board.innerHTML = "";
+      state.grid.forEach((row,rowIndex)=>{
+        row.forEach((letter,colIndex)=>{
+          const cell = document.createElement("div");
+          cell.className = "cell";
+          cell.textContent = letter;
+          cell.dataset.row = String(rowIndex);
+          cell.dataset.col = String(colIndex);
+          cell.setAttribute("role","button");
+          cell.setAttribute("aria-label",`Litera ${letter}, wiersz ${rowIndex + 1}, kolumna ${colIndex + 1}`);
+          els.board.appendChild(cell);
+        });
+      });
+      paintFoundWords();
+    }
+
+    function renderWordList() {
+      els.wordList.innerHTML = "";
+      WORDS.forEach(item=>{
+        const node = document.createElement("div");
+        node.className = `word-item${state.found.has(item.word) ? " found" : ""}`;
+        node.dataset.word = item.word;
+        node.innerHTML = `<span class="word-es">${item.word}</span><span class="word-pl">${item.pl}</span>`;
+        els.wordList.appendChild(node);
+      });
+    }
+
+    function cellAt(row,col) {
+      return els.board.querySelector(`.cell[data-row="${row}"][data-col="${col}"]`);
+    }
+
+    function clearPreview() {
+      state.preview.forEach(pos=>cellAt(pos.row,pos.col)?.classList.remove("preview"));
+      state.preview = [];
+    }
+
+    function showPreview(path) {
+      clearPreview();
+      state.preview = path;
+      path.forEach(pos=>cellAt(pos.row,pos.col)?.classList.add("preview"));
+    }
+
+    function paintFoundWords() {
+      state.placements.forEach(item=>{
+        if (!state.found.has(item.word)) return;
+        item.coords.forEach(pos=>cellAt(pos.row,pos.col)?.classList.add("found"));
+      });
+    }
+
+    function getCellFromPoint(x,y) {
+      const element = document.elementFromPoint(x,y);
+      const cell = element?.closest?.(".cell");
+      if (!cell || !els.board.contains(cell)) return null;
+      return {row:Number(cell.dataset.row),col:Number(cell.dataset.col)};
+    }
+
+    function sameCell(a,b) {
+      return Boolean(a && b && a.row === b.row && a.col === b.col);
+    }
+
+    function startSelection(cell) {
+      if (state.completed) return;
+      state.selecting = true;
+      state.pointerDownCell = cell;
+      state.pointerMoved = false;
+      state.start = state.clickAnchor || cell;
+      const path = buildStraightPath(state.start,cell);
+      showPreview(path.length ? path : [state.start]);
+    }
+
+    function moveSelection(cell) {
+      if (!state.selecting || !state.start) return;
+      if (!sameCell(cell,state.pointerDownCell)) state.pointerMoved = true;
+      const path = buildStraightPath(state.start,cell);
+      if (path.length) showPreview(path);
+    }
+
+    function cancelActiveSelection({keepAnchor=false}={}) {
+      state.selecting = false;
+      state.start = keepAnchor ? state.clickAnchor : null;
+      state.pointerDownCell = null;
+      state.pointerMoved = false;
+      if (!keepAnchor) {
+        state.clickAnchor = null;
+        clearPreview();
+      } else if (state.clickAnchor) {
+        showPreview([state.clickAnchor]);
+      }
+    }
+
+    function completeSelectedPath(selected) {
+      if (selected.length < 2) return false;
+      clearPreview();
+      state.clickAnchor = null;
+      state.start = null;
+      evaluateSelection(selected);
+      return true;
+    }
+
+    function finishPointerSelection(endCell) {
+      if (!state.selecting) return;
+
+      const wasDrag = state.pointerMoved;
+      const anchor = state.clickAnchor;
+      state.selecting = false;
+      state.pointerDownCell = null;
+      state.pointerMoved = false;
+
+      if (wasDrag) {
+        const selected = [...state.preview];
+        completeSelectedPath(selected);
+        return;
+      }
+
+      if (!endCell) {
+        cancelActiveSelection({keepAnchor:Boolean(anchor)});
+        return;
+      }
+
+      if (!anchor) {
+        state.clickAnchor = endCell;
+        state.start = endCell;
+        showPreview([endCell]);
+        setFeedback("","Wybrano pierwszą literę","Teraz kliknij ostatnią literę hasła. Możesz też przeciągnąć od tej litery do końca słowa.");
+        return;
+      }
+
+      if (sameCell(anchor,endCell)) {
+        state.clickAnchor = null;
+        state.start = null;
+        clearPreview();
+        setFeedback("","Zaznaczenie anulowane","Kliknij pierwszą literę nowego hasła.");
+        return;
+      }
+
+      const selected = buildStraightPath(anchor,endCell);
+      if (!selected.length) {
+        showPreview([anchor]);
+        state.start = anchor;
+        setFeedback("error","To nie jest linia prosta","Ostatnia litera musi leżeć poziomo, pionowo albo po skosie względem pierwszej.");
+        return;
+      }
+
+      completeSelectedPath(selected);
+    }
+
+    function evaluateSelection(selected) {
+      const selectedKey = pathKey(selected);
+      const match = state.placements.find(item=>{
+        if (state.found.has(item.word)) return false;
+        const forward = pathKey(item.coords);
+        const backward = pathKey([...item.coords].reverse());
+        return selectedKey === forward || selectedKey === backward;
+      });
+
+      if (!match) {
+        setFeedback("error","To nie jest szukane hasło","Sprawdź początek, koniec i kierunek zaznaczenia.");
+        return;
+      }
+
+      state.found.add(match.word);
+      match.coords.forEach(pos=>cellAt(pos.row,pos.col)?.classList.add("found"));
+      const listNode = els.wordList.querySelector(`[data-word="${match.word}"]`);
+      listNode?.classList.add("found");
+      updateProgress();
+      setFeedback("success",`Znaleziono: ${match.word}`,`Po polsku: ${match.pl}. Kierunek: ${match.direction}.`);
+
+      if (state.found.size === WORDS.length) finishGame();
+    }
+
+    function setFeedback(type,title,text) {
+      els.feedbackBox.className = `feedback${type ? ` ${type}` : ""}`;
+      els.feedbackTitle.textContent = title;
+      els.feedbackText.textContent = text;
+    }
+
+    function updateProgress() {
+      els.foundCount.textContent = String(state.found.size);
+      els.progressText.textContent = `${state.found.size} z ${WORDS.length}`;
+      els.hintBtn.disabled = state.found.size === WORDS.length;
+    }
+
+    function newGame() {
+      clearInterval(state.timerId);
+      const puzzle = generatePuzzle();
+      state.grid = puzzle.grid;
+      state.placements = puzzle.placements;
+      state.found = new Set();
+      state.selecting = false;
+      state.start = null;
+      state.preview = [];
+      state.completed = false;
+      state.clickAnchor = null;
+      state.pointerDownCell = null;
+      state.pointerMoved = false;
+      state.startedAt = Date.now();
+      els.finishOverlay.classList.add("hidden");
+      renderBoard();
+      renderWordList();
+      updateProgress();
+      setFeedback("","Nowa plansza gotowa","Hasła znajdują się we wszystkich ośmiu możliwych kierunkach.");
+      updateTimer();
+      state.timerId = setInterval(updateTimer,1000);
+      runSelfTest();
+    }
+
+    function updateTimer() {
+      const seconds = Math.floor((Date.now()-state.startedAt)/1000);
+      const minutes = Math.floor(seconds/60);
+      const rest = seconds%60;
+      els.timeDisplay.textContent = `${String(minutes).padStart(2,"0")}:${String(rest).padStart(2,"0")}`;
+    }
+
+    function showHint() {
+      const available = state.placements.filter(item=>!state.found.has(item.word));
+      if (!available.length) return;
+      const item = available[Math.floor(Math.random()*available.length)];
+      const first = item.coords[0];
+      const last = item.coords[item.coords.length-1];
+      [first,last].forEach(pos=>{
+        const cell = cellAt(pos.row,pos.col);
+        cell?.classList.remove("hint");
+        void cell?.offsetWidth;
+        cell?.classList.add("hint");
+      });
+      setFeedback("",`Podpowiedź: ${item.word}`,"Podświetlono pierwszą i ostatnią literę hasła. Możesz zaznaczyć je w dowolną stronę.");
+    }
+
+    function resetSelection() {
+      state.selecting = false;
+      state.start = null;
+      state.clickAnchor = null;
+      state.pointerDownCell = null;
+      state.pointerMoved = false;
+      clearPreview();
+      setFeedback("","Zaznaczenie wyczyszczone","Kliknij pierwszą i ostatnią literę albo przeciągnij po całym haśle.");
+    }
+
+    function finishGame() {
+      state.completed = true;
+      clearInterval(state.timerId);
+      updateTimer();
+      els.finishText.textContent = `Znaleziono wszystkie 20 czasowników w czasie ${els.timeDisplay.textContent}.`;
+      els.finishOverlay.classList.remove("hidden");
+    }
+
+    function runSelfTest() {
+      const directionSet = new Set(state.placements.map(item=>item.direction));
+      console.assert(directionSet.size === 8,"Plansza nie zawiera wszystkich 8 kierunków.");
+      console.assert(state.placements.length === WORDS.length,"Nie umieszczono wszystkich słów.");
+
+      state.placements.forEach(item=>{
+        const forward = pathKey(item.coords);
+        const backward = pathKey([...item.coords].reverse());
+        const rebuiltForward = pathKey(buildStraightPath(item.coords[0],item.coords[item.coords.length-1]));
+        const rebuiltBackward = pathKey(buildStraightPath(item.coords[item.coords.length-1],item.coords[0]));
+        console.assert(forward === rebuiltForward,`Błąd odczytu do przodu: ${item.word}`);
+        console.assert(backward === rebuiltBackward,`Błąd odczytu od końca: ${item.word}`);
+        const letters = item.coords.map(pos=>state.grid[pos.row][pos.col]).join("");
+        console.assert(letters === item.normalized,`Błąd liter w haśle: ${item.word}`);
+      });
+    }
+
+    els.board.addEventListener("pointerdown",event=>{
+      const cellElement = event.target.closest?.(".cell");
+      if (!cellElement) return;
+      event.preventDefault();
+      const cell = {row:Number(cellElement.dataset.row),col:Number(cellElement.dataset.col)};
+      startSelection(cell);
+      try { els.board.setPointerCapture?.(event.pointerId); } catch (_) {}
+    });
+
+    els.board.addEventListener("pointermove",event=>{
+      if (!state.selecting) return;
+      event.preventDefault();
+      const cell = getCellFromPoint(event.clientX,event.clientY);
+      if (cell) moveSelection(cell);
+    });
+
+    els.board.addEventListener("pointerup",event=>{
+      if (!state.selecting) return;
+      event.preventDefault();
+      const endCell = getCellFromPoint(event.clientX,event.clientY) || state.pointerDownCell;
+      try { els.board.releasePointerCapture?.(event.pointerId); } catch (_) {}
+      finishPointerSelection(endCell);
+    });
+
+    els.board.addEventListener("pointercancel",()=>cancelActiveSelection({keepAnchor:Boolean(state.clickAnchor)}));
+
+    els.board.addEventListener("contextmenu",event=>event.preventDefault());
+    els.newBoardBtn.addEventListener("click",newGame);
+    els.hintBtn.addEventListener("click",showHint);
+    els.resetSelectionBtn.addEventListener("click",resetSelection);
+    els.playAgainBtn.addEventListener("click",newGame);
+
+    window.__wordSearchDebug = {
+      getPlacements:()=>state.placements.map(item=>({
+        word:item.word,
+        direction:item.direction,
+        coords:item.coords.map(pos=>({...pos}))
+      })),
+      getFoundCount:()=>state.found.size,
+      newGame,
+      runSelfTest
+    };
+
+    newGame();
+  </script>
+</body>
+</html>
