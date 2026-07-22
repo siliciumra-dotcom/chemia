@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Juego interactivo para introducir los verbos reflexivos en español." />
+  <title>El espejo de la rutina</title>
+  <style>
+    :root {
+      --bg-1:#f5f7ff;
+      --bg-2:#eefbf8;
+      --bg-3:#fff8ee;
+      --card:rgba(255,255,255,.88);
+      --card-strong:#ffffff;
+      --text:#1f2942;
+      --muted:#68748f;
+      --primary:#6c63e8;
+      --primary-dark:#5048c8;
+      --secondary:#17b6a4;
+      --secondary-dark:#0d8f82;
+      --accent:#f3a93b;
+      --success:#229b67;
+      --danger:#dc566f;
+      --warning:#d69325;
+      --line:rgba(89,92,167,.14);
+      --shadow:0 26px 70px rgba(39,49,91,.13);
+      --shadow-soft:0 14px 34px rgba(39,49,91,.08);
+      --radius-xl:30px;
+      --radius-lg:22px;
+      --radius-md:16px;
+    }
+
+    *{box-sizing:border-box}
+    html{min-height:100%}
+    body{
+      margin:0;
+      min-height:100vh;
+      font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at 7% 10%,rgba(108,99,232,.16),transparent 28%),
+        radial-gradient(circle at 92% 18%,rgba(23,182,164,.14),transparent 25%),
+        radial-gradient(circle at 84% 90%,rgba(243,169,59,.13),transparent 24%),
+        linear-gradient(145deg,var(--bg-1),var(--bg-2) 52%,var(--bg-3));
+      padding:22px;
+      overflow-x:hidden;
+    }
+
+    body::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      opacity:.35;
+      background-image:
+        linear-gradient(rgba(255,255,255,.28) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(255,255,255,.28) 1px,transparent 1px);
+      background-size:46px 46px;
+      z-index:-1;
+    }
+
+    button,input,select{font:inherit}
+    button{cursor:pointer}
+
+    .app{width:min(1220px,100%);margin:0 auto}
+
+    .hero{
+      position:relative;
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:22px;
+      padding:27px 30px;
+      margin-bottom:18px;
+      border:1px solid rgba(255,255,255,.82);
+      border-radius:var(--radius-xl);
+      background:linear-gradient(135deg,rgba(255,255,255,.88),rgba(255,255,255,.66));
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(14px);
+      overflow:hidden;
+    }
+
+    .hero::before{
+      content:"";
+      position:absolute;
+      width:390px;
+      height:390px;
+      right:-140px;
+      top:-210px;
+      border-radius:50%;
+      background:radial-gradient(circle,rgba(23,182,164,.15),transparent 68%);
+    }
+
+    .hero-copy,.hero-stats{position:relative;z-index:1}
+
+    .eyebrow{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      margin-bottom:12px;
+      padding:8px 12px;
+      border-radius:999px;
+      color:var(--primary-dark);
+      background:rgba(108,99,232,.10);
+      border:1px solid rgba(108,99,232,.10);
+      font-size:.77rem;
+      font-weight:900;
+      text-transform:uppercase;
+      letter-spacing:.09em;
+    }
+
+    h1{
+      margin:0;
+      font-size:clamp(2.2rem,5vw,4rem);
+      line-height:.98;
+      letter-spacing:-.05em;
+      background:linear-gradient(90deg,#4b46c9,#7168ee 45%,#12a798 100%);
+      -webkit-background-clip:text;
+      background-clip:text;
+      color:transparent;
+    }
+
+    .hero p{
+      max-width:760px;
+      margin:13px 0 0;
+      color:var(--muted);
+      line-height:1.62;
+      font-size:1.01rem;
+    }
+
+    .hero-stats{
+      min-width:190px;
+      display:grid;
+      gap:10px;
+    }
+
+    .stat-pill{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      padding:12px 15px;
+      border-radius:16px;
+      background:rgba(255,255,255,.88);
+      border:1px solid rgba(89,92,167,.10);
+      box-shadow:var(--shadow-soft);
+      color:var(--muted);
+      font-size:.88rem;
+      font-weight:800;
+    }
+
+    .stat-pill strong{color:var(--text);font-size:1rem}
+
+    .top-controls{
+      display:grid;
+      grid-template-columns:1fr 1fr .9fr .9fr auto;
+      gap:12px;
+      align-items:end;
+      padding:17px;
+      margin-bottom:18px;
+      border-radius:var(--radius-xl);
+      background:var(--card);
+      border:1px solid rgba(255,255,255,.82);
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(14px);
+    }
+
+    .field label{
+      display:block;
+      margin:0 0 7px 3px;
+      color:var(--muted);
+      font-size:.76rem;
+      font-weight:900;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+    }
+
+    .field input,.field select{
+      width:100%;
+      padding:12px 13px;
+      border-radius:15px;
+      border:1px solid var(--line);
+      background:#fff;
+      color:var(--text);
+      outline:none;
+      transition:.2s ease;
+    }
+
+    .field input:focus,.field select:focus{
+      border-color:rgba(108,99,232,.55);
+      box-shadow:0 0 0 4px rgba(108,99,232,.10);
+      transform:translateY(-1px);
+    }
+
+    .btn{
+      border:0;
+      border-radius:15px;
+      padding:12px 17px;
+      font-weight:900;
+      transition:.18s ease;
+      box-shadow:0 10px 24px rgba(39,49,91,.08);
+    }
+
+    .btn:hover:not(:disabled){transform:translateY(-2px);filter:brightness(1.03)}
+    .btn:active:not(:disabled){transform:translateY(0)}
+    .btn:disabled{opacity:.43;cursor:not-allowed}
+    .btn-primary{color:#fff;background:linear-gradient(135deg,var(--primary),var(--primary-dark))}
+    .btn-secondary{color:#fff;background:linear-gradient(135deg,var(--secondary),var(--secondary-dark))}
+    .btn-success{color:#fff;background:linear-gradient(135deg,#2ac884,var(--success))}
+    .btn-danger{color:#fff;background:linear-gradient(135deg,#ef7688,var(--danger))}
+    .btn-soft{color:var(--primary-dark);background:linear-gradient(135deg,#eff0ff,#e8fff9)}
+
+    .layout{
+      display:grid;
+      grid-template-columns:minmax(410px,.9fr) minmax(480px,1.1fr);
+      gap:18px;
+      align-items:stretch;
+    }
+
+    .panel{
+      border-radius:var(--radius-xl);
+      background:var(--card);
+      border:1px solid rgba(255,255,255,.82);
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(14px);
+      overflow:hidden;
+    }
+
+    .visual-panel{
+      position:relative;
+      min-height:680px;
+      padding:24px;
+      display:flex;
+      flex-direction:column;
+      gap:16px;
+      background:
+        radial-gradient(circle at 20% 14%,rgba(108,99,232,.10),transparent 25%),
+        radial-gradient(circle at 86% 24%,rgba(23,182,164,.09),transparent 23%),
+        var(--card);
+    }
+
+    .stage-title{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+
+    .stage-title h2{margin:0;font-size:1.25rem;letter-spacing:-.02em}
+    .stage-badge{
+      padding:8px 12px;
+      border-radius:999px;
+      background:rgba(108,99,232,.10);
+      color:var(--primary-dark);
+      font-size:.78rem;
+      font-weight:900;
+    }
+
+    .mirror-stage{
+      position:relative;
+      flex:1;
+      min-height:430px;
+      display:grid;
+      place-items:center;
+      border-radius:26px;
+      overflow:hidden;
+      background:
+        linear-gradient(180deg,rgba(231,239,255,.95),rgba(246,252,250,.96) 62%,rgba(254,246,233,.95));
+      border:1px solid rgba(89,92,167,.10);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.8);
+    }
+
+    .room-floor{
+      position:absolute;
+      left:-10%;right:-10%;bottom:-8%;
+      height:38%;
+      background:linear-gradient(180deg,#f1dfc3,#e9d3b2);
+      transform:perspective(500px) rotateX(66deg);
+      transform-origin:bottom;
+      opacity:.92;
+    }
+
+    .mirror{
+      position:absolute;
+      right:8%;
+      top:8%;
+      width:34%;
+      height:72%;
+      border-radius:48% 48% 24px 24px;
+      border:10px solid rgba(255,255,255,.95);
+      background:linear-gradient(145deg,rgba(207,235,250,.95),rgba(242,250,255,.95));
+      box-shadow:0 18px 45px rgba(39,49,91,.16),inset 0 0 0 2px rgba(108,99,232,.08);
+      overflow:hidden;
+    }
+
+    .mirror::before{
+      content:"";
+      position:absolute;
+      width:150%;
+      height:28px;
+      top:22%;
+      left:-24%;
+      background:rgba(255,255,255,.58);
+      transform:rotate(-37deg);
+    }
+
+    .mirror-reflection{
+      position:absolute;
+      left:50%;
+      bottom:12%;
+      transform:translateX(-50%) scaleX(-1);
+      opacity:.32;
+      filter:saturate(.65);
+    }
+
+    .character-wrap{
+      position:absolute;
+      left:12%;
+      bottom:10%;
+      width:42%;
+      display:grid;
+      justify-items:center;
+      z-index:3;
+    }
+
+    .character{
+      position:relative;
+      width:170px;
+      height:290px;
+      animation:bob 2.8s ease-in-out infinite;
+    }
+
+    @keyframes bob{50%{transform:translateY(-5px)}}
+
+    .head{
+      position:absolute;
+      left:50%;top:0;
+      transform:translateX(-50%);
+      width:86px;height:94px;
+      border-radius:48% 48% 44% 44%;
+      background:linear-gradient(145deg,#f3c79f,#ddb083);
+      border:4px solid rgba(255,255,255,.78);
+      box-shadow:0 10px 24px rgba(39,49,91,.13);
+    }
+
+    .hair{
+      position:absolute;
+      left:7px;right:7px;top:-3px;
+      height:38px;
+      border-radius:50% 50% 42% 42%;
+      background:#51443e;
+    }
+
+    .eye{position:absolute;top:43px;width:7px;height:7px;border-radius:50%;background:#30364b}
+    .eye.left{left:24px}.eye.right{right:24px}
+    .mouth{position:absolute;left:50%;top:66px;width:20px;height:8px;border-bottom:3px solid #a45b62;border-radius:50%;transform:translateX(-50%)}
+
+    .body-shape{
+      position:absolute;
+      left:50%;top:89px;
+      transform:translateX(-50%);
+      width:112px;height:126px;
+      border-radius:28px 28px 20px 20px;
+      background:linear-gradient(145deg,#6f68ea,#4f48cb);
+      box-shadow:0 12px 28px rgba(79,72,203,.22);
+    }
+
+    .arm,.leg{
+      position:absolute;
+      border-radius:999px;
+      transform-origin:top center;
+    }
+
+    .arm{top:104px;width:27px;height:112px;background:#efc097}
+    .arm.left{left:18px;transform:rotate(15deg)}
+    .arm.right{right:18px;transform:rotate(-15deg)}
+    .leg{top:205px;width:34px;height:82px;background:#34415d}
+    .leg.left{left:48px;transform:rotate(3deg)}
+    .leg.right{right:48px;transform:rotate(-3deg)}
+
+    .action-object{
+      position:absolute;
+      left:50%;
+      top:42%;
+      transform:translate(-50%,-50%);
+      z-index:4;
+      font-size:3.2rem;
+      filter:drop-shadow(0 10px 18px rgba(39,49,91,.15));
+    }
+
+    .action-label{
+      position:absolute;
+      left:50%;bottom:4%;
+      transform:translateX(-50%);
+      z-index:5;
+      min-width:240px;
+      max-width:82%;
+      padding:12px 16px;
+      border-radius:999px;
+      background:rgba(255,255,255,.92);
+      border:1px solid rgba(89,92,167,.10);
+      box-shadow:0 12px 30px rgba(39,49,91,.10);
+      text-align:center;
+      font-size:1.08rem;
+      font-weight:900;
+      color:#35405f;
+    }
+
+    .arrow-loop{
+      position:absolute;
+      left:44%;top:18%;
+      width:145px;height:145px;
+      border:8px solid rgba(23,182,164,.68);
+      border-left-color:transparent;
+      border-bottom-color:transparent;
+      border-radius:50%;
+      transform:rotate(32deg);
+      opacity:0;
+      transition:.25s ease;
+      z-index:6;
+    }
+
+    .arrow-loop::after{
+      content:"";
+      position:absolute;
+      right:-5px;bottom:8px;
+      width:0;height:0;
+      border-left:14px solid rgba(23,182,164,.85);
+      border-top:9px solid transparent;
+      border-bottom:9px solid transparent;
+      transform:rotate(60deg);
+    }
+
+    .mirror-stage.reflexive .arrow-loop{opacity:1}
+
+    .mini-explanation{
+      padding:16px 17px;
+      border-radius:20px;
+      background:rgba(255,255,255,.80);
+      border:1px solid var(--line);
+      color:var(--muted);
+      line-height:1.56;
+      box-shadow:var(--shadow-soft);
+    }
+
+    .mini-explanation strong{color:var(--text)}
+
+    .game-panel{
+      min-height:680px;
+      padding:24px;
+      display:flex;
+      flex-direction:column;
+      gap:16px;
+    }
+
+    .progress-wrap{display:grid;gap:8px}
+    .progress-head{display:flex;justify-content:space-between;gap:16px;color:var(--muted);font-size:.85rem;font-weight:850}
+    .progress-track{height:10px;border-radius:999px;background:#e9ecf6;overflow:hidden}
+    .progress-fill{height:100%;width:0;background:linear-gradient(90deg,var(--primary),var(--secondary));border-radius:999px;transition:.35s ease}
+
+    .mission-card{
+      padding:20px;
+      border-radius:24px;
+      background:linear-gradient(135deg,#f0f1ff,#effcf9);
+      border:1px solid rgba(108,99,232,.10);
+      box-shadow:var(--shadow-soft);
+    }
+
+    .mission-kicker{
+      color:var(--primary-dark);
+      font-size:.77rem;
+      font-weight:900;
+      text-transform:uppercase;
+      letter-spacing:.09em;
+      margin-bottom:7px;
+    }
+
+    .mission-title{margin:0;font-size:clamp(1.35rem,3vw,2rem);letter-spacing:-.03em;line-height:1.18}
+    .mission-copy{margin:9px 0 0;color:var(--muted);line-height:1.55}
+
+    .answer-zone{
+      flex:1;
+      min-height:300px;
+      padding:20px;
+      border-radius:24px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.74);
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      gap:18px;
+    }
+
+    .sentence-line{
+      display:flex;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      min-height:72px;
+      padding:14px;
+      border-radius:18px;
+      background:#f7f8fc;
+      border:1px dashed rgba(108,99,232,.20);
+    }
+
+    .fixed-word,.selected-tile{
+      padding:11px 15px;
+      border-radius:14px;
+      font-weight:900;
+      font-size:1.05rem;
+    }
+
+    .fixed-word{background:#fff;border:1px solid var(--line);color:#3e4967}
+    .selected-tile{background:linear-gradient(135deg,#eceeff,#e8fff9);border:1px solid rgba(108,99,232,.15);color:var(--primary-dark)}
+
+    .options{
+      display:flex;
+      flex-wrap:wrap;
+      justify-content:center;
+      gap:10px;
+    }
+
+    .option-btn,.tile-btn{
+      border:1px solid rgba(108,99,232,.15);
+      border-radius:15px;
+      padding:12px 16px;
+      background:#fff;
+      color:#35405d;
+      font-weight:900;
+      box-shadow:0 9px 20px rgba(39,49,91,.06);
+      transition:.17s ease;
+    }
+
+    .option-btn:hover,.tile-btn:hover{transform:translateY(-2px);border-color:rgba(108,99,232,.42)}
+    .option-btn.selected,.tile-btn.selected{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;border-color:transparent}
+    .option-btn.correct{background:#eafaf2;border-color:rgba(34,155,103,.35);color:var(--success)}
+    .option-btn.wrong{background:#fff0f3;border-color:rgba(220,86,111,.35);color:var(--danger)}
+
+    .classify-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .classify-btn{
+      min-height:100px;
+      border:1px solid var(--line);
+      border-radius:20px;
+      background:#fff;
+      padding:16px;
+      text-align:left;
+      transition:.18s ease;
+      box-shadow:var(--shadow-soft);
+    }
+    .classify-btn:hover{transform:translateY(-3px);border-color:rgba(108,99,232,.35)}
+    .classify-btn strong{display:block;font-size:1.1rem;margin-bottom:5px;color:var(--text)}
+    .classify-btn span{color:var(--muted);line-height:1.45}
+
+    .roulette-box{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:12px;
+    }
+
+    .roulette-column{
+      padding:15px;
+      border-radius:19px;
+      background:#fff;
+      border:1px solid var(--line);
+      text-align:center;
+      box-shadow:var(--shadow-soft);
+    }
+
+    .roulette-column small{display:block;color:var(--muted);font-weight:900;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+    .roulette-column strong{display:block;font-size:1.1rem;min-height:46px;display:grid;place-items:center}
+
+    .feedback{
+      min-height:92px;
+      padding:16px 17px;
+      border-radius:20px;
+      background:#fafbff;
+      border:1px solid var(--line);
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      gap:5px;
+    }
+    .feedback strong{font-size:1.03rem}
+    .feedback span{color:var(--muted);line-height:1.5}
+    .feedback.success{background:#f0fbf5;border-color:rgba(34,155,103,.27)}
+    .feedback.error{background:#fff3f5;border-color:rgba(220,86,111,.26)}
+    .feedback.info{background:#f2f4ff;border-color:rgba(108,99,232,.22)}
+
+    .action-row{display:flex;flex-wrap:wrap;gap:10px}
+    .action-row .btn{flex:1 1 160px}
+
+    .intro-overlay,.finish-overlay{
+      position:fixed;
+      inset:0;
+      z-index:50;
+      display:grid;
+      place-items:center;
+      padding:20px;
+      background:rgba(28,34,61,.50);
+      backdrop-filter:blur(8px);
+    }
+    .intro-overlay.hidden,.finish-overlay.hidden{display:none}
+
+    .modal-card{
+      width:min(720px,100%);
+      max-height:92vh;
+      overflow:auto;
+      padding:28px;
+      border-radius:30px;
+      background:linear-gradient(145deg,#fff,#f5f7ff);
+      box-shadow:0 30px 90px rgba(20,27,53,.30);
+      border:1px solid rgba(255,255,255,.85);
+    }
+
+    .modal-card h2{margin:0 0 9px;font-size:clamp(1.8rem,4vw,2.7rem);letter-spacing:-.04em}
+    .modal-card>p{color:var(--muted);line-height:1.58}
+
+    .compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:22px 0}
+    .compare-card{padding:18px;border-radius:22px;background:#fff;border:1px solid var(--line);box-shadow:var(--shadow-soft)}
+    .compare-card h3{margin:0 0 5px;font-size:1.2rem}
+    .compare-card p{margin:0;color:var(--muted);line-height:1.48}
+    .compare-card.reflexive{background:linear-gradient(145deg,#f0fbf8,#fff)}
+    .compare-card.non-reflexive{background:linear-gradient(145deg,#f3f4ff,#fff)}
+    .compare-scene{height:130px;margin-bottom:12px;border-radius:18px;position:relative;overflow:hidden;border:1px solid rgba(31,44,93,.06);background:linear-gradient(180deg,rgba(255,255,255,.95),rgba(243,247,255,.95))}
+    .compare-scene::before{content:"";position:absolute;inset:auto 0 0;height:32px;background:linear-gradient(180deg,rgba(30,41,59,.02),rgba(30,41,59,.06))}
+    .scene-person,.scene-person-mini{position:absolute;bottom:18px;display:flex;flex-direction:column;align-items:center;gap:4px}
+    .scene-person{left:18px}
+    .scene-person.right{left:auto;right:22px}
+    .scene-head{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#ffcf9f,#f7b77e);box-shadow:0 2px 6px rgba(0,0,0,.08)}
+    .scene-body{width:40px;height:48px;border-radius:16px 16px 12px 12px;background:linear-gradient(135deg,#7186ff,#5568ea);position:relative;box-shadow:0 8px 16px rgba(85,104,234,.18)}
+    .scene-body.teal{background:linear-gradient(135deg,#36cfc3,#12b1a2);box-shadow:0 8px 16px rgba(18,177,162,.18)}
+    .scene-body::before,.scene-body::after{content:"";position:absolute;top:8px;width:10px;height:28px;border-radius:999px;background:inherit}
+    .scene-body::before{left:-6px;transform:rotate(20deg)}
+    .scene-body::after{right:-6px;transform:rotate(-20deg)}
+    .scene-object{position:absolute;right:18px;bottom:28px;width:78px;height:50px;border-radius:16px;background:linear-gradient(145deg,#dfe7ff,#ffffff);border:1px solid rgba(99,102,241,.14);box-shadow:0 10px 18px rgba(28,39,80,.08);display:grid;place-items:center}
+    .scene-object::before{content:"";position:absolute;left:10px;right:10px;top:12px;height:14px;border-radius:7px;background:linear-gradient(90deg,#7f8bff,#43c0f0);opacity:.35}
+    .scene-object::after{content:"";position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);width:44px;height:8px;border-radius:999px;background:rgba(31,44,93,.08)}
+    .scene-object.car::before{left:14px;right:14px;top:20px;height:10px;border-radius:8px;background:linear-gradient(90deg,#6a7ef6,#38bdf8);opacity:1}
+    .scene-object.car .wheel,.scene-object.sink .knob{position:absolute;bottom:8px;width:12px;height:12px;border-radius:50%;background:#6a7ef6}
+    .scene-object.car .wheel.left{left:16px}.scene-object.car .wheel.right{right:16px}
+    .scene-object.sink{right:50%;transform:translateX(50%);width:92px;height:46px;background:linear-gradient(145deg,#ebfdf8,#ffffff);border-color:rgba(18,177,162,.16)}
+    .scene-object.sink::before{left:18px;right:18px;top:18px;height:12px;border-radius:10px;background:linear-gradient(90deg,#6de1d1,#16b6a6);opacity:1}
+    .scene-object.sink::after{width:52px}
+    .scene-object.sink .knob{top:6px;left:50%;transform:translateX(-50%);width:22px;height:8px;border-radius:999px;background:#14b8a6}
+    .scene-arrow-line{position:absolute;left:88px;right:102px;top:48%;height:3px;border-radius:999px;background:linear-gradient(90deg,#7c83f5,#3db6ef)}
+    .scene-arrow-line::after{content:"";position:absolute;right:-2px;top:50%;width:12px;height:12px;border-top:3px solid #3db6ef;border-right:3px solid #3db6ef;transform:translateY(-50%) rotate(45deg)}
+    .scene-loop{position:absolute;left:50%;top:18px;transform:translateX(-50%);width:104px;height:88px;border:4px solid rgba(20,184,166,.30);border-left-color:transparent;border-bottom-color:transparent;border-radius:50%;}
+    .scene-loop::after{content:"";position:absolute;right:6px;top:6px;width:12px;height:12px;border-top:4px solid #14b8a6;border-right:4px solid #14b8a6;transform:rotate(20deg)}
+    .scene-label{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.85);border:1px solid rgba(31,44,93,.06);font-size:.75rem;font-weight:800;color:#52607a}
+
+    .pronoun-strip{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 22px}
+    .pronoun-chip{padding:9px 12px;border-radius:999px;background:#eef0ff;color:var(--primary-dark);font-weight:900}
+
+    .finish-score{font-size:3rem;font-weight:950;margin:12px 0;color:var(--primary-dark)}
+
+    @media(max-width:980px){
+      .hero{flex-direction:column}
+      .hero-stats{grid-template-columns:repeat(3,1fr);width:100%}
+      .top-controls{grid-template-columns:1fr 1fr}
+      .top-controls .btn{grid-column:1/-1}
+      .layout{grid-template-columns:1fr}
+      .visual-panel,.game-panel{min-height:auto}
+    }
+
+    @media(max-width:640px){
+      body{padding:12px}
+      .hero{padding:22px 18px}
+      .hero-stats{grid-template-columns:1fr}
+      .top-controls{grid-template-columns:1fr}
+      .top-controls .btn{grid-column:auto}
+      .visual-panel,.game-panel{padding:17px}
+      .mirror-stage{min-height:400px}
+      .character-wrap{left:7%;width:48%}
+      .character{transform:scale(.88);transform-origin:bottom center}
+      .mirror{right:5%;width:38%}
+      .classify-grid,.roulette-box,.compare-grid{grid-template-columns:1fr}
+      .action-row{flex-direction:column}
+    }
+
+    @media(prefers-reduced-motion:reduce){
+      *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="hero">
+      <div class="hero-copy">
+        <div class="eyebrow">🪞 Verbos reflexivos · A1</div>
+        <h1>El espejo de la rutina</h1>
+        <p>Descubre cómo la acción vuelve a la persona: elige el pronombre, construye frases, distingue acciones reflexivas y termina con una ruleta de la rutina.</p>
+      </div>
+      <div class="hero-stats">
+        <div class="stat-pill"><span>Ronda</span><strong id="heroRound">0/12</strong></div>
+        <div class="stat-pill"><span>Puntos</span><strong id="heroScore">0</strong></div>
+        <div class="stat-pill"><span>Jugador</span><strong id="heroPlayer">Jugador 1</strong></div>
+      </div>
+    </header>
+
+    <section class="top-controls">
+      <div class="field">
+        <label for="playerOneInput">Jugador 1</label>
+        <input id="playerOneInput" value="Jugador 1" maxlength="24" />
+      </div>
+      <div class="field">
+        <label for="playerTwoInput">Jugador 2</label>
+        <input id="playerTwoInput" value="Jugador 2" maxlength="24" />
+      </div>
+      <div class="field">
+        <label for="modeSelect">Modo</label>
+        <select id="modeSelect">
+          <option value="solo">individual</option>
+          <option value="pair" selected>parejas</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="roundsSelect">Rondas</label>
+        <select id="roundsSelect">
+          <option value="8">8</option>
+          <option value="12" selected>12</option>
+          <option value="16">16</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" id="newGameBtn" type="button">Nueva partida</button>
+    </section>
+
+    <section class="layout">
+      <article class="panel visual-panel">
+        <div class="stage-title">
+          <h2>La acción</h2>
+          <span class="stage-badge" id="personBadge">yo</span>
+        </div>
+
+        <div class="mirror-stage reflexive" id="mirrorStage">
+          <div class="room-floor"></div>
+          <div class="mirror">
+            <div class="mirror-reflection character" aria-hidden="true">
+              <div class="head"><div class="hair"></div><div class="eye left"></div><div class="eye right"></div><div class="mouth"></div></div>
+              <div class="body-shape"></div><div class="arm left"></div><div class="arm right"></div><div class="leg left"></div><div class="leg right"></div>
+            </div>
+          </div>
+          <div class="character-wrap">
+            <div class="character">
+              <div class="head"><div class="hair"></div><div class="eye left"></div><div class="eye right"></div><div class="mouth"></div></div>
+              <div class="body-shape"></div><div class="arm left"></div><div class="arm right"></div><div class="leg left"></div><div class="leg right"></div>
+            </div>
+          </div>
+          <div class="action-object" id="actionObject">🪥</div>
+          <div class="arrow-loop"></div>
+          <div class="action-label" id="actionLabel">lavarse los dientes</div>
+        </div>
+
+        <div class="mini-explanation" id="visualExplanation">
+          <strong>lavarse los dientes</strong> — myć zęby.
+        </div>
+      </article>
+
+      <aside class="panel game-panel">
+        <div class="progress-wrap">
+          <div class="progress-head"><span id="progressText">Ronda 0 de 12</span><span id="levelText">Introducción</span></div>
+          <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+        </div>
+
+        <div class="mission-card">
+          <div class="mission-kicker" id="missionKicker">Nivel 1</div>
+          <h2 class="mission-title" id="missionTitle">Elige el pronombre reflexivo</h2>
+          <p class="mission-copy" id="missionCopy">Completa la frase correctamente.</p>
+        </div>
+
+        <div class="answer-zone" id="answerZone"></div>
+
+        <div class="feedback info" id="feedbackBox" aria-live="polite">
+          <strong id="feedbackTitle">Preparados</strong>
+          <span id="feedbackText">Pulsa «Empezar» para ver la primera misión.</span>
+        </div>
+
+        <div class="action-row">
+          <button class="btn btn-primary" id="startBtn" type="button">Empezar</button>
+          <button class="btn btn-secondary" id="checkBtn" type="button" disabled>Comprobar</button>
+          <button class="btn btn-soft" id="nextBtn" type="button" disabled>Siguiente</button>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <div class="intro-overlay" id="introOverlay">
+    <div class="modal-card">
+      <div class="eyebrow">La idea clave</div>
+      <h2>¿Reflexivo o no reflexivo?</h2>
+      <p>Primero observa quién recibe la acción. Cuando la misma persona hace y recibe la acción, usamos un pronombre reflexivo.</p>
+      <div class="compare-grid">
+        <div class="compare-card non-reflexive">
+          <div class="compare-scene">
+            <div class="scene-person">
+              <div class="scene-head"></div>
+              <div class="scene-body"></div>
+            </div>
+            <div class="scene-arrow-line"></div>
+            <div class="scene-object car">
+              <span class="wheel left"></span>
+              <span class="wheel right"></span>
+            </div>
+            <div class="scene-label">acción → objeto</div>
+          </div>
+          <h3>Lavo el coche.</h3>
+          <p>La acción sale de la persona y afecta a otra cosa.</p>
+        </div>
+        <div class="compare-card reflexive">
+          <div class="compare-scene">
+            <div class="scene-person right">
+              <div class="scene-head"></div>
+              <div class="scene-body teal"></div>
+            </div>
+            <div class="scene-loop"></div>
+            <div class="scene-object sink">
+              <span class="knob"></span>
+            </div>
+            <div class="scene-label">acción ↺ misma persona</div>
+          </div>
+          <h3>Me lavo.</h3>
+          <p>La persona hace la acción y también recibe el resultado.</p>
+        </div>
+      </div>
+      <div class="pronoun-strip">
+        <span class="pronoun-chip">yo → me</span>
+        <span class="pronoun-chip">tú → te</span>
+        <span class="pronoun-chip">él/ella → se</span>
+        <span class="pronoun-chip">nosotros → nos</span>
+        <span class="pronoun-chip">vosotros → os</span>
+        <span class="pronoun-chip">ellos → se</span>
+      </div>
+      <button class="btn btn-primary" id="closeIntroBtn" type="button">Entendido</button>
+    </div>
+  </div>
+
+  <div class="finish-overlay hidden" id="finishOverlay">
+    <div class="modal-card" style="text-align:center">
+      <div style="font-size:4rem">🏆</div>
+      <h2 id="finishTitle">¡Partida terminada!</h2>
+      <p id="finishText"></p>
+      <div class="finish-score" id="finishScore">0 puntos</div>
+      <button class="btn btn-primary" id="playAgainBtn" type="button">Jugar otra vez</button>
+    </div>
+  </div>
+
+  <script>
+    "use strict";
+
+    const people = [
+      {key:"yo",label:"yo",pronoun:"me",ending:{ar:"o",er:"o",ir:"o"}},
+      {key:"tu",label:"tú",pronoun:"te",ending:{ar:"as",er:"es",ir:"es"}},
+      {key:"ella",label:"ella",pronoun:"se",ending:{ar:"a",er:"e",ir:"e"}},
+      {key:"nosotros",label:"nosotros",pronoun:"nos",ending:{ar:"amos",er:"emos",ir:"imos"}},
+      {key:"vosotros",label:"vosotros",pronoun:"os",ending:{ar:"áis",er:"éis",ir:"ís"}},
+      {key:"ellos",label:"ellos",pronoun:"se",ending:{ar:"an",er:"en",ir:"en"}}
+    ];
+
+    const actions = [
+      {
+        inf:"despertarse",stem:"despert",group:"ar",change:"e-ie",label:"despertarse",pl:"budzić się",object:"⏰",extra:"",
+        times:["por la mañana","a las siete","temprano","antes de desayunar"]
+      },
+      {
+        inf:"levantarse",stem:"levant",group:"ar",label:"levantarse",pl:"wstawać",object:"🛏️",extra:"",
+        times:["por la mañana","a las siete","temprano","después de despertarse"]
+      },
+      {
+        inf:"ducharse",stem:"duch",group:"ar",label:"ducharse",pl:"brać prysznic",object:"🚿",extra:"",
+        times:["por la mañana","después del gimnasio","después de trabajar","por la noche"]
+      },
+      {
+        inf:"lavarse",stem:"lav",group:"ar",label:"lavarse las manos",pl:"myć sobie ręce",object:"🧼",extra:"las manos",
+        times:["antes de comer","después de volver a casa","después de cocinar","varias veces al día"]
+      },
+      {
+        inf:"lavarse",stem:"lav",group:"ar",label:"lavarse los dientes",pl:"myć zęby",object:"🪥",extra:"los dientes",
+        times:["por la mañana","después de desayunar","por la noche","antes de dormir"]
+      },
+      {
+        inf:"peinarse",stem:"pein",group:"ar",label:"peinarse",pl:"czesać się",object:"🪮",extra:"",
+        times:["por la mañana","después de ducharse","antes de salir","antes de ir al trabajo"]
+      },
+      {
+        inf:"vestirse",stem:"vest",group:"ir",change:"e-i",label:"vestirse",pl:"ubierać się",object:"👕",extra:"",
+        times:["por la mañana","después de ducharse","antes de salir","antes de ir al trabajo"]
+      },
+      {
+        inf:"maquillarse",stem:"maquill",group:"ar",label:"maquillarse",pl:"malować się",object:"💄",extra:"",
+        times:["por la mañana","antes de salir","antes de una fiesta","antes de ir al trabajo"]
+      },
+      {
+        inf:"afeitarse",stem:"afeit",group:"ar",label:"afeitarse",pl:"golić się",object:"🪒",extra:"",
+        times:["por la mañana","después de ducharse","antes de salir","antes de ir al trabajo"]
+      },
+      {
+        inf:"acostarse",stem:"acost",group:"ar",change:"o-ue",label:"acostarse",pl:"kłaść się spać",object:"🌙",extra:"",
+        times:["por la noche","a las once","después de cenar","tarde"]
+      }
+    ];
+
+    const classifyItems = [
+      {sentence:"María se lava antes de desayunar.",reflexive:true,reason:"María hace la acción sobre sí misma."},
+      {sentence:"María lava el coche.",reflexive:false,reason:"La acción afecta al coche, no a María."},
+      {sentence:"Los niños se visten rápido.",reflexive:true,reason:"Los niños se ponen la ropa a sí mismos."},
+      {sentence:"Pedro viste a su hijo.",reflexive:false,reason:"Pedro hace la acción sobre otra persona."},
+      {sentence:"Nos peinamos por la mañana.",reflexive:true,reason:"Nosotros hacemos la acción sobre nosotros mismos."},
+      {sentence:"Peino a mi hermana.",reflexive:false,reason:"La acción afecta a mi hermana."},
+      {sentence:"Te duchas después del gimnasio.",reflexive:true,reason:"Tú haces la acción sobre ti mismo o sobre ti misma."},
+      {sentence:"Ducho al perro después del paseo.",reflexive:false,reason:"La acción afecta al perro."},
+      {sentence:"Carlos se afeita antes de trabajar.",reflexive:true,reason:"Carlos se afeita a sí mismo."},
+      {sentence:"El barbero afeita al cliente.",reflexive:false,reason:"El barbero hace la acción sobre el cliente."},
+      {sentence:"Ana se maquilla antes de la fiesta.",reflexive:true,reason:"Ana hace la acción sobre sí misma."},
+      {sentence:"Ana maquilla a su amiga.",reflexive:false,reason:"La acción afecta a su amiga."},
+      {sentence:"Me lavo las manos antes de comer.",reflexive:true,reason:"Yo lavo una parte de mi propio cuerpo."},
+      {sentence:"Lavo los platos después de cenar.",reflexive:false,reason:"La acción afecta a los platos."}
+    ];
+
+    const els = Object.fromEntries([
+      "heroRound","heroScore","heroPlayer","playerOneInput","playerTwoInput","modeSelect","roundsSelect","newGameBtn",
+      "personBadge","mirrorStage","actionObject","actionLabel","visualExplanation","progressText","levelText","progressFill",
+      "missionKicker","missionTitle","missionCopy","answerZone","feedbackBox","feedbackTitle","feedbackText","startBtn","checkBtn","nextBtn",
+      "introOverlay","closeIntroBtn","finishOverlay","finishTitle","finishText","finishScore","playAgainBtn"
+    ].map(id=>[id,document.getElementById(id)]));
+
+    const state={
+      names:["Jugador 1","Jugador 2"],mode:"pair",active:0,scores:[0,0],round:0,total:12,current:null,selected:null,locked:false,started:false,
+      classifyNextReflexive:true,classifyHistory:[]
+    };
+
+    function cleanName(v,f){const x=v.trim().replace(/\s+/g," ");return x||f}
+    function random(arr){return arr[Math.floor(Math.random()*arr.length)]}
+    function shuffle(arr){return [...arr].sort(()=>Math.random()-.5)}
+
+    function nextClassifyItem(){
+      const wanted=state.classifyNextReflexive;
+      let candidates=classifyItems.filter(item=>item.reflexive===wanted&&!state.classifyHistory.includes(item.sentence));
+      if(!candidates.length){
+        state.classifyHistory=state.classifyHistory.filter(sentence=>{
+          const found=classifyItems.find(item=>item.sentence===sentence);
+          return found&&found.reflexive!==wanted;
+        });
+        candidates=classifyItems.filter(item=>item.reflexive===wanted&&!state.classifyHistory.includes(item.sentence));
+      }
+      const item=random(candidates.length?candidates:classifyItems.filter(entry=>entry.reflexive===wanted));
+      state.classifyHistory.push(item.sentence);
+      if(state.classifyHistory.length>6)state.classifyHistory.shift();
+      state.classifyNextReflexive=!state.classifyNextReflexive;
+      return item;
+    }
+
+    function conjugate(person,action){
+      let stem=action.stem;
+      const keepsOriginalStem=person.key==="nosotros"||person.key==="vosotros";
+      if(!keepsOriginalStem){
+        if(action.change==="e-ie") stem=replaceLastVowel(stem,"e","ie");
+        if(action.change==="e-i") stem=replaceLastVowel(stem,"e","i");
+        if(action.change==="o-ue") stem=replaceLastVowel(stem,"o","ue");
+      }
+      return stem+person.ending[action.group];
+    }
+
+    function replaceLastVowel(stem,vowel,replacement){
+      const index=stem.lastIndexOf(vowel);
+      return index===-1?stem:stem.slice(0,index)+replacement+stem.slice(index+1);
+    }
+    function fullSentence(person,action,time=""){
+      const verb=conjugate(person,action);
+      const extra=action.extra?` ${action.extra}`:"";
+      const timeText=time?` ${time}`:"";
+      return `${capitalize(person.label)} ${person.pronoun} ${verb}${extra}${timeText}.`;
+    }
+    function capitalize(s){return s.charAt(0).toUpperCase()+s.slice(1)}
+
+    function updateHeader(){
+      els.heroRound.textContent=`${state.round}/${state.total}`;
+      els.heroScore.textContent=state.mode==="pair"?`${state.scores[0]} · ${state.scores[1]}`:String(state.scores[0]);
+      els.heroPlayer.textContent=state.names[state.active];
+      els.progressText.textContent=`Ronda ${state.round} de ${state.total}`;
+      els.progressFill.style.width=`${state.total?state.round/state.total*100:0}%`;
+    }
+
+    function resetGame(){
+      state.names=[cleanName(els.playerOneInput.value,"Jugador 1"),cleanName(els.playerTwoInput.value,"Jugador 2")];
+      state.mode=els.modeSelect.value;
+      state.total=Number(els.roundsSelect.value)||12;
+      if(state.mode==="pair"&&state.total%2!==0)state.total+=1;
+      state.active=0;state.scores=[0,0];state.round=0;state.current=null;state.selected=null;state.locked=false;state.started=false;
+      state.classifyNextReflexive=true;state.classifyHistory=[];
+      els.startBtn.disabled=false;els.startBtn.textContent="Empezar";els.checkBtn.disabled=true;els.nextBtn.disabled=true;
+      els.answerZone.innerHTML='<div style="text-align:center;color:var(--muted);line-height:1.6">Aquí aparecerá la primera misión.</div>';
+      setFeedback("info","Nueva partida preparada",`${state.names[0]} empieza.`);
+      updateHeader();
+      setVisual(random(people),random(actions),true);
+      els.finishOverlay.classList.add("hidden");
+    }
+
+    function setVisual(person,action,reflexive=true){
+      els.personBadge.textContent=person.label;
+      els.actionObject.textContent=action.object;
+      els.actionLabel.textContent=action.label;
+      els.mirrorStage.classList.toggle("reflexive",reflexive);
+      els.visualExplanation.innerHTML=`<strong>${action.label}</strong> — ${action.pl}.`;
+    }
+
+    function setFeedback(type,title,text){
+      els.feedbackBox.className=`feedback ${type}`;
+      els.feedbackTitle.textContent=title;
+      els.feedbackText.textContent=text;
+    }
+
+    function getRoundType(round,total){
+      const stages=["pronoun","build","classify","roulette"];
+
+      if(state.mode!=="pair"){
+        const quarter=round/total;
+        if(quarter<=.25)return "pronoun";
+        if(quarter<=.55)return "build";
+        if(quarter<=.78)return "classify";
+        return "roulette";
+      }
+
+      /*
+        En parejas, cada nivel se juega en bloques de dos rondas:
+        una para cada jugador. Así ambos reciben exactamente el mismo
+        número de misiones de cada dificultad y las mismas oportunidades
+        de conseguir las rondas de 150 puntos.
+      */
+      const pairBlocks=Math.floor(total/2);
+      const blockIndex=Math.floor((round-1)/2);
+      const baseBlocks=Math.floor(pairBlocks/stages.length);
+      const extraBlocks=pairBlocks%stages.length;
+      let limit=0;
+
+      for(let i=0;i<stages.length;i+=1){
+        limit+=baseBlocks+(i<extraBlocks?1:0);
+        if(blockIndex<limit)return stages[i];
+      }
+      return stages[stages.length-1];
+    }
+
+    function createRound(){
+      state.round+=1;state.selected=null;state.locked=false;
+      const type=getRoundType(state.round,state.total);
+      state.current=generateMission(type);
+      renderMission();updateHeader();
+      els.startBtn.disabled=true;els.checkBtn.disabled=type==="classify";els.nextBtn.disabled=true;
+      setFeedback("info",`${state.names[state.active]}, es tu turno`,"Completa la misión y comprueba tu respuesta.");
+    }
+
+    function generateMission(type){
+      const person=random(people),action=random(actions),time=random(action.times);
+      if(type==="pronoun")return{type,person,action,time,correct:person.pronoun};
+      if(type==="build"){
+        const verb=conjugate(person,action);
+        const words=[capitalize(person.label),person.pronoun,verb];
+        if(action.extra)words.push(action.extra);
+        words.push(time+".");
+        return{type,person,action,time,words,correct:words.join(" ")};
+      }
+      if(type==="classify"){
+        const item=nextClassifyItem();
+        return{type,person,action,time,item,correct:item.reflexive};
+      }
+      return{type,person,action,time,correct:fullSentence(person,action,time)};
+    }
+
+    function renderMission(){
+      const m=state.current;
+      const labels={pronoun:"Nivel 1 · Pronombre",build:"Nivel 2 · Construye",classify:"Nivel 3 · Reflexivo o no",roulette:"Nivel 4 · Ruleta"};
+      els.levelText.textContent=labels[m.type];
+      setVisual(m.person,m.action,m.type!=="classify"?true:m.item.reflexive);
+      els.answerZone.innerHTML="";
+      if(m.type==="pronoun")renderPronoun(m);
+      if(m.type==="build")renderBuild(m);
+      if(m.type==="classify")renderClassify(m);
+      if(m.type==="roulette")renderRoulette(m);
+    }
+
+    function renderPronoun(m){
+      els.missionKicker.textContent="Elige el pronombre";
+      els.missionTitle.textContent="¿Qué pronombre necesita esta persona?";
+      els.missionCopy.textContent="Completa la frase sin cambiar la persona ni el verbo.";
+      const line=document.createElement("div");line.className="sentence-line";
+      line.innerHTML=`<span class="fixed-word">${capitalize(m.person.label)}</span><span class="selected-tile" id="pronounSlot">___</span><span class="fixed-word">${conjugate(m.person,m.action)}${m.action.extra?` ${m.action.extra}`:""}</span>`;
+      const opts=document.createElement("div");opts.className="options";
+      ["me","te","se","nos","os"].forEach(p=>{
+        const b=document.createElement("button");b.className="option-btn";b.textContent=p;b.type="button";
+        b.addEventListener("click",()=>{if(state.locked)return;state.selected=p;document.querySelectorAll(".option-btn").forEach(x=>x.classList.toggle("selected",x===b));document.getElementById("pronounSlot").textContent=p;els.checkBtn.disabled=false});
+        opts.appendChild(b);
+      });
+      els.answerZone.append(line,opts);
+    }
+
+    function renderBuild(m){
+      els.missionKicker.textContent="Construye la frase";
+      els.missionTitle.textContent="Ordena todos los elementos";
+      els.missionCopy.textContent="Haz clic en las palabras en el orden correcto.";
+      const line=document.createElement("div");line.className="sentence-line";line.id="buildLine";line.innerHTML='<span style="color:var(--muted)">Tu frase aparecerá aquí</span>';
+      const opts=document.createElement("div");opts.className="options";opts.id="tileOptions";
+      const tiles=shuffle(m.words.map((w,i)=>({w,id:i})));state.selected=[];
+      tiles.forEach(t=>{
+        const b=document.createElement("button");b.className="tile-btn";b.textContent=t.w;b.type="button";b.dataset.id=t.id;
+        b.addEventListener("click",()=>{if(state.locked||b.classList.contains("selected"))return;b.classList.add("selected");state.selected.push(t.w);renderBuiltLine();els.checkBtn.disabled=state.selected.length!==m.words.length});
+        opts.appendChild(b);
+      });
+      const undo=document.createElement("button");undo.className="btn btn-soft";undo.type="button";undo.textContent="↶ Borrar última";
+      undo.addEventListener("click",()=>{if(state.locked||!state.selected.length)return;const removed=state.selected.pop();const candidates=[...document.querySelectorAll(".tile-btn.selected")];const target=candidates.reverse().find(x=>x.textContent===removed);if(target)target.classList.remove("selected");renderBuiltLine();els.checkBtn.disabled=true});
+      els.answerZone.append(line,opts,undo);
+    }
+
+    function renderBuiltLine(){
+      const line=document.getElementById("buildLine");line.innerHTML="";
+      if(!state.selected.length){line.innerHTML='<span style="color:var(--muted)">Tu frase aparecerá aquí</span>';return}
+      state.selected.forEach(w=>{const s=document.createElement("span");s.className="selected-tile";s.textContent=w;line.appendChild(s)});
+    }
+
+    function renderClassify(m){
+      els.missionKicker.textContent="Observa la acción";
+      els.missionTitle.textContent=m.item.sentence;
+      els.missionCopy.textContent="Decide si la acción es reflexiva o no reflexiva.";
+      const grid=document.createElement("div");grid.className="classify-grid";
+      [{v:true,t:"Reflexiva",d:"La persona hace y recibe la acción."},{v:false,t:"No reflexiva",d:"La acción afecta a otra persona o cosa."}].forEach(o=>{
+        const b=document.createElement("button");b.className="classify-btn";b.type="button";b.innerHTML=`<strong>${o.t}</strong><span>${o.d}</span>`;
+        b.addEventListener("click",()=>{if(state.locked)return;state.selected=o.v;checkAnswer()});grid.appendChild(b)
+      });
+      els.answerZone.appendChild(grid);
+    }
+
+    function renderRoulette(m){
+      els.missionKicker.textContent="Ruleta final";
+      els.missionTitle.textContent="Construye una frase completa";
+      els.missionCopy.textContent="Usa la persona, la acción y el momento que han salido en la ruleta.";
+      const box=document.createElement("div");box.className="roulette-box";
+      [["Persona",m.person.label],["Acción",m.action.label],["Momento",m.time]].forEach(([a,b])=>{const d=document.createElement("div");d.className="roulette-column";d.innerHTML=`<small>${a}</small><strong>${b}</strong>`;box.appendChild(d)});
+      const line=document.createElement("div");line.className="sentence-line";line.id="rouletteLine";line.innerHTML='<span style="color:var(--muted)">Selecciona una opción de cada grupo</span>';
+      state.selected={pronoun:null,verb:null};
+      const pron=document.createElement("div");pron.className="options";
+      ["me","te","se","nos","os"].forEach(p=>{const b=document.createElement("button");b.className="option-btn";b.textContent=p;b.type="button";b.addEventListener("click",()=>{if(state.locked)return;state.selected.pronoun=p;pron.querySelectorAll("button").forEach(x=>x.classList.toggle("selected",x===b));updateRouletteLine()});pron.appendChild(b)});
+      const verbs=document.createElement("div");verbs.className="options";
+      const correct=conjugate(m.person,m.action);
+      const distractors=shuffle(people.map(p=>conjugate(p,m.action)).filter(v=>v!==correct)).slice(0,3);
+      shuffle([correct,...distractors]).forEach(v=>{const b=document.createElement("button");b.className="option-btn";b.textContent=v;b.type="button";b.addEventListener("click",()=>{if(state.locked)return;state.selected.verb=v;verbs.querySelectorAll("button").forEach(x=>x.classList.toggle("selected",x===b));updateRouletteLine()});verbs.appendChild(b)});
+      els.answerZone.append(box,line,pron,verbs);
+    }
+
+    function updateRouletteLine(){
+      const m=state.current,line=document.getElementById("rouletteLine");
+      const p=state.selected.pronoun||"___",v=state.selected.verb||"___";
+      line.innerHTML=`<span class="fixed-word">${capitalize(m.person.label)}</span><span class="selected-tile">${p}</span><span class="selected-tile">${v}</span>${m.action.extra?`<span class="fixed-word">${m.action.extra}</span>`:""}<span class="fixed-word">${m.time}.</span>`;
+      els.checkBtn.disabled=!(state.selected.pronoun&&state.selected.verb);
+    }
+
+    function checkAnswer(){
+      if(state.locked||!state.current)return;
+      const m=state.current;let ok=false,explanation="";
+      if(m.type==="pronoun"){
+        ok=state.selected===m.correct;
+        explanation=`${capitalize(m.person.label)} → ${m.person.pronoun}. La frase correcta es: ${fullSentence(m.person,m.action).replace(/\.$/,"")}.`;
+      }else if(m.type==="build"){
+        ok=state.selected.join(" ")===m.correct;
+        explanation=`Orden correcto: ${m.correct}`;
+      }else if(m.type==="classify"){
+        ok=state.selected===m.correct;
+        explanation=m.item.reason;
+      }else{
+        ok=state.selected.pronoun===m.person.pronoun&&state.selected.verb===conjugate(m.person,m.action);
+        explanation=`Frase modelo: ${m.correct}`;
+      }
+      state.locked=true;els.checkBtn.disabled=true;els.nextBtn.disabled=false;
+      if(ok){
+        const points=m.type==="roulette"?150:100;state.scores[state.active]+=points;
+        setFeedback("success",`¡Correcto! +${points} puntos`,explanation);launchConfetti(m.type==="roulette"?24:12);
+      }else{
+        setFeedback("error","Todavía no",explanation);
+      }
+      updateHeader();
+    }
+
+    function nextRound(){
+      if(state.round>=state.total){showFinish();return}
+      if(state.mode==="pair")state.active=state.active===0?1:0;
+      createRound();
+    }
+
+    function showFinish(){
+      const a=state.scores[0],b=state.scores[1];
+      if(state.mode==="solo"){
+        els.finishTitle.textContent="¡Reto completado!";
+        els.finishText.textContent=`${state.names[0]} ha terminado todas las misiones.`;
+        els.finishScore.textContent=`${a} puntos`;
+      }else if(a===b){
+        els.finishTitle.textContent="¡Empate!";
+        els.finishText.textContent=`${state.names[0]} y ${state.names[1]} han conseguido la misma puntuación.`;
+        els.finishScore.textContent=`${a} · ${b}`;
+      }else{
+        const i=a>b?0:1;
+        els.finishTitle.textContent=`¡Gana ${state.names[i]}!`;
+        els.finishText.textContent="Ya sabéis reconocer y construir frases con verbos reflexivos.";
+        els.finishScore.textContent=`${state.names[0]}: ${a} · ${state.names[1]}: ${b}`;
+      }
+      els.finishOverlay.classList.remove("hidden");launchConfetti(70);
+    }
+
+    function launchConfetti(count){
+      const colors=["#6c63e8","#17b6a4","#f3a93b","#dc566f"];
+      for(let i=0;i<count;i++){
+        const d=document.createElement("div");
+        d.style.position="fixed";d.style.zIndex="80";d.style.width="9px";d.style.height="14px";d.style.borderRadius="3px";d.style.left=`${Math.random()*100}vw`;d.style.top="-20px";d.style.background=random(colors);d.style.pointerEvents="none";
+        const x=(Math.random()-.5)*260,dur=1300+Math.random()*1200;
+        d.animate([{transform:"translate(0,0) rotate(0)",opacity:1},{transform:`translate(${x}px,110vh) rotate(720deg)`,opacity:.1}],{duration:dur,easing:"ease-in",fill:"forwards"});
+        document.body.appendChild(d);setTimeout(()=>d.remove(),dur+100);
+      }
+    }
+
+    els.closeIntroBtn.addEventListener("click",()=>els.introOverlay.classList.add("hidden"));
+    els.newGameBtn.addEventListener("click",resetGame);
+    els.startBtn.addEventListener("click",()=>{if(!state.started){state.started=true;createRound()}});
+    els.checkBtn.addEventListener("click",checkAnswer);
+    els.nextBtn.addEventListener("click",nextRound);
+    els.playAgainBtn.addEventListener("click",resetGame);
+
+    resetGame();
+  </script>
+</body>
+</html>
