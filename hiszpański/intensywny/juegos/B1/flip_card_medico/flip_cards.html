@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Consejos de salud</title>
+
+<style>
+body{
+    margin:0;
+    font-family:Arial,Helvetica,sans-serif;
+    background:linear-gradient(135deg,#4facfe,#00f2fe);
+}
+
+h1{
+    text-align:center;
+    color:white;
+    margin:30px 0;
+}
+
+#board{
+    width:95%;
+    max-width:1400px;
+    margin:auto;
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:20px;
+    padding-bottom:40px;
+}
+
+.card{
+    height:190px;
+    perspective:1000px;
+    cursor:pointer;
+}
+
+.inner{
+    position:relative;
+    width:100%;
+    height:100%;
+    transition:transform .6s;
+    transform-style:preserve-3d;
+}
+
+.card.flipped .inner{
+    transform:rotateY(180deg);
+}
+
+.front,.back{
+    position:absolute;
+    width:100%;
+    height:100%;
+    border-radius:18px;
+    backface-visibility:hidden;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+    padding:18px;
+    box-sizing:border-box;
+    box-shadow:0 8px 20px rgba(0,0,0,.25);
+}
+
+.front{
+    background:white;
+    font-size:48px;
+    font-weight:bold;
+    color:#2196F3;
+}
+
+.back{
+    background:#fff8e8;
+    transform:rotateY(180deg);
+    flex-direction:column;
+    justify-content:flex-start;
+    align-items:flex-start;
+    overflow:auto;
+}
+
+.back h3{
+    margin-top:0;
+    color:#e53935;
+}
+
+.back ul{
+    margin-top:8px;
+    padding-left:20px;
+    font-size:17px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🩺 Da consejos al paciente</h1>
+
+<div id="board"></div>
+
+<script>
+
+const problems = [
+
+{
+title:"No duermo bien",
+items:[
+"Me acuesto a las 2 de la madrugada.",
+"Veo el móvil antes de dormir.",
+"Estoy muy cansado."
+]
+},
+
+{
+title:"Siempre estoy enfermo",
+items:[
+"Nunca como fruta.",
+"No hago deporte.",
+"Trabajo mucho."
+]
+},
+
+{
+title:"Tengo mucho estrés",
+items:[
+"Trabajo doce horas al día.",
+"Nunca descanso.",
+"Pienso en el trabajo todo el tiempo."
+]
+},
+
+{
+title:"Me duele la espalda",
+items:[
+"Trabajo delante del ordenador.",
+"Nunca hago ejercicio.",
+"Paso diez horas sentado."
+]
+},
+
+{
+title:"Tengo dolor de estómago",
+items:[
+"Como comida rápida todos los días.",
+"Bebo muchos refrescos.",
+"Nunca desayuno."
+]
+},
+
+{
+title:"Tengo fiebre",
+items:[
+"Tengo tos.",
+"Me duele la garganta.",
+"Mañana tengo que trabajar."
+]
+},
+
+{
+title:"Quiero adelgazar",
+items:[
+"Como muchos dulces.",
+"Nunca hago deporte.",
+"Bebo Coca-Cola todos los días."
+]
+},
+
+{
+title:"Estoy siempre cansado",
+items:[
+"Duermo cinco horas.",
+"Trabajo mucho.",
+"Tomo mucho café."
+]
+},
+
+{
+title:"Tengo dolor de cabeza",
+items:[
+"Paso todo el día delante del ordenador.",
+"No bebo agua.",
+"No descanso."
+]
+},
+
+{
+title:"Estoy resfriado",
+items:[
+"Tengo tos.",
+"Me duele la garganta.",
+"No quiero ir al médico."
+]
+},
+
+{
+title:"Fumo mucho",
+items:[
+"Un paquete al día.",
+"Siempre después del café.",
+"Quiero dejar de fumar."
+]
+},
+
+{
+title:"No hago deporte",
+items:[
+"Voy en coche a todas partes.",
+"Trabajo sentado.",
+"Siempre estoy cansado."
+]
+},
+
+{
+title:"Tengo alergia",
+items:[
+"Estornudo mucho.",
+"Me lloran los ojos.",
+"No tomo medicinas."
+]
+},
+
+{
+title:"Estoy nervioso",
+items:[
+"Tengo un examen mañana.",
+"No puedo dormir.",
+"No puedo concentrarme."
+]
+},
+
+{
+title:"Paso todo el día con el móvil",
+items:[
+"Me duelen los ojos.",
+"Me duele el cuello.",
+"Duermo poco."
+]
+},
+
+{
+title:"Quiero estar más sano",
+items:[
+"No sé por dónde empezar.",
+"No tengo mucho tiempo.",
+"Me gusta la comida rápida."
+]
+},
+
+{
+title:"Soy adicto al café",
+items:[
+"Tomo seis cafés al día.",
+"No puedo trabajar sin café.",
+"No puedo dormir."
+]
+},
+
+{
+title:"Trabajo desde casa",
+items:[
+"Nunca salgo.",
+"Paso todo el día sentado.",
+"Siempre estoy cansado."
+]
+},
+
+{
+title:"Soy estudiante",
+items:[
+"Como pizza tres veces por semana.",
+"Duermo poco.",
+"Estoy siempre estresado."
+]
+},
+
+{
+title:"Soy influencer",
+items:[
+"Paso diez horas al día mirando el móvil.",
+"Me duelen los ojos.",
+"Tengo dolor de cuello."
+]
+}
+
+];
+
+problems.sort(()=>Math.random()-0.5);
+
+const board=document.getElementById("board");
+
+problems.forEach((p,i)=>{
+
+const card=document.createElement("div");
+card.className="card";
+
+card.innerHTML=`
+<div class="inner">
+
+<div class="front">
+${i+1}
+</div>
+
+<div class="back">
+<h3>${p.title}</h3>
+<ul>
+${p.items.map(x=>`<li>${x}</li>`).join("")}
+</ul>
+</div>
+
+</div>
+`;
+
+card.onclick=()=>card.classList.toggle("flipped");
+
+board.appendChild(card);
+
+});
+
+</script>
+
+</body>
+</html>
