@@ -1,551 +1,391 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <meta
-        name="description"
-        content="Juegos interactivos para practicar preguntas y tiempos verbales en español."
-    >
+  <meta
+    name="description"
+    content="Juegos interactivos para practicar los tiempos verbales y el subjuntivo en español, nivel B1."
+  >
 
-    <title>Preguntas y tiempos verbales</title>
+  <title>Tiempos verbales · Nivel B1</title>
 
-    <style>
-        @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap");
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap");
 
-        :root {
-            --background-start: #eef2ff;
-            --background-middle: #fdf4ff;
-            --background-end: #fff7ed;
-            --text: #1f2937;
-            --muted: #667085;
-            --card: rgba(255, 255, 255, 0.88);
-            --card-border: rgba(255, 255, 255, 0.72);
-            --shadow: 0 24px 60px rgba(79, 70, 229, 0.13);
-            --purple: #6d5ce7;
-            --purple-dark: #5145cd;
-            --blue: #3b82f6;
-            --blue-dark: #2563eb;
-            --orange: #f59e0b;
-            --orange-dark: #ea580c;
-        }
+    :root {
+      --background-start: #667eea;
+      --background-end: #764ba2;
+      --card-background: rgba(255, 255, 255, 0.97);
+      --text-dark: #292936;
+      --text-muted: #696979;
+      --primary: #667eea;
+      --primary-dark: #5060cc;
+      --future: #4489d9;
+      --past: #d27355;
+      --subjunctive: #3b9778;
+      --shadow: 0 20px 50px rgba(31, 26, 70, 0.23);
+    }
 
-        * {
-            box-sizing: border-box;
-        }
+    * {
+      box-sizing: border-box;
+    }
 
-        html {
-            min-height: 100%;
-        }
+    html {
+      min-height: 100%;
+    }
 
-        body {
-            margin: 0;
-            min-height: 100vh;
-            padding: 28px;
-            font-family: "Poppins", sans-serif;
-            color: var(--text);
-            background:
-                radial-gradient(circle at 12% 12%, rgba(129, 140, 248, 0.22), transparent 28%),
-                radial-gradient(circle at 88% 18%, rgba(244, 114, 182, 0.17), transparent 30%),
-                radial-gradient(circle at 78% 88%, rgba(251, 146, 60, 0.16), transparent 27%),
-                linear-gradient(
-                    135deg,
-                    var(--background-start),
-                    var(--background-middle) 50%,
-                    var(--background-end)
-                );
-            overflow-x: hidden;
-        }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 40px 24px;
+      color: white;
+      font-family: "Poppins", sans-serif;
+      background:
+        radial-gradient(
+          circle at 10% 5%,
+          rgba(255, 255, 255, 0.16),
+          transparent 31%
+        ),
+        radial-gradient(
+          circle at 90% 90%,
+          rgba(255, 255, 255, 0.12),
+          transparent 30%
+        ),
+        linear-gradient(
+          135deg,
+          var(--background-start),
+          var(--background-end)
+        );
+    }
 
-        body::before,
-        body::after {
-            content: "";
-            position: fixed;
-            z-index: -1;
-            border-radius: 999px;
-            filter: blur(4px);
-            opacity: 0.55;
-            pointer-events: none;
-        }
+    .container {
+      width: min(1120px, 100%);
+      margin: 0 auto;
+    }
 
-        body::before {
-            width: 240px;
-            height: 240px;
-            top: -80px;
-            right: -70px;
-            background: rgba(99, 102, 241, 0.18);
-        }
+    .header {
+      margin-bottom: 42px;
+      text-align: center;
+    }
 
-        body::after {
-            width: 300px;
-            height: 300px;
-            bottom: -130px;
-            left: -110px;
-            background: rgba(249, 115, 22, 0.13);
-        }
+    .level {
+      display: inline-block;
+      margin-bottom: 13px;
+      padding: 7px 15px;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.14);
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      backdrop-filter: blur(10px);
+    }
 
-        .page {
-            width: min(1100px, 100%);
-            margin: 0 auto;
-        }
+    h1 {
+      margin: 0;
+      font-size: clamp(2.2rem, 5vw, 3.5rem);
+      line-height: 1.1;
+      letter-spacing: -0.045em;
+    }
 
-        .hero {
-            position: relative;
-            padding: 46px 38px;
-            overflow: hidden;
-            text-align: center;
-            border: 1px solid var(--card-border);
-            border-radius: 32px;
-            background: rgba(255, 255, 255, 0.73);
-            box-shadow: var(--shadow);
-            backdrop-filter: blur(18px);
-        }
+    .subtitle {
+      max-width: 670px;
+      margin: 15px auto 0;
+      color: rgba(255, 255, 255, 0.86);
+      font-size: 1rem;
+      line-height: 1.6;
+    }
 
-        .hero::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background:
-                linear-gradient(120deg, rgba(109, 92, 231, 0.09), transparent 44%),
-                linear-gradient(300deg, rgba(245, 158, 11, 0.08), transparent 46%);
-            pointer-events: none;
-        }
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 25px;
+      padding: 9px 15px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 999px;
+      color: white;
+      background: rgba(255, 255, 255, 0.12);
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition:
+        background 0.2s ease,
+        transform 0.2s ease;
+    }
 
-        .hero-content {
-            position: relative;
-            z-index: 1;
-        }
+    .back-link:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: translateX(-3px);
+    }
 
-        .eyebrow {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 18px;
-            padding: 8px 14px;
-            border: 1px solid rgba(109, 92, 231, 0.16);
-            border-radius: 999px;
-            color: var(--purple-dark);
-            background: rgba(109, 92, 231, 0.08);
-            font-size: 0.78rem;
-            font-weight: 700;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-        }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+      gap: 25px;
+    }
 
-        h1 {
-            max-width: 780px;
-            margin: 0 auto;
-            font-size: clamp(2.1rem, 5vw, 4rem);
-            line-height: 1.08;
-            letter-spacing: -0.045em;
-        }
+    .card {
+      position: relative;
+      display: flex;
+      min-height: 310px;
+      overflow: hidden;
+      flex-direction: column;
+      padding: 29px;
+      border: 1px solid rgba(255, 255, 255, 0.86);
+      border-radius: 25px;
+      color: var(--text-dark);
+      background: var(--card-background);
+      box-shadow: var(--shadow);
+      transition:
+        transform 0.25s ease,
+        box-shadow 0.25s ease;
+    }
 
-        .gradient-text {
-            color: transparent;
-            background: linear-gradient(90deg, var(--purple), var(--blue), var(--orange-dark));
-            -webkit-background-clip: text;
-            background-clip: text;
-        }
+    .card::before {
+      position: absolute;
+      top: 0;
+      right: 0;
+      left: 0;
+      height: 7px;
+      content: "";
+      background: var(--primary);
+    }
 
-        .subtitle {
-            max-width: 720px;
-            margin: 20px auto 0;
-            color: var(--muted);
-            font-size: clamp(1rem, 2vw, 1.13rem);
-            line-height: 1.75;
-        }
+    .card.future::before {
+      background: linear-gradient(90deg, var(--future), #72b8ee);
+    }
 
-        .stats {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 10px;
-            margin-top: 26px;
-        }
+    .card.past::before {
+      background: linear-gradient(90deg, var(--past), #eba27b);
+    }
 
-        .stat {
-            padding: 9px 14px;
-            border-radius: 999px;
-            background: rgba(255, 255, 255, 0.84);
-            border: 1px solid rgba(17, 24, 39, 0.08);
-            color: #475467;
-            font-size: 0.88rem;
-            font-weight: 600;
-        }
+    .card.subjunctive::before {
+      background: linear-gradient(90deg, var(--subjunctive), #6bc6a6);
+    }
 
-        .section-heading {
-            display: flex;
-            align-items: end;
-            justify-content: space-between;
-            gap: 20px;
-            margin: 42px 4px 18px;
-        }
+    .card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 28px 60px rgba(31, 26, 70, 0.31);
+    }
 
-        .section-heading h2 {
-            margin: 0;
-            font-size: clamp(1.5rem, 3vw, 2rem);
-            letter-spacing: -0.03em;
-        }
+    .icon {
+      display: grid;
+      width: 61px;
+      height: 61px;
+      margin-bottom: 19px;
+      place-items: center;
+      border-radius: 19px;
+      font-size: 1.85rem;
+    }
 
-        .section-heading p {
-            margin: 0;
-            color: var(--muted);
-            font-size: 0.94rem;
-        }
+    .future .icon {
+      background: #e7f2fd;
+    }
 
-        .games-grid {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 22px;
-        }
+    .past .icon {
+      background: #fff0e9;
+    }
 
-        .game-card {
-            position: relative;
-            display: flex;
-            min-height: 400px;
-            flex-direction: column;
-            overflow: hidden;
-            padding: 28px;
-            border: 1px solid rgba(255, 255, 255, 0.82);
-            border-radius: 28px;
-            color: inherit;
-            text-decoration: none;
-            background: var(--card);
-            box-shadow: 0 18px 42px rgba(31, 41, 55, 0.10);
-            backdrop-filter: blur(14px);
-            transition:
-                transform 220ms ease,
-                box-shadow 220ms ease,
-                border-color 220ms ease;
-        }
+    .subjunctive .icon {
+      background: #e4f6ef;
+    }
 
-        .game-card:hover {
-            transform: translateY(-7px);
-            box-shadow: 0 28px 58px rgba(31, 41, 55, 0.16);
-        }
+    .tag {
+      align-self: flex-start;
+      margin-bottom: 14px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
 
-        .game-card:focus-visible {
-            outline: 4px solid rgba(59, 130, 246, 0.28);
-            outline-offset: 4px;
-        }
+    .future .tag {
+      color: #3675b9;
+      background: #e7f2fd;
+    }
 
-        .game-card::after {
-            content: "";
-            position: absolute;
-            width: 210px;
-            height: 210px;
-            right: -70px;
-            bottom: -82px;
-            border-radius: 50%;
-            opacity: 0.17;
-            transition: transform 280ms ease;
-        }
+    .past .tag {
+      color: #b3573c;
+      background: #fff0e9;
+    }
 
-        .game-card:hover::after {
-            transform: scale(1.14);
-        }
+    .subjunctive .tag {
+      color: #28785f;
+      background: #e4f6ef;
+    }
 
-        .past-card {
-            border-color: rgba(109, 92, 231, 0.15);
-        }
+    .card h2 {
+      margin: 0 0 11px;
+      font-size: 1.32rem;
+      line-height: 1.32;
+    }
 
-        .past-card::after {
-            background: var(--purple);
-        }
+    .card p {
+      margin: 0 0 22px;
+      color: var(--text-muted);
+      font-size: 0.92rem;
+      line-height: 1.62;
+    }
 
-        .future-card {
-            border-color: rgba(245, 158, 11, 0.18);
-        }
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: auto;
+      padding: 12px 20px;
+      border-radius: 999px;
+      color: white;
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 700;
+      transition:
+        transform 0.2s ease,
+        filter 0.2s ease;
+    }
 
-        .future-card::after {
-            background: var(--orange);
-        }
+    .button:hover {
+      filter: brightness(0.92);
+      transform: translateX(3px);
+    }
 
-        .card-top {
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            gap: 18px;
-        }
+    .future .button {
+      background: var(--future);
+    }
 
-        .icon {
-            display: grid;
-            width: 72px;
-            height: 72px;
-            flex: 0 0 auto;
-            place-items: center;
-            border-radius: 22px;
-            font-size: 2rem;
-        }
+    .past .button {
+      background: var(--past);
+    }
 
-        .past-card .icon {
-            color: var(--purple-dark);
-            background: rgba(109, 92, 231, 0.12);
-        }
+    .subjunctive .button {
+      background: var(--subjunctive);
+    }
 
-        .future-card .icon {
-            color: var(--orange-dark);
-            background: rgba(245, 158, 11, 0.14);
-        }
+    footer {
+      margin-top: 50px;
+      color: rgba(255, 255, 255, 0.8);
+      text-align: center;
+      font-size: 0.86rem;
+    }
 
-        .level-badge {
-            display: inline-flex;
-            align-items: center;
-            padding: 7px 11px;
-            border-radius: 999px;
-            color: #475467;
-            background: #f2f4f7;
-            font-size: 0.78rem;
-            font-weight: 700;
-            letter-spacing: 0.04em;
-        }
+    @media (max-width: 680px) {
+      body {
+        padding: 25px 16px;
+      }
 
-        .game-card h3 {
-            margin: 26px 0 10px;
-            font-size: clamp(1.45rem, 3vw, 2rem);
-            line-height: 1.2;
-            letter-spacing: -0.035em;
-        }
+      .header {
+        margin-bottom: 30px;
+      }
 
-        .description {
-            margin: 0;
-            color: var(--muted);
-            line-height: 1.7;
-        }
+      .grid {
+        grid-template-columns: 1fr;
+      }
 
-        .features {
-            display: grid;
-            gap: 10px;
-            margin: 24px 0 28px;
-            padding: 0;
-            list-style: none;
-        }
-
-        .features li {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: #475467;
-            font-size: 0.92rem;
-        }
-
-        .check {
-            display: grid;
-            width: 23px;
-            height: 23px;
-            flex: 0 0 auto;
-            place-items: center;
-            border-radius: 50%;
-            font-size: 0.72rem;
-            font-weight: 800;
-        }
-
-        .past-card .check {
-            color: var(--purple-dark);
-            background: rgba(109, 92, 231, 0.11);
-        }
-
-        .future-card .check {
-            color: var(--orange-dark);
-            background: rgba(245, 158, 11, 0.13);
-        }
-
-        .open-button {
-            position: relative;
-            z-index: 1;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 16px;
-            margin-top: auto;
-            padding: 14px 17px;
-            border-radius: 17px;
-            color: white;
-            font-weight: 700;
-            transition: transform 180ms ease;
-        }
-
-        .past-card .open-button {
-            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
-        }
-
-        .future-card .open-button {
-            background: linear-gradient(135deg, var(--orange), var(--orange-dark));
-        }
-
-        .game-card:hover .open-button {
-            transform: translateX(2px);
-        }
-
-        .arrow {
-            font-size: 1.18rem;
-            transition: transform 180ms ease;
-        }
-
-        .game-card:hover .arrow {
-            transform: translateX(5px);
-        }
-
-        footer {
-            padding: 28px 8px 8px;
-            text-align: center;
-            color: var(--muted);
-            font-size: 0.83rem;
-        }
-
-        @media (max-width: 760px) {
-            body {
-                padding: 16px;
-            }
-
-            .hero {
-                padding: 36px 22px;
-                border-radius: 24px;
-            }
-
-            .games-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .section-heading {
-                align-items: flex-start;
-                flex-direction: column;
-                margin-top: 32px;
-            }
-
-            .game-card {
-                min-height: 370px;
-                padding: 24px;
-                border-radius: 24px;
-            }
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-            *,
-            *::before,
-            *::after {
-                scroll-behavior: auto !important;
-                transition-duration: 0.01ms !important;
-                animation-duration: 0.01ms !important;
-                animation-iteration-count: 1 !important;
-            }
-        }
-    </style>
+      .card {
+        min-height: 285px;
+        padding: 25px;
+      }
+    }
+  </style>
 </head>
 
 <body>
-    <main class="page">
-        <section class="hero">
-            <div class="hero-content">
-                <div class="eyebrow">🎯 Práctica interactiva · Nivel B1</div>
 
-                <h1>
-                    Preguntas y
-                    <span class="gradient-text">tiempos verbales</span>
-                </h1>
+  <main class="container">
 
-                <p class="subtitle">
-                    Elige un desafío, formula preguntas completas y comprueba
-                    si has utilizado correctamente el tiempo verbal exigido por el contexto.
-                </p>
+    <a class="back-link" href="../index.html">
+      ← Volver a Juegos B1
+    </a>
 
-                <div class="stats" aria-label="Características de los juegos">
-                    <span class="stat">⏱️ 5 minutos por ronda</span>
-                    <span class="stat">✍️ Producción escrita</span>
-                    <span class="stat">🧠 Análisis gramatical</span>
-                    <span class="stat">💬 Temas de conversación B1</span>
-                </div>
-            </div>
-        </section>
+    <header class="header">
+      <span class="level">Español · Nivel B1</span>
 
-        <div class="section-heading">
-            <div>
-                <h2>Elige tu desafío</h2>
-                <p>Dos juegos, dos perspectivas temporales.</p>
-            </div>
-        </div>
+      <h1>⏳ Tiempos verbales</h1>
 
-        <section class="games-grid" aria-label="Juegos disponibles">
-            <a
-                class="game-card past-card"
-                href="indefinido_imperfecto_perfecto/indef_imperf_perf_preguntas.html"
-            >
-                <div class="card-top">
-                    <div class="icon" aria-hidden="true">⏳</div>
-                    <span class="level-badge">B1 · PASADO</span>
-                </div>
+      <p class="subtitle">
+        Juegos interactivos para practicar el futuro,
+        los tiempos del pasado, el subjuntivo y el imperativo.
+      </p>
+    </header>
 
-                <h3>El reto del pasado</h3>
+    <section class="grid">
 
-                <p class="description">
-                    Distingue entre pretérito perfecto, indefinido e imperfecto
-                    y selecciona el tiempo adecuado para cada situación.
-                </p>
+      <article class="card future">
+        <div class="icon">🔮</div>
 
-                <ul class="features">
-                    <li>
-                        <span class="check">✓</span>
-                        Tres tiempos del pasado
-                    </li>
-                    <li>
-                        <span class="check">✓</span>
-                        Contextos y marcadores temporales
-                    </li>
-                    <li>
-                        <span class="check">✓</span>
-                        Análisis de vocabulario y por/para
-                    </li>
-                </ul>
+        <span class="tag">Futuro simple</span>
 
-                <div class="open-button">
-                    <span>Empezar el reto</span>
-                    <span class="arrow" aria-hidden="true">→</span>
-                </div>
-            </a>
+        <h2>Preguntas sobre el futuro</h2>
 
-            <a
-                class="game-card future-card"
-                href="futuro/preguntas_futuro.html"
-            >
-                <div class="card-top">
-                    <div class="icon" aria-hidden="true">🚀</div>
-                    <span class="level-badge">B1 · FUTURO</span>
-                </div>
+        <p>
+          Actividad oral para formular predicciones,
+          hablar de planes y practicar las formas del futuro simple.
+        </p>
 
-                <h3>El desafío del futuro</h3>
+        <a
+          class="button"
+          href="futuro/preguntas_futuro.html"
+        >
+          Empezar
+          <span aria-hidden="true">→</span>
+        </a>
+      </article>
 
-                <p class="description">
-                    Formula predicciones, planes y preguntas usando el futuro simple.
-                    También puedes añadir tus propios temas.
-                </p>
+      <article class="card past">
+        <div class="icon">🕰️</div>
 
-                <ul class="features">
-                    <li>
-                        <span class="check">✓</span>
-                        Futuro simple regular e irregular
-                    </li>
-                    <li>
-                        <span class="check">✓</span>
-                        Temas preparados y personalizados
-                    </li>
-                    <li>
-                        <span class="check">✓</span>
-                        Corrección animada y pistas
-                    </li>
-                </ul>
+        <span class="tag">Tiempos del pasado</span>
 
-                <div class="open-button">
-                    <span>Viajar al futuro</span>
-                    <span class="arrow" aria-hidden="true">→</span>
-                </div>
-            </a>
-        </section>
+        <h2>Indefinido, imperfecto y perfecto</h2>
 
-        <footer>
-            Juegos interactivos de español · Preguntas y tiempos verbales
-        </footer>
-    </main>
+        <p>
+          Preguntas para comparar el pretérito perfecto,
+          el indefinido y el imperfecto en diferentes contextos.
+        </p>
+
+        <a
+          class="button"
+          href="indefinido_imperfecto_perfecto/indef_imperf_perf_preguntas.html"
+        >
+          Practicar
+          <span aria-hidden="true">→</span>
+        </a>
+      </article>
+
+      <article class="card subjunctive">
+        <div class="icon">🩺</div>
+
+        <span class="tag">Subjuntivo e imperativo</span>
+
+        <h2>Memory médico</h2>
+
+        <p>
+          Relaciona los problemas de los pacientes con los consejos
+          adecuados usando el imperativo y el presente de subjuntivo.
+        </p>
+
+        <a
+          class="button"
+          href="subjuntivo/flipcard_med_subj_imp.html"
+        >
+          Jugar
+          <span aria-hidden="true">→</span>
+        </a>
+      </article>
+
+    </section>
+
+    <footer>
+      🇪🇸 Biblioteca de recursos ELE · Tiempos verbales B1
+    </footer>
+
+  </main>
+
 </body>
-</html>
 
+</html>
