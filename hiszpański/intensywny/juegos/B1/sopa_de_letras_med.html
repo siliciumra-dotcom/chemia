@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Sopa de letras interactiva para practicar síntomas y enfermedades en español, nivel B1.">
+  <title>Sopa de letras · Síntomas B1</title>
+
+  <style>
+    :root {
+      --bg-start: #eef6ff;
+      --bg-end: #f8f1ff;
+      --card: rgba(255, 255, 255, 0.96);
+      --text: #233044;
+      --muted: #6d7888;
+      --primary: #5267d9;
+      --primary-dark: #3f50b6;
+      --primary-soft: #e7ebff;
+      --success: #21875b;
+      --success-soft: #dff5ea;
+      --danger: #c95050;
+      --danger-soft: #ffe4e4;
+      --border: #dce3ee;
+      --shadow: 0 22px 60px rgba(46, 58, 89, 0.14);
+      --cell-size: clamp(23px, 2.2vw, 38px);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      min-height: 100%;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 28px;
+      color: var(--text);
+      font-family: Inter, "Segoe UI", Arial, sans-serif;
+      background:
+        radial-gradient(circle at 10% 10%, rgba(82, 103, 217, 0.14), transparent 32%),
+        radial-gradient(circle at 90% 80%, rgba(155, 96, 210, 0.13), transparent 34%),
+        linear-gradient(135deg, var(--bg-start), var(--bg-end));
+    }
+
+    button {
+      font: inherit;
+    }
+
+    .page {
+      width: min(1500px, 100%);
+      margin: 0 auto;
+    }
+
+    .hero {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 22px;
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--primary);
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2rem, 4vw, 3.5rem);
+      line-height: 1;
+      letter-spacing: -0.045em;
+    }
+
+    .subtitle {
+      max-width: 780px;
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1.55;
+    }
+
+    .progress-card {
+      min-width: 190px;
+      padding: 14px 16px;
+      border: 1px solid rgba(255,255,255,0.85);
+      border-radius: 18px;
+      background: rgba(255,255,255,0.72);
+      box-shadow: 0 12px 30px rgba(46,58,89,0.08);
+      backdrop-filter: blur(14px);
+    }
+
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 9px;
+      color: var(--muted);
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+
+    .progress-track {
+      height: 9px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: #e5e9f1;
+    }
+
+    .progress-bar {
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--primary), #9b60d2);
+      transition: width 280ms ease;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(320px, 390px);
+      gap: 22px;
+      align-items: start;
+    }
+
+    .card {
+      border: 1px solid rgba(255,255,255,0.9);
+      border-radius: 26px;
+      background: var(--card);
+      box-shadow: var(--shadow);
+    }
+
+    .game-card {
+      padding: clamp(16px, 2.4vw, 30px);
+      overflow: auto;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .instruction {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.93rem;
+      line-height: 1.45;
+    }
+
+    .instruction strong {
+      color: var(--text);
+    }
+
+    .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+    }
+
+    .btn {
+      border: 0;
+      border-radius: 12px;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-weight: 800;
+      transition: transform 150ms ease, box-shadow 150ms ease, background 150ms ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      color: #fff;
+      background: var(--primary);
+      box-shadow: 0 8px 18px rgba(82,103,217,0.25);
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+    }
+
+    .btn-light {
+      color: var(--text);
+      border: 1px solid var(--border);
+      background: #fff;
+    }
+
+    .grid-wrap {
+      width: fit-content;
+      max-width: 100%;
+      margin: 0 auto;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      background: #f7f9fc;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.9);
+      touch-action: none;
+      user-select: none;
+    }
+
+    .letter-grid {
+      display: grid;
+      grid-template-columns: repeat(23, var(--cell-size));
+      grid-template-rows: repeat(23, var(--cell-size));
+      gap: 3px;
+      width: fit-content;
+    }
+
+    .cell {
+      display: grid;
+      place-items: center;
+      width: var(--cell-size);
+      height: var(--cell-size);
+      border: 1px solid transparent;
+      border-radius: 8px;
+      cursor: pointer;
+      color: #2a3548;
+      background: #fff;
+      font-size: clamp(0.68rem, 1.25vw, 1rem);
+      font-weight: 800;
+      line-height: 1;
+      transition:
+        background 120ms ease,
+        color 120ms ease,
+        transform 120ms ease,
+        border-color 120ms ease;
+    }
+
+    .cell:hover {
+      border-color: #bdc7dc;
+      transform: scale(1.04);
+    }
+
+    .cell.anchor {
+      color: #fff;
+      border-color: var(--primary);
+      background: var(--primary);
+      transform: scale(1.06);
+    }
+
+    .cell.preview {
+      color: var(--primary-dark);
+      border-color: #b8c2ff;
+      background: var(--primary-soft);
+    }
+
+    .cell.found {
+      color: #176743;
+      border-color: #a9ddc5;
+      background: var(--success-soft);
+    }
+
+    .cell.wrong {
+      color: #a73e3e;
+      border-color: #efb9b9;
+      background: var(--danger-soft);
+      animation: shake 230ms ease-in-out;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      30% { transform: translateX(-3px); }
+      70% { transform: translateX(3px); }
+    }
+
+    .side-card {
+      position: sticky;
+      top: 20px;
+      padding: 24px;
+    }
+
+    .side-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 6px;
+    }
+
+    .side-title h2 {
+      margin: 0;
+      font-size: 1.25rem;
+    }
+
+    .counter {
+      flex: 0 0 auto;
+      padding: 6px 10px;
+      border-radius: 999px;
+      color: var(--primary-dark);
+      background: var(--primary-soft);
+      font-size: 0.8rem;
+      font-weight: 900;
+    }
+
+    .side-note {
+      margin: 0 0 16px;
+      color: var(--muted);
+      font-size: 0.87rem;
+      line-height: 1.4;
+    }
+
+    .word-list {
+      display: grid;
+      gap: 8px;
+      max-height: calc(100vh - 190px);
+      padding-right: 4px;
+      overflow-y: auto;
+    }
+
+    .word-item {
+      display: grid;
+      grid-template-columns: 27px minmax(0, 1fr);
+      gap: 9px;
+      align-items: start;
+      padding: 10px 11px;
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      background: #fff;
+      transition: border-color 180ms ease, background 180ms ease, transform 180ms ease;
+    }
+
+    .word-number {
+      display: grid;
+      place-items: center;
+      width: 27px;
+      height: 27px;
+      border-radius: 9px;
+      color: var(--muted);
+      background: #f0f3f8;
+      font-size: 0.75rem;
+      font-weight: 900;
+    }
+
+    .word-es {
+      display: block;
+      font-size: 0.94rem;
+      font-weight: 800;
+      line-height: 1.3;
+    }
+
+    .word-pl {
+      display: none;
+      margin-top: 3px;
+      color: var(--success);
+      font-size: 0.82rem;
+      font-weight: 750;
+      line-height: 1.3;
+    }
+
+    .word-item.solved {
+      border-color: #b6dfca;
+      background: #f3fbf7;
+      transform: translateX(2px);
+    }
+
+    .word-item.solved .word-number {
+      color: #fff;
+      background: var(--success);
+    }
+
+    .word-item.solved .word-es {
+      color: #7b8791;
+      text-decoration: line-through;
+      text-decoration-thickness: 2px;
+    }
+
+    .word-item.solved .word-pl {
+      display: block;
+    }
+
+    .status {
+      min-height: 24px;
+      margin: 14px 0 0;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.9rem;
+      font-weight: 750;
+    }
+
+    .status.success {
+      color: var(--success);
+    }
+
+    .status.error {
+      color: var(--danger);
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: none;
+      place-items: center;
+      padding: 24px;
+      background: rgba(31, 40, 60, 0.48);
+      backdrop-filter: blur(5px);
+    }
+
+    .modal.show {
+      display: grid;
+    }
+
+    .modal-box {
+      width: min(430px, 100%);
+      padding: 30px;
+      border-radius: 26px;
+      background: #fff;
+      box-shadow: 0 28px 80px rgba(25,33,52,0.28);
+      text-align: center;
+      animation: pop 220ms ease-out;
+    }
+
+    @keyframes pop {
+      from { opacity: 0; transform: translateY(10px) scale(0.96); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .modal-icon {
+      font-size: 3rem;
+    }
+
+    .modal-box h2 {
+      margin: 8px 0 8px;
+      font-size: 1.8rem;
+    }
+
+    .modal-box p {
+      margin: 0 0 20px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    @media (max-width: 1050px) {
+      body {
+        padding: 18px;
+      }
+
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .side-card {
+        position: static;
+      }
+
+      .word-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        max-height: none;
+      }
+    }
+
+    @media (max-width: 700px) {
+      :root {
+        --cell-size: 25px;
+      }
+
+      body {
+        padding: 12px;
+      }
+
+      .hero {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .progress-card {
+        min-width: 0;
+      }
+
+      .game-card,
+      .side-card {
+        border-radius: 20px;
+      }
+
+      .word-list {
+        grid-template-columns: 1fr;
+      }
+
+      .toolbar {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .buttons {
+        width: 100%;
+      }
+
+      .btn {
+        flex: 1;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="page">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">Español · Nivel B1</p>
+        <h1>Sopa de letras: síntomas</h1>
+        <p class="subtitle">
+          Encuentra los 20 síntomas. Puedes seleccionar las palabras en horizontal,
+          vertical y diagonal, en ambos sentidos.
+        </p>
+      </div>
+
+      <section class="progress-card" aria-label="Progreso">
+        <div class="progress-label">
+          <span>Progreso</span>
+          <span id="progressText">0 / 20</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-bar" id="progressBar"></div>
+        </div>
+      </section>
+    </header>
+
+    <div class="layout">
+      <section class="card game-card">
+        <div class="toolbar">
+          <p class="instruction">
+            <strong>Haz clic en la primera y la última letra</strong> o arrastra el cursor.
+            Las expresiones aparecen sin espacios ni tildes.
+          </p>
+
+          <div class="buttons">
+            <button class="btn btn-light" id="clearBtn" type="button">Borrar selección</button>
+            <button class="btn btn-primary" id="newBtn" type="button">Nueva sopa</button>
+          </div>
+        </div>
+
+        <div class="grid-wrap" id="gridWrap">
+          <div class="letter-grid" id="letterGrid" role="grid" aria-label="Sopa de letras"></div>
+        </div>
+
+        <p class="status" id="status" aria-live="polite">
+          Selecciona la primera letra de una palabra.
+        </p>
+      </section>
+
+      <aside class="card side-card">
+        <div class="side-title">
+          <h2>Palabras</h2>
+          <span class="counter" id="counter">20 por encontrar</span>
+        </div>
+        <p class="side-note">
+          Al encontrar una palabra, aparecerá su traducción al polaco.
+        </p>
+        <div class="word-list" id="wordList"></div>
+      </aside>
+    </div>
+  </main>
+
+  <div class="modal" id="winModal" role="dialog" aria-modal="true" aria-labelledby="winTitle">
+    <div class="modal-box">
+      <div class="modal-icon">🎉</div>
+      <h2 id="winTitle">¡Excelente!</h2>
+      <p>Has encontrado los 20 síntomas y has completado la sopa de letras.</p>
+      <button class="btn btn-primary" id="playAgainBtn" type="button">Jugar otra vez</button>
+    </div>
+  </div>
+
+  <script>
+    "use strict";
+
+    const SIZE = 23;
+    const LETTERS = "ABCDEFGHIJKLMNÑOPQRSTUVWXYZ";
+
+    const WORDS = [
+      { es: "dolor de cabeza", pl: "ból głowy" },
+      { es: "dolor de garganta", pl: "ból gardła" },
+      { es: "fiebre", pl: "gorączka" },
+      { es: "tos", pl: "kaszel" },
+      { es: "náuseas", pl: "nudności" },
+      { es: "mareo", pl: "zawroty głowy" },
+      { es: "cansancio", pl: "zmęczenie" },
+      { es: "escalofríos", pl: "dreszcze" },
+      { es: "congestión nasal", pl: "zatkany nos" },
+      { es: "dolor de estómago", pl: "ból brzucha / żołądka" },
+      { es: "diarrea", pl: "biegunka" },
+      { es: "vómitos", pl: "wymioty" },
+      { es: "picor", pl: "swędzenie" },
+      { es: "hinchazón", pl: "obrzęk / opuchlizna" },
+      { es: "dificultad para respirar", pl: "trudności z oddychaniem" },
+      { es: "dolor muscular", pl: "ból mięśni" },
+      { es: "pérdida de apetito", pl: "utrata apetytu" },
+      { es: "insomnio", pl: "bezsenność" },
+      { es: "debilidad", pl: "osłabienie" },
+      { es: "estornudos", pl: "kichanie" }
+    ].map((word, index) => ({
+      ...word,
+      id: index,
+      key: normalize(word.es)
+    }));
+
+    const DIRECTIONS = [
+      { dr: 0, dc: 1 },
+      { dr: 0, dc: -1 },
+      { dr: 1, dc: 0 },
+      { dr: -1, dc: 0 },
+      { dr: 1, dc: 1 },
+      { dr: 1, dc: -1 },
+      { dr: -1, dc: 1 },
+      { dr: -1, dc: -1 }
+    ];
+
+    const gridElement = document.getElementById("letterGrid");
+    const wordListElement = document.getElementById("wordList");
+    const statusElement = document.getElementById("status");
+    const progressText = document.getElementById("progressText");
+    const progressBar = document.getElementById("progressBar");
+    const counter = document.getElementById("counter");
+    const clearBtn = document.getElementById("clearBtn");
+    const newBtn = document.getElementById("newBtn");
+    const winModal = document.getElementById("winModal");
+    const playAgainBtn = document.getElementById("playAgainBtn");
+
+    let board = [];
+    let placements = [];
+    let cells = [];
+    let solved = new Set();
+    let anchor = null;
+    let previewCells = [];
+    let pointerIsDown = false;
+    let pointerMoved = false;
+    let dragOrigin = null;
+    let lastPointerCell = null;
+
+    function normalize(text) {
+      return text
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^A-Za-zÑñ]/g, "")
+        .toUpperCase();
+    }
+
+    function shuffle(array) {
+      const copy = [...array];
+      for (let i = copy.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function emptyBoard() {
+      return Array.from({ length: SIZE }, () => Array(SIZE).fill(""));
+    }
+
+    function canPlace(grid, word, row, col, direction) {
+      const endRow = row + direction.dr * (word.length - 1);
+      const endCol = col + direction.dc * (word.length - 1);
+
+      if (
+        endRow < 0 || endRow >= SIZE ||
+        endCol < 0 || endCol >= SIZE
+      ) {
+        return false;
+      }
+
+      for (let i = 0; i < word.length; i += 1) {
+        const r = row + direction.dr * i;
+        const c = col + direction.dc * i;
+        const current = grid[r][c];
+
+        if (current && current !== word[i]) {
+          return false;
+        }
+      }
+
+      return true;
+    }
+
+    function putWord(grid, wordObject, row, col, direction) {
+      const coordinates = [];
+
+      for (let i = 0; i < wordObject.key.length; i += 1) {
+        const r = row + direction.dr * i;
+        const c = col + direction.dc * i;
+        grid[r][c] = wordObject.key[i];
+        coordinates.push({ row: r, col: c });
+      }
+
+      return {
+        id: wordObject.id,
+        coordinates
+      };
+    }
+
+    function generateBoard() {
+      const orderedWords = [...WORDS].sort((a, b) => b.key.length - a.key.length);
+
+      for (let boardAttempt = 0; boardAttempt < 120; boardAttempt += 1) {
+        const candidate = emptyBoard();
+        const candidatePlacements = [];
+        let success = true;
+
+        for (const word of orderedWords) {
+          let placed = false;
+          const directions = shuffle(DIRECTIONS);
+
+          for (let attempt = 0; attempt < 1600; attempt += 1) {
+            const direction = directions[attempt % directions.length];
+            const row = Math.floor(Math.random() * SIZE);
+            const col = Math.floor(Math.random() * SIZE);
+
+            if (canPlace(candidate, word.key, row, col, direction)) {
+              candidatePlacements.push(
+                putWord(candidate, word, row, col, direction)
+              );
+              placed = true;
+              break;
+            }
+          }
+
+          if (!placed) {
+            success = false;
+            break;
+          }
+        }
+
+        if (success) {
+          for (let row = 0; row < SIZE; row += 1) {
+            for (let col = 0; col < SIZE; col += 1) {
+              if (!candidate[row][col]) {
+                candidate[row][col] =
+                  LETTERS[Math.floor(Math.random() * LETTERS.length)];
+              }
+            }
+          }
+
+          board = candidate;
+          placements = candidatePlacements;
+          return;
+        }
+      }
+
+      throw new Error("No se ha podido generar la sopa de letras.");
+    }
+
+    function renderBoard() {
+      gridElement.innerHTML = "";
+      cells = Array.from({ length: SIZE }, () => Array(SIZE));
+
+      for (let row = 0; row < SIZE; row += 1) {
+        for (let col = 0; col < SIZE; col += 1) {
+          const cell = document.createElement("button");
+          cell.type = "button";
+          cell.className = "cell";
+          cell.textContent = board[row][col];
+          cell.dataset.row = String(row);
+          cell.dataset.col = String(col);
+          cell.setAttribute("role", "gridcell");
+          cell.setAttribute("aria-label", `Fila ${row + 1}, columna ${col + 1}: ${board[row][col]}`);
+
+          cell.addEventListener("pointerdown", handlePointerDown);
+          cell.addEventListener("pointerenter", handlePointerEnter);
+          cell.addEventListener("pointerup", handlePointerUp);
+
+          gridElement.appendChild(cell);
+          cells[row][col] = cell;
+        }
+      }
+    }
+
+    function renderWordList() {
+      wordListElement.innerHTML = "";
+
+      WORDS.forEach((word, index) => {
+        const item = document.createElement("div");
+        item.className = "word-item";
+        item.id = `word-${word.id}`;
+        item.innerHTML = `
+          <span class="word-number">${index + 1}</span>
+          <span>
+            <span class="word-es">${word.es}</span>
+            <span class="word-pl">🇵🇱 ${word.pl}</span>
+          </span>
+        `;
+        wordListElement.appendChild(item);
+      });
+    }
+
+    function getCellPosition(cell) {
+      return {
+        row: Number(cell.dataset.row),
+        col: Number(cell.dataset.col)
+      };
+    }
+
+    function getPath(startCell, endCell) {
+      const start = getCellPosition(startCell);
+      const end = getCellPosition(endCell);
+      const rowDiff = end.row - start.row;
+      const colDiff = end.col - start.col;
+
+      const isHorizontal = rowDiff === 0;
+      const isVertical = colDiff === 0;
+      const isDiagonal = Math.abs(rowDiff) === Math.abs(colDiff);
+
+      if (!isHorizontal && !isVertical && !isDiagonal) {
+        return [];
+      }
+
+      const length = Math.max(Math.abs(rowDiff), Math.abs(colDiff)) + 1;
+      const stepRow = Math.sign(rowDiff);
+      const stepCol = Math.sign(colDiff);
+      const path = [];
+
+      for (let i = 0; i < length; i += 1) {
+        path.push(cells[start.row + stepRow * i][start.col + stepCol * i]);
+      }
+
+      return path;
+    }
+
+    function sameCoordinates(path, targetCoordinates) {
+      if (path.length !== targetCoordinates.length) {
+        return false;
+      }
+
+      return path.every((cell, index) => {
+        const position = getCellPosition(cell);
+        const target = targetCoordinates[index];
+        return position.row === target.row && position.col === target.col;
+      });
+    }
+
+    function clearPreview() {
+      previewCells.forEach(cell => cell.classList.remove("preview"));
+      previewCells = [];
+    }
+
+    function clearAnchor() {
+      if (anchor) {
+        anchor.classList.remove("anchor");
+      }
+      anchor = null;
+    }
+
+    function clearSelection() {
+      clearPreview();
+      clearAnchor();
+      pointerIsDown = false;
+      pointerMoved = false;
+      dragOrigin = null;
+      lastPointerCell = null;
+      setStatus("Selecciona la primera letra de una palabra.");
+    }
+
+    function showPreview(path) {
+      clearPreview();
+      previewCells = path;
+
+      path.forEach(cell => {
+        if (cell !== anchor) {
+          cell.classList.add("preview");
+        }
+      });
+    }
+
+    function handlePointerDown(event) {
+      event.preventDefault();
+      pointerIsDown = true;
+      pointerMoved = false;
+      lastPointerCell = event.currentTarget;
+      dragOrigin = anchor || event.currentTarget;
+
+      if (anchor && event.currentTarget !== anchor) {
+        const path = getPath(anchor, event.currentTarget);
+        showPreview(path);
+      }
+    }
+
+    function handlePointerEnter(event) {
+      if (!pointerIsDown || !dragOrigin) {
+        return;
+      }
+
+      if (event.currentTarget !== lastPointerCell) {
+        pointerMoved = true;
+        lastPointerCell = event.currentTarget;
+      }
+
+      const path = getPath(dragOrigin, event.currentTarget);
+      showPreview(path);
+    }
+
+    function handlePointerUp(event) {
+      event.preventDefault();
+      const endCell = event.currentTarget;
+
+      if (!pointerIsDown) {
+        return;
+      }
+
+      pointerIsDown = false;
+
+      if (pointerMoved && dragOrigin) {
+        const path = getPath(dragOrigin, endCell);
+        evaluatePath(path);
+        clearAnchor();
+      } else if (!anchor) {
+        anchor = endCell;
+        anchor.classList.add("anchor");
+        setStatus("Ahora selecciona la última letra.");
+      } else if (anchor === endCell) {
+        clearSelection();
+      } else {
+        const path = getPath(anchor, endCell);
+        evaluatePath(path);
+        clearAnchor();
+      }
+
+      dragOrigin = null;
+      pointerMoved = false;
+      lastPointerCell = null;
+    }
+
+    document.addEventListener("pointerup", event => {
+      if (
+        pointerIsDown &&
+        !event.target.classList.contains("cell")
+      ) {
+        pointerIsDown = false;
+        dragOrigin = null;
+        pointerMoved = false;
+        clearPreview();
+      }
+    });
+
+    function evaluatePath(path) {
+      clearPreview();
+
+      if (path.length < 2) {
+        setStatus("Selecciona una palabra completa.", "error");
+        return;
+      }
+
+      const placement = placements.find(item => {
+        if (solved.has(item.id)) {
+          return false;
+        }
+
+        return (
+          sameCoordinates(path, item.coordinates) ||
+          sameCoordinates(path, [...item.coordinates].reverse())
+        );
+      });
+
+      if (placement) {
+        solveWord(placement.id, path);
+      } else {
+        markWrong(path);
+        setStatus("Esta selección no corresponde a ninguna palabra.", "error");
+      }
+    }
+
+    function solveWord(wordId, path) {
+      solved.add(wordId);
+      path.forEach(cell => cell.classList.add("found"));
+
+      const item = document.getElementById(`word-${wordId}`);
+      item.classList.add("solved");
+
+      const word = WORDS.find(entry => entry.id === wordId);
+      setStatus(`¡Muy bien! Has encontrado: ${word.es}.`, "success");
+      updateProgress();
+
+      if (solved.size === WORDS.length) {
+        window.setTimeout(() => {
+          winModal.classList.add("show");
+        }, 450);
+      }
+    }
+
+    function markWrong(path) {
+      path.forEach(cell => cell.classList.add("wrong"));
+
+      window.setTimeout(() => {
+        path.forEach(cell => cell.classList.remove("wrong"));
+      }, 420);
+    }
+
+    function setStatus(message, type = "") {
+      statusElement.textContent = message;
+      statusElement.className = `status${type ? ` ${type}` : ""}`;
+    }
+
+    function updateProgress() {
+      const found = solved.size;
+      const remaining = WORDS.length - found;
+      progressText.textContent = `${found} / ${WORDS.length}`;
+      progressBar.style.width = `${(found / WORDS.length) * 100}%`;
+      counter.textContent = remaining === 1
+        ? "1 por encontrar"
+        : `${remaining} por encontrar`;
+    }
+
+    function startNewGame() {
+      solved = new Set();
+      clearSelection();
+      winModal.classList.remove("show");
+      generateBoard();
+      renderBoard();
+      renderWordList();
+      updateProgress();
+    }
+
+    clearBtn.addEventListener("click", clearSelection);
+    newBtn.addEventListener("click", startNewGame);
+    playAgainBtn.addEventListener("click", startNewGame);
+
+    winModal.addEventListener("click", event => {
+      if (event.target === winModal) {
+        winModal.classList.remove("show");
+      }
+    });
+
+    startNewGame();
+  </script>
+</body>
+</html>
