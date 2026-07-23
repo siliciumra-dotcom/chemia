@@ -2,323 +2,340 @@
 <html lang="es">
 
 <head>
-
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Juegos ELE B1</title>
-
-
-<style>
-
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
-
-
-*{
-box-sizing:border-box;
-font-family:'Poppins',sans-serif;
-}
-
-
-body{
-
-margin:0;
-
-min-height:100vh;
-
-background:
-linear-gradient(135deg,#667eea,#764ba2);
-
-padding:40px;
-
-color:white;
-
-}
-
-
-
-.container{
-
-max-width:1100px;
-
-margin:auto;
-
-}
-
-
-
-h1{
-
-text-align:center;
-
-font-size:42px;
-
-}
-
-
-
-.subtitle{
-
-text-align:center;
-
-margin-bottom:40px;
-
-}
-
-
-
-.grid{
-
-display:grid;
-
-grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
-
-gap:25px;
-
-}
-
-
-
-.card{
-
-background:white;
-
-color:#333;
-
-padding:25px;
-
-border-radius:22px;
-
-box-shadow:
-0 15px 35px rgba(0,0,0,.2);
-
-transition:.3s;
-
-}
-
-
-
-.card:hover{
-
-transform:translateY(-8px);
-
-}
-
-
-
-.card h2{
-
-margin-top:0;
-
-}
-
-
-
-.card p{
-
-color:#666;
-
-}
-
-
-
-a{
-
-display:inline-block;
-
-margin-top:15px;
-
-padding:12px 22px;
-
-background:#667eea;
-
-color:white;
-
-border-radius:30px;
-
-text-decoration:none;
-
-font-weight:bold;
-
-}
-
-
-
-footer{
-
-text-align:center;
-
-margin-top:50px;
-
-opacity:.8;
-
-}
-
-
-</style>
-
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta
+    name="description"
+    content="Juegos interactivos de español ELE para estudiantes de nivel B1."
+  >
+
+  <title>Juegos ELE B1</title>
+
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap");
+
+    :root {
+      --background-start: #667eea;
+      --background-end: #764ba2;
+      --card-background: rgba(255, 255, 255, 0.96);
+      --text-dark: #292936;
+      --text-muted: #696979;
+      --primary: #667eea;
+      --primary-dark: #5264d6;
+      --medical: #3a9d7d;
+      --medical-dark: #2f8067;
+      --shadow: 0 18px 45px rgba(32, 27, 70, 0.22);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      min-height: 100%;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 40px 24px;
+      color: white;
+      font-family: "Poppins", sans-serif;
+      background:
+        radial-gradient(
+          circle at top left,
+          rgba(255, 255, 255, 0.16),
+          transparent 32%
+        ),
+        radial-gradient(
+          circle at bottom right,
+          rgba(255, 255, 255, 0.12),
+          transparent 30%
+        ),
+        linear-gradient(
+          135deg,
+          var(--background-start),
+          var(--background-end)
+        );
+    }
+
+    .container {
+      width: min(1150px, 100%);
+      margin: 0 auto;
+    }
+
+    .header {
+      margin-bottom: 42px;
+      text-align: center;
+    }
+
+    .level {
+      display: inline-block;
+      margin-bottom: 12px;
+      padding: 7px 15px;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.14);
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      backdrop-filter: blur(10px);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2.2rem, 5vw, 3.4rem);
+      line-height: 1.15;
+      letter-spacing: -0.04em;
+    }
+
+    .subtitle {
+      max-width: 650px;
+      margin: 15px auto 0;
+      color: rgba(255, 255, 255, 0.86);
+      font-size: 1rem;
+      line-height: 1.6;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+      gap: 25px;
+    }
+
+    .card {
+      position: relative;
+      display: flex;
+      min-height: 285px;
+      overflow: hidden;
+      flex-direction: column;
+      padding: 28px;
+      border: 1px solid rgba(255, 255, 255, 0.85);
+      border-radius: 24px;
+      color: var(--text-dark);
+      background: var(--card-background);
+      box-shadow: var(--shadow);
+      transition:
+        transform 0.25s ease,
+        box-shadow 0.25s ease;
+    }
+
+    .card::before {
+      position: absolute;
+      top: 0;
+      right: 0;
+      left: 0;
+      height: 6px;
+      content: "";
+      background: linear-gradient(
+        90deg,
+        var(--primary),
+        var(--background-end)
+      );
+    }
+
+    .card.medical::before {
+      background: linear-gradient(
+        90deg,
+        var(--medical),
+        #68c5a7
+      );
+    }
+
+    .card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 25px 55px rgba(32, 27, 70, 0.3);
+    }
+
+    .icon {
+      display: grid;
+      width: 58px;
+      height: 58px;
+      margin-bottom: 20px;
+      place-items: center;
+      border-radius: 18px;
+      background: #edf0ff;
+      font-size: 1.8rem;
+    }
+
+    .medical .icon {
+      background: #e3f6ef;
+    }
+
+    .card h2 {
+      margin: 0 0 11px;
+      font-size: 1.35rem;
+      line-height: 1.3;
+    }
+
+    .card p {
+      margin: 0 0 22px;
+      color: var(--text-muted);
+      font-size: 0.94rem;
+      line-height: 1.6;
+    }
+
+    .tag {
+      align-self: flex-start;
+      margin-bottom: 20px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      color: var(--primary-dark);
+      background: #edf0ff;
+      font-size: 0.74rem;
+      font-weight: 700;
+    }
+
+    .medical .tag {
+      color: var(--medical-dark);
+      background: #e3f6ef;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: auto;
+      padding: 12px 21px;
+      border-radius: 999px;
+      color: white;
+      background: var(--primary);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 700;
+      transition:
+        background 0.2s ease,
+        transform 0.2s ease;
+    }
+
+    .button:hover {
+      background: var(--primary-dark);
+      transform: translateX(3px);
+    }
+
+    .medical .button {
+      background: var(--medical);
+    }
+
+    .medical .button:hover {
+      background: var(--medical-dark);
+    }
+
+    footer {
+      margin-top: 50px;
+      color: rgba(255, 255, 255, 0.8);
+      text-align: center;
+      font-size: 0.88rem;
+    }
+
+    @media (max-width: 680px) {
+      body {
+        padding: 26px 16px;
+      }
+
+      .header {
+        margin-bottom: 30px;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .card {
+        min-height: 260px;
+        padding: 24px;
+      }
+    }
+  </style>
 </head>
-
-
 
 <body>
 
+  <main class="container">
 
-<div class="container">
+    <header class="header">
+      <span class="level">Español · Nivel B1</span>
 
+      <h1>🎮 Juegos ELE</h1>
 
+      <p class="subtitle">
+        Actividades interactivas para practicar gramática,
+        vocabulario y comunicación en español.
+      </p>
+    </header>
 
-<h1>🎮 Juegos ELE - Nivel B1</h1>
+    <section class="grid">
 
+      <article class="card">
+        <div class="icon">⏳</div>
 
-<div class="subtitle">
+        <span class="tag">Gramática</span>
 
-Actividades interactivas para practicar español
+        <h2>Tiempos verbales</h2>
 
-</div>
+        <p>
+          Actividades para practicar el presente, los tiempos
+          del pasado, el futuro y el condicional.
+        </p>
 
+        <a class="button" href="tiempos/index.html">
+          Entrar
+          <span aria-hidden="true">→</span>
+        </a>
+      </article>
 
+      <article class="card medical">
+        <div class="icon">🩺</div>
 
+        <span class="tag">Vocabulario médico</span>
 
-<div class="grid">
+        <h2>Tarjetas de síntomas</h2>
 
+        <p>
+          Tarjetas interactivas para aprender síntomas,
+          enfermedades y expresiones útiles para hablar con el médico.
+        </p>
 
+        <a
+          class="button"
+          href="flip_card_medico/flip_cards.html"
+        >
+          Abrir las tarjetas
+          <span aria-hidden="true">→</span>
+        </a>
+      </article>
 
+      <article class="card medical">
+        <div class="icon">🔎</div>
 
+        <span class="tag">Vocabulario médico</span>
 
-<div class="card">
+        <h2>Sopa de letras: síntomas</h2>
 
-<h2>⏳ Tiempos verbales</h2>
+        <p>
+          Encuentra veinte síntomas en todas las direcciones
+          y descubre su traducción al polaco.
+        </p>
 
-<p>
+        <a
+          class="button"
+          href="sopa_letras/sopa_de_letras_med.html"
+        >
+          Jugar
+          <span aria-hidden="true">→</span>
+        </a>
+      </article>
 
-Presente, pasados, futuro y condicional.
+    </section>
 
-</p>
+    <footer>
+      🇪🇸 Biblioteca de recursos ELE · Nivel B1
+    </footer>
 
-
-<a href="tiempos/index.html">
-
-Entrar
-
-</a>
-
-</div>
-
-
-
-
-
-<div class="card">
-
-<h2>📚 Gramática</h2>
-
-<p>
-
-Ser y estar, por y para, pronombres, subjuntivo y más.
-
-</p>
-
-
-<a href="gramatica/">
-
-Ver juegos
-
-</a>
-
-
-</div>
-
-
-
-
-
-<div class="card">
-
-<h2>🗣️ Conversación</h2>
-
-<p>
-
-Preguntas, debates y actividades orales.
-
-</p>
-
-
-<a href="conversacion/">
-
-Ver juegos
-
-</a>
-
-
-</div>
-
-
-
-
-
-<div class="card">
-
-<h2>🧠 Vocabulario</h2>
-
-<p>
-
-Juegos de palabras, categorías y situaciones reales.
-
-</p>
-
-
-<a href="vocabulario/">
-
-Ver juegos
-
-</a>
-
-
-</div>
-
-
-
-
-
-<div class="card">
-
-<h2>🎲 Juegos generales</h2>
-
-<p>
-
-Ruletas, tarjetas, pasapalabra y dinámicas.
-
-</p>
-
-
-<a href="juegos_generales/">
-
-Ver juegos
-
-</a>
-
-
-</div>
-
-
-
-
-</div>
-
-
-
-<footer>
-
-🇪🇸 Biblioteca de recursos ELE · Nivel B1
-
-</footer>
-
-
-
-</div>
-
+  </main>
 
 </body>
 
