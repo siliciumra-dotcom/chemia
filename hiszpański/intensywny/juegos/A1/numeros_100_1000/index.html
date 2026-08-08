@@ -75,6 +75,8 @@ button{font:inherit}
 
 .game{
   position:relative;
+  touch-action:none;
+  overscroll-behavior:none;
   height:min(78vh,790px);
   min-height:620px;
   overflow:hidden;
@@ -327,10 +329,18 @@ button{font:inherit}
 /* vehicle */
 .vehicle{
   position:absolute;left:50%;bottom:76px;width:124px;height:136px;transform:translateX(-50%);
-  z-index:26;transition:filter .14s ease,width .5s ease,height .5s ease;will-change:left,transform;
-  filter:drop-shadow(0 17px 13px rgba(15,44,70,.28))
+  z-index:26;transition:filter .14s ease,width .5s ease,height .5s ease;will-change:left,bottom,transform;
+  filter:drop-shadow(0 17px 13px rgba(15,44,70,.28));
+  touch-action:none;
+  user-select:none;
+  -webkit-user-select:none;
+  cursor:grab;
 }
-.vehicle svg{display:block;width:100%;height:100%;overflow:visible}
+.vehicle.dragging{
+  cursor:grabbing;
+  transition:filter .14s ease,width .5s ease,height .5s ease;
+}
+.vehicle svg{display:block;width:100%;height:100%;overflow:visible;pointer-events:none}
 .vehicle.good{filter:drop-shadow(0 0 13px rgba(46,170,120,.95)) drop-shadow(0 17px 13px rgba(15,44,70,.24))}
 .vehicle.bad{filter:drop-shadow(0 0 13px rgba(228,95,104,.95)) drop-shadow(0 17px 13px rgba(15,44,70,.24))}
 .game.stage-3 .vehicle{width:132px;height:142px}
@@ -345,12 +355,44 @@ button{font:inherit}
 .feedback.good{background:var(--good)}
 .feedback.bad{background:var(--bad)}
 
-.mobile-controls{
-  display:none;position:absolute;bottom:18px;left:50%;transform:translateX(-50%);z-index:44;gap:18px
+
+.touch-hint{
+  display:none;
+  position:absolute;
+  left:50%;
+  bottom:18px;
+  transform:translateX(-50%);
+  z-index:42;
+  padding:6px 10px;
+  border-radius:999px;
+  background:rgba(11,35,57,.66);
+  color:#fff;
+  font-size:11px;
+  font-weight:800;
+  backdrop-filter:blur(5px);
+  pointer-events:none;
+  transition:opacity .25s ease;
+  white-space:nowrap;
 }
-.move-btn{
-  width:66px;height:54px;border:none;border-radius:18px;background:rgba(255,255,255,.9);color:var(--ink);
-  font-size:27px;font-weight:950;box-shadow:0 8px 20px rgba(23,50,77,.2);touch-action:none
+.touch-hint.hidden{opacity:0}
+
+
+.vehicle::after{
+  content:"";
+  position:absolute;
+  left:-26px;
+  right:-26px;
+  top:-26px;
+  bottom:-26px;
+  background:transparent;
+}
+@media(max-width:700px){
+  .vehicle::after{
+    left:-42px;
+    right:-42px;
+    top:-42px;
+    bottom:-42px;
+  }
 }
 
 /* overlay */
@@ -407,26 +449,166 @@ button{font:inherit}
   body{padding:0}
   .app{width:100%;gap:0}
   .game-card{border-radius:0}
-  .game{height:74vh;min-height:590px}
-  .hud{padding:10px 12px;align-items:flex-start;flex-direction:column}
-  .hud-stats{justify-content:flex-start}
-  .level-ribbon{left:9px;top:10px}
-  .cycle-ribbon{right:9px;top:10px}
-  .target{top:65px}
-  .gate.two .answer-zone{width:44%;min-width:145px}
+
+  .game{
+    height:calc(100svh - 58px);
+    min-height:570px;
+  }
+
+  .hud{
+    min-height:58px;
+    padding:6px 8px;
+    flex-direction:row;
+    align-items:center;
+    gap:6px;
+  }
+
+  .title{
+    font-size:14px;
+    line-height:1.05;
+  }
+
+  .subtitle{display:none}
+
+  .hud-stats{
+    margin-left:auto;
+    justify-content:flex-end;
+    flex-wrap:nowrap;
+    gap:4px;
+  }
+
+  .stat{
+    padding:4px 6px;
+    font-size:9px;
+  }
+
+  .score-stat{
+    min-width:0;
+    padding:4px 6px;
+    box-shadow:none;
+  }
+
+  .score-label{
+    font-size:0;
+  }
+
+  .score-label::after{
+    content:"⭐";
+    font-size:11px;
+  }
+
+  .score-stat strong{
+    min-width:18px;
+    margin-left:2px;
+    font-size:12px;
+  }
+
+  #lives{
+    font-size:10px;
+    letter-spacing:0;
+  }
+
+  .level-ribbon{
+    left:7px;
+    top:7px;
+    padding:5px 7px;
+  }
+
+  .level-ribbon strong{font-size:10px}
+  .level-ribbon span{display:none}
+
+  .cycle-ribbon{
+    right:7px;
+    top:7px;
+    padding:5px 7px;
+    font-size:9px;
+  }
+
+  .target{
+    top:45px;
+    min-width:138px;
+    padding:5px 12px 6px;
+    border-radius:15px;
+  }
+
+  .target small{font-size:7px}
+  #targetNumber{font-size:34px}
+
+  .gate.two .answer-zone{
+    width:44%;
+    min-width:145px;
+  }
+
   .gate.two .answer-zone.pos-0{left:2%}
   .gate.two .answer-zone.pos-1{right:2%}
-  .gate.three .answer-zone{width:31.5%;min-width:98px}
+
+  .gate.three .answer-zone{
+    width:31.5%;
+    min-width:98px;
+  }
+
   .gate.three .answer-zone.pos-0{left:1%}
   .gate.three .answer-zone.pos-2{right:1%}
-  .cloud-shape::before{width:65px;height:65px;top:-28px}
-  .cloud-shape::after{width:78px;height:78px;top:-36px}
-  .answer-text{font-size:14px;inset:25px 7px 8px}
-  .gate.three .answer-text{font-size:11px;line-height:1.04;inset:21px 5px 5px}
-  .vehicle{width:102px;height:114px;bottom:86px}
-  .game.stage-3 .vehicle,.game.stage-4 .vehicle,.game.stage-5 .vehicle,.game.stage-6 .vehicle,.game.stage-7 .vehicle{width:110px;height:120px}
-  .mobile-controls{display:flex}
-  .sidebar .panel{border-radius:0;box-shadow:none;border-left:none;border-right:none}
+
+  .cloud-shape::before{
+    width:65px;
+    height:65px;
+    top:-28px;
+  }
+
+  .cloud-shape::after{
+    width:78px;
+    height:78px;
+    top:-36px;
+  }
+
+  .answer-text{
+    font-size:14px;
+    inset:25px 7px 8px;
+  }
+
+  .gate.three .answer-text{
+    font-size:11px;
+    line-height:1.04;
+    inset:21px 5px 5px;
+  }
+
+  .vehicle{
+    width:104px;
+    height:116px;
+    bottom:72px;
+  }
+
+  .game.stage-3 .vehicle,
+  .game.stage-4 .vehicle,
+  .game.stage-5 .vehicle,
+  .game.stage-6 .vehicle,
+  .game.stage-7 .vehicle,
+  .game.stage-8 .vehicle{
+    width:110px;
+    height:120px;
+  }
+
+  .touch-hint{
+    display:block;
+    bottom:12px;
+    font-size:10px;
+    padding:5px 9px;
+  }
+
+  .feedback{
+    bottom:198px;
+    padding:4px 7px;
+    border-radius:9px;
+    font-size:11px;
+  }
+
+  .sidebar .panel{
+    border-radius:0;
+    box-shadow:none;
+    border-left:none;
+    border-right:none;
+  }
 }
 </style>
 </head>
@@ -440,7 +622,7 @@ button{font:inherit}
         <div class="subtitle">Cada etapa sube más alto: del suelo al espacio profundo.</div>
       </div>
       <div class="hud-stats">
-        <div class="stat score-stat">⭐ PUNTOS <strong id="score">0</strong></div>
+        <div class="stat score-stat"><span class="score-label">⭐ PUNTOS</span><strong id="score">0</strong></div>
         <div class="stat">Vidas <span id="lives">❤️❤️❤️❤️</span></div>
       </div>
     </header>
@@ -470,25 +652,19 @@ button{font:inherit}
         <small>Número objetivo</small>
         <div id="targetNumber">500</div>
       </div>
-
-      <div class="cycle-ribbon">
+<div class="cycle-ribbon">
         Ciclo <span id="cycleTop">1</span>/180
       </div>
 
       <div class="vehicle" id="vehicle"></div>
-      <div class="feedback" id="feedback">¡Perfecto! +10</div>
-
-      <div class="mobile-controls">
-        <button class="move-btn" id="leftBtn">←</button>
-        <button class="move-btn" id="rightBtn">→</button>
-      </div>
-
-      <div class="overlay" id="startOverlay">
+      <div class="feedback" id="feedback">+10</div>
+      <div class="touch-hint" id="touchHint">👆 Dotknij i przeciągnij pojazd</div>
+<div class="overlay" id="startOverlay">
         <div class="modal">
           <div class="icon">🛩️</div>
           <h1>Del cielo al espacio</h1>
           <p>
-            Mueve el vehículo con <strong>← →</strong> o <strong>A / D</strong> y atraviesa la respuesta correcta.
+            En ordenador usa <strong>← →</strong> o <strong>A / D</strong>. En el móvil, <strong>toca y arrastra el vehículo con el dedo</strong> para atravesar la respuesta correcta.
             La dificultad cambia automáticamente: primero centenas, después centenas con decenas y al final números completos
             con <strong>tres opciones muy parecidas</strong>.
             <br><br>
@@ -580,8 +756,7 @@ button{font:inherit}
   const startBtn = document.getElementById('startBtn');
   const restartBtn = document.getElementById('restartBtn');
   const pauseBtn = document.getElementById('pauseBtn');
-  const leftBtn = document.getElementById('leftBtn');
-  const rightBtn = document.getElementById('rightBtn');
+  const touchHint = document.getElementById('touchHint');
   const cards = STAGES.map(s => document.getElementById('card'+s.id));
 
   let score = 0;
@@ -592,6 +767,12 @@ button{font:inherit}
   let planeX = 50;
   let moveDir = 0;
   let lastTs = 0;
+
+  let draggingVehicle = false;
+  let dragPointerId = null;
+  let dragTilt = 0;
+  let dragBottom = null;
+  let lastDragX = null;
   let gates = [];
   let gateCounter = 0;
   let currentStageId = 1;
@@ -919,7 +1100,10 @@ button{font:inherit}
   }
 
   function flash(ok,points=0){
-    feedback.textContent = ok ? `¡Perfecto! +${points}` : '¡Cuidado! −1 vida';
+    const compact = window.matchMedia('(max-width:700px)').matches;
+    feedback.textContent = ok
+      ? (compact ? `+${points}` : `¡Perfecto! +${points}`)
+      : (compact ? '−1 ❤️' : '¡Cuidado! −1 vida');
     feedback.className = `feedback ${ok?'good':'bad'} show`;
     vehicle.classList.remove('good','bad');
     vehicle.classList.add(ok?'good':'bad');
@@ -1004,13 +1188,16 @@ button{font:inherit}
   }
 
   function updateVehicle(dt){
-    planeX += moveDir * dt * 0.056;
-    planeX = Math.max(6,Math.min(94,planeX));
-    vehicle.style.left = planeX + '%';
-
     const stage = stageForCycle(Math.min(TOTAL,completed+1));
     const tiltAmount = stage.id === 3 ? 4 : stage.id >= 4 ? 10 : 8;
-    vehicle.style.transform = `translateX(-50%) rotate(${moveDir*tiltAmount}deg)`;
+
+    if(draggingVehicle) return;
+
+    planeX += moveDir * dt * 0.056;
+    planeX = Math.max(6,Math.min(94,planeX));
+    vehicle.style.left = planeX + "%";
+    vehicle.style.transform =
+      `translateX(-50%) rotate(${moveDir*tiltAmount}deg)`;
   }
 
   function loop(ts){
@@ -1050,9 +1237,15 @@ button{font:inherit}
     paused=false;
     planeX=50;
     moveDir=0;
+    draggingVehicle=false;
+    dragPointerId=null;
+    dragTilt=0;
+    dragBottom=null;
+    lastDragX=null;
     currentStageId=1;
     recentCorrectPositions={2:[],3:[]};
     vehicle.style.left='50%';
+    vehicle.style.bottom='';
     vehicle.style.transform='translateX(-50%)';
     applyStage(STAGES[0]);
     targetNumber.textContent='500';
@@ -1065,6 +1258,12 @@ button{font:inherit}
     startOverlay.classList.add('hidden');
     endOverlay.classList.add('hidden');
     pauseBtn.textContent='Pausa';
+
+    if(touchHint){
+      touchHint.classList.remove('hidden');
+      setTimeout(()=>touchHint.classList.add('hidden'),6500);
+    }
+
     spawnGate();
   }
 
@@ -1084,6 +1283,117 @@ button{font:inherit}
     }
   }
 
+
+
+  function moveVehicleTo(clientX, clientY){
+    const rect = game.getBoundingClientRect();
+    const vRect = vehicle.getBoundingClientRect();
+
+    const halfW = vRect.width / 2;
+    const x = Math.max(
+      halfW + 4,
+      Math.min(rect.width - halfW - 4, clientX - rect.left)
+    );
+
+    if(lastDragX !== null){
+      dragTilt = Math.max(-12, Math.min(12, (clientX - lastDragX) * 0.8));
+    }
+    lastDragX = clientX;
+
+    planeX = (x / rect.width) * 100;
+    vehicle.style.left = planeX + "%";
+
+    const halfH = vRect.height / 2;
+    const fromBottom = rect.bottom - clientY - halfH;
+    const minBottom = 42;
+    const maxBottom = Math.max(145, rect.height * 0.42);
+
+    vehicle.style.bottom =
+      Math.max(minBottom, Math.min(maxBottom, fromBottom)) + "px";
+
+    vehicle.style.transform =
+      `translateX(-50%) rotate(${dragTilt}deg)`;
+  }
+
+  function beginDrag(pointerId, clientX){
+    if(!running || paused) return false;
+
+    draggingVehicle = true;
+    dragPointerId = pointerId;
+    lastDragX = clientX;
+    dragTilt = 0;
+    moveDir = 0;
+
+    vehicle.classList.add("dragging");
+
+    if(touchHint){
+      touchHint.classList.add("hidden");
+    }
+
+    return true;
+  }
+
+  function endDrag(){
+    if(!draggingVehicle) return;
+
+    draggingVehicle = false;
+    dragPointerId = null;
+    lastDragX = null;
+    dragTilt = 0;
+
+    vehicle.classList.remove("dragging");
+    vehicle.style.transform = "translateX(-50%) rotate(0deg)";
+  }
+
+  if(window.PointerEvent){
+    vehicle.addEventListener("pointerdown", e=>{
+      if(!beginDrag(e.pointerId, e.clientX)) return;
+
+      try{
+        vehicle.setPointerCapture(e.pointerId);
+      }catch(_){}
+
+      e.preventDefault();
+    }, {passive:false});
+
+    window.addEventListener("pointermove", e=>{
+      if(!draggingVehicle) return;
+      if(dragPointerId !== null && e.pointerId !== dragPointerId) return;
+
+      moveVehicleTo(e.clientX, e.clientY);
+      e.preventDefault();
+    }, {passive:false});
+
+    window.addEventListener("pointerup", e=>{
+      if(!draggingVehicle) return;
+      if(dragPointerId !== null && e.pointerId !== dragPointerId) return;
+      endDrag();
+    }, {passive:false});
+
+    window.addEventListener("pointercancel", endDrag, {passive:false});
+  }else{
+    vehicle.addEventListener("touchstart", e=>{
+      if(!e.touches.length) return;
+      const t = e.touches[0];
+
+      if(!beginDrag(null, t.clientX)) return;
+
+      e.preventDefault();
+    }, {passive:false});
+
+    window.addEventListener("touchmove", e=>{
+      if(!draggingVehicle || !e.touches.length) return;
+      const t = e.touches[0];
+
+      moveVehicleTo(t.clientX, t.clientY);
+      e.preventDefault();
+    }, {passive:false});
+
+    window.addEventListener("touchend", endDrag, {passive:false});
+    window.addEventListener("touchcancel", endDrag, {passive:false});
+  }
+
+
   function setMove(dir){moveDir=dir}
 
   document.addEventListener('keydown',e=>{
@@ -1099,15 +1409,6 @@ button{font:inherit}
   document.addEventListener('keyup',e=>{
     if(['ArrowLeft','ArrowRight','a','A','d','D'].includes(e.key)) setMove(0);
   });
-
-  function bindHold(btn,dir){
-    btn.addEventListener('pointerdown',e=>{e.preventDefault();setMove(dir)});
-    ['pointerup','pointercancel','pointerleave'].forEach(type=>{
-      btn.addEventListener(type,e=>{e.preventDefault();setMove(0)});
-    });
-  }
-  bindHold(leftBtn,-1);
-  bindHold(rightBtn,1);
 
   pauseBtn.addEventListener('click',()=>{
     if(!running)return;
