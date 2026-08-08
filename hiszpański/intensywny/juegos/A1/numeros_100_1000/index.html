@@ -414,6 +414,113 @@ button{font:inherit}
   }
 }
 
+
+/* ---------- BLACK HOLE HAZARD ---------- */
+.answer-zone.black-hole-zone{filter:none}
+.black-hole{
+  position:absolute;left:50%;top:50%;width:96px;height:96px;
+  transform:translate(-50%,-43%);border-radius:50%;z-index:6;pointer-events:none
+}
+.black-hole::before{
+  content:"";position:absolute;inset:15px;border-radius:50%;
+  background:radial-gradient(circle at 44% 42%,#030303 0 35%,#000 52%,#08020f 64%,transparent 67%);
+  box-shadow:0 0 9px 4px rgba(255,255,255,.08),0 0 22px 8px rgba(122,70,255,.24),0 0 42px 13px rgba(68,132,255,.16);
+  animation:blackHoleCore 1.15s ease-in-out infinite alternate
+}
+.black-hole::after{
+  content:"";position:absolute;inset:4px;border-radius:50%;border:7px solid transparent;
+  border-top-color:#ffb347;border-right-color:#fa5ba8;border-bottom-color:#7868ff;border-left-color:#63dbff;
+  box-shadow:0 0 10px rgba(255,184,80,.7),0 0 24px rgba(149,91,255,.55);
+  transform:rotate(-18deg) scaleY(.48);animation:blackHoleDisk 1.05s linear infinite
+}
+.black-hole-ring{
+  position:absolute;left:50%;top:50%;width:118px;height:42px;
+  transform:translate(-50%,-50%) rotate(-16deg);border-radius:50%;
+  border:3px solid rgba(255,225,171,.72);
+  box-shadow:0 0 10px rgba(255,187,96,.75),0 0 24px rgba(143,93,255,.48);
+  animation:blackHoleRing 1.4s ease-in-out infinite alternate
+}
+.black-hole-label{
+  position:absolute;left:50%;bottom:2px;transform:translateX(-50%);z-index:8;
+  font-size:10px;font-weight:950;letter-spacing:.08em;color:#f7edff;
+  text-shadow:0 2px 8px #000;white-space:nowrap
+}
+@keyframes blackHoleDisk{to{transform:rotate(342deg) scaleY(.48)}}
+@keyframes blackHoleCore{from{transform:scale(.94)}to{transform:scale(1.05)}}
+@keyframes blackHoleRing{
+  from{opacity:.55;transform:translate(-50%,-50%) rotate(-16deg) scale(.94)}
+  to{opacity:1;transform:translate(-50%,-50%) rotate(-16deg) scale(1.08)}
+}
+
+.vehicle.swallowed{
+  animation:swallowedByBlackHole 1.1s cubic-bezier(.65,.05,.85,.35) forwards !important;
+  filter:drop-shadow(0 0 18px rgba(126,88,255,.95)) drop-shadow(0 0 36px rgba(55,163,255,.72)) !important;
+  pointer-events:none
+}
+@keyframes swallowedByBlackHole{
+  0%{opacity:1;scale:1;rotate:0deg}
+  35%{opacity:1;scale:.72;rotate:120deg}
+  72%{opacity:.86;scale:.28;rotate:410deg}
+  100%{opacity:0;scale:.02;rotate:760deg}
+}
+
+/* ---------- SUPERNOVA ENDING ---------- */
+.supernova-scene{
+  position:absolute;inset:0;z-index:95;display:flex;align-items:center;justify-content:center;overflow:hidden;
+  background:radial-gradient(circle at center,rgba(30,46,88,.42),rgba(2,4,12,.96) 68%);
+  opacity:0;pointer-events:none;transition:opacity .35s ease
+}
+.supernova-scene.show{opacity:1}
+.supernova-star{
+  position:relative;width:72px;height:72px;border-radius:50%;
+  background:radial-gradient(circle at 35% 32%,#fff 0 9%,#fffbd1 17%,#ffd75c 38%,#ff933a 58%,#f04670 72%,transparent 74%);
+  box-shadow:0 0 18px 10px rgba(255,245,181,.8),0 0 48px 18px rgba(255,180,72,.52),0 0 95px 35px rgba(218,75,145,.32);
+  animation:starPulse .65s ease-in-out infinite alternate
+}
+.supernova-star::before,.supernova-star::after{
+  content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border-radius:50%;pointer-events:none
+}
+.supernova-star::before{
+  width:145px;height:8px;background:linear-gradient(90deg,transparent,#fff8bb 30%,#fff 50%,#fff8bb 70%,transparent);
+  box-shadow:0 0 18px rgba(255,241,168,.8)
+}
+.supernova-star::after{
+  width:8px;height:145px;background:linear-gradient(180deg,transparent,#fff8bb 30%,#fff 50%,#fff8bb 70%,transparent);
+  box-shadow:0 0 18px rgba(255,241,168,.8)
+}
+.supernova-scene.explode .supernova-star{animation:supernovaExplosion 1.45s cubic-bezier(.15,.85,.25,1) forwards}
+.supernova-wave{
+  position:absolute;width:40px;height:40px;border-radius:50%;border:5px solid rgba(255,239,182,.9);opacity:0
+}
+.supernova-scene.explode .supernova-wave{animation:supernovaWave 1.6s .18s ease-out forwards}
+.supernova-particles{
+  position:absolute;inset:0;opacity:0;
+  background:
+    radial-gradient(circle at 20% 32%,#fff 0 2px,transparent 3px),
+    radial-gradient(circle at 76% 25%,#ffd971 0 3px,transparent 4px),
+    radial-gradient(circle at 68% 73%,#ff6f91 0 2px,transparent 3px),
+    radial-gradient(circle at 34% 78%,#8fdfff 0 2px,transparent 3px),
+    radial-gradient(circle at 49% 12%,#fff 0 2px,transparent 3px),
+    radial-gradient(circle at 87% 53%,#d7a7ff 0 3px,transparent 4px),
+    radial-gradient(circle at 11% 64%,#ffae5d 0 3px,transparent 4px)
+}
+.supernova-scene.explode .supernova-particles{animation:supernovaParticles 1.45s .12s ease-out forwards}
+@keyframes starPulse{from{transform:scale(.92)}to{transform:scale(1.08)}}
+@keyframes supernovaExplosion{
+  0%{transform:scale(1);filter:brightness(1);opacity:1}
+  28%{transform:scale(1.5);filter:brightness(2.2);opacity:1}
+  48%{transform:scale(7);filter:brightness(4);opacity:1}
+  100%{transform:scale(19);filter:brightness(2);opacity:0}
+}
+@keyframes supernovaWave{0%{transform:scale(.3);opacity:1}100%{transform:scale(18);opacity:0}}
+@keyframes supernovaParticles{0%{opacity:0;transform:scale(.5)}30%{opacity:1}100%{opacity:0;transform:scale(3.2)}}
+
+@media(max-width:700px){
+  .black-hole{width:78px;height:78px}
+  .black-hole-ring{width:94px;height:34px}
+  .black-hole-label{font-size:8px}
+}
+
 /* overlay */
 .overlay{
   position:absolute;inset:0;z-index:70;display:flex;align-items:center;justify-content:center;padding:24px;
@@ -705,7 +812,14 @@ button{font:inherit}
       <div class="vehicle" id="vehicle"></div>
       <div class="feedback" id="feedback">+10</div>
       <div class="touch-hint" id="touchHint">👆 Dotknij i przeciągnij pojazd</div>
-<div class="overlay" id="startOverlay">
+
+      <div class="supernova-scene" id="supernovaScene">
+        <div class="supernova-particles"></div>
+        <div class="supernova-wave"></div>
+        <div class="supernova-star"></div>
+      </div>
+
+      <div class="overlay" id="startOverlay">
         <div class="modal">
           <div class="icon">🛩️</div>
           <h1>Del cielo al espacio</h1>
@@ -761,7 +875,8 @@ button{font:inherit}
         ✅ <strong>Respuesta correcta:</strong> suma puntos<br>
         ❌ <strong>Respuesta incorrecta:</strong> −1 vida<br>
         💨 <strong>No atraviesas ninguna:</strong> −1 vida<br>
-        ❤️ Empiezas con <strong>4 vidas</strong>.<br><br>
+        ❤️ Empiezas con <strong>4 vidas</strong>.<br>
+        🕳️ Desde la etapa 6 puede aparecer un <strong>agujero negro</strong>: si entras, la partida termina.<br><br>
         Desde la etapa 5 aparecen <strong>tres respuestas</strong>. En las etapas 7–8 aparecen <strong>cuatro opciones</strong> y los números son deliberadamente muy parecidos.
       </div>
       <button class="small-btn" id="pauseBtn">Pausa</button>
@@ -803,6 +918,7 @@ button{font:inherit}
   const restartBtn = document.getElementById('restartBtn');
   const pauseBtn = document.getElementById('pauseBtn');
   const touchHint = document.getElementById('touchHint');
+  const supernovaScene = document.getElementById('supernovaScene');
   const cards = STAGES.map(s => document.getElementById('card'+s.id));
 
   let score = 0;
@@ -822,6 +938,8 @@ button{font:inherit}
   let gates = [];
   let gateCounter = 0;
   let currentStageId = 1;
+  let blackHoleCooldown = 0;
+  let endingSequence = false;
 
   /* Random, but without annoying long streaks on one side/column. */
   let recentCorrectPositions = {2:[],3:[],4:[]};
@@ -1213,7 +1331,19 @@ button{font:inherit}
     }
   }
 
-  function zoneHTML(pos,text){
+  function zoneHTML(pos,text,isBlackHole=false){
+    if(isBlackHole){
+      return `
+        <div class="answer-zone black-hole-zone pos-${pos}" data-black-hole="true">
+          <div class="space-shape"></div>
+          <div class="zone-glow"></div>
+          <div class="black-hole">
+            <div class="black-hole-ring"></div>
+            <div class="black-hole-label">AGUJERO NEGRO</div>
+          </div>
+        </div>`;
+    }
+
     return `
       <div class="answer-zone pos-${pos}">
         <div class="cloud-shape"></div>
@@ -1274,12 +1404,33 @@ button{font:inherit}
     el.className = `gate ${stage.options===2?'two':stage.options===3?'three':'four'}`;
     const id = ++gateCounter;
     el.dataset.id = id;
-    el.innerHTML = values.map((v,i)=>zoneHTML(i,numberToSpanish(v))).join('');
+    let blackHolePos = null;
+
+    if(stage.id >= 6){
+      if(blackHoleCooldown > 0){
+        blackHoleCooldown--;
+      }else{
+        const hazardChance =
+          stage.id === 6 ? 0.28 :
+          stage.id === 7 ? 0.32 :
+          0.36;
+
+        if(Math.random() < hazardChance){
+          const wrongPositions = values.map((_,i)=>i).filter(i=>i !== correctPos);
+          blackHolePos = wrongPositions[Math.floor(Math.random()*wrongPositions.length)];
+          blackHoleCooldown = 2;
+        }
+      }
+    }
+
+    el.innerHTML = values
+      .map((v,i)=>zoneHTML(i,numberToSpanish(v),i===blackHolePos))
+      .join('');
     game.appendChild(el);
 
     const startY = stage.options === 4 ? -245 : stage.options === 3 ? -220 : -180;
     const gate = {
-      id, el, y:startY, stage, number, correctPos, values, resolved:false, speed:stage.speed
+      id, el, y:startY, stage, number, correctPos, values, blackHolePos, resolved:false, speed:stage.speed
     };
     gates.push(gate);
 
@@ -1312,6 +1463,32 @@ button{font:inherit}
     },420);
   }
 
+  function blackHoleGameOver(gate,chosenPos){
+    if(gate.resolved || endingSequence) return;
+
+    gate.resolved = true;
+    endingSequence = true;
+    running = false;
+    paused = false;
+
+    const chosen = gate.el.querySelector('.answer-zone.pos-'+chosenPos);
+    if(chosen) chosen.classList.add('chosen');
+
+    vehicle.classList.add('swallowed');
+
+    feedback.textContent = 'AGUJERO NEGRO';
+    feedback.className = 'feedback bad show';
+
+    setTimeout(()=>{
+      feedback.classList.remove('show');
+      endIcon.textContent='🕳️';
+      endTitle.textContent='¡Agujero negro!';
+      endText.innerHTML=`La nave ha sido absorbida.<br>Has conseguido <strong>${score} puntos</strong>.`;
+      endOverlay.classList.remove('hidden');
+      endingSequence = false;
+    },1100);
+  }
+
   function resolveGate(gate,result,chosenPos=null){
     if(gate.resolved) return;
     gate.resolved = true;
@@ -1336,7 +1513,7 @@ button{font:inherit}
     updateHUD();
 
     if(completed >= TOTAL){
-      setTimeout(()=>endGame(true),520);
+      setTimeout(()=>playSupernovaEnding(),420);
       return;
     }
     if(lives <= 0){
@@ -1408,6 +1585,11 @@ button{font:inherit}
           : boundaries[chosen];
 
         if(shipCenterX >= leftLimit && shipCenterX <= rightLimit){
+          if(gate.blackHolePos === chosen){
+            blackHoleGameOver(gate,chosen);
+            return;
+          }
+
           resolveGate(
             gate,
             chosen === gate.correctPos ? 'correct' : 'wrong',
@@ -1496,7 +1678,12 @@ button{font:inherit}
     dragBottom=null;
     lastDragX=null;
     currentStageId=1;
+    blackHoleCooldown=0;
+    endingSequence=false;
     recentCorrectPositions={2:[],3:[],4:[]};
+    vehicle.classList.remove('swallowed');
+    vehicle.style.opacity='1';
+    supernovaScene.classList.remove('show','explode');
     vehicle.style.left='50%';
     vehicle.style.bottom='';
     vehicle.style.transform='translateX(-50%)';
@@ -1520,6 +1707,33 @@ button{font:inherit}
     spawnGate();
   }
 
+  function playSupernovaEnding(){
+    if(endingSequence) return;
+
+    endingSequence = true;
+    running = false;
+    paused = false;
+
+    gates.forEach(g=>g.el.remove());
+    gates=[];
+
+    vehicle.style.opacity='0';
+    supernovaScene.classList.add('show');
+
+    setTimeout(()=>{
+      supernovaScene.classList.add('explode');
+    },900);
+
+    setTimeout(()=>{
+      supernovaScene.classList.remove('show','explode');
+      endIcon.textContent='✨';
+      endTitle.textContent='FIN DE JUEGO';
+      endText.innerHTML=`Puntuación final: <strong>${score} puntos</strong>.`;
+      endOverlay.classList.remove('hidden');
+      endingSequence=false;
+    },2700);
+  }
+
   function endGame(success){
     running=false;
     paused=false;
@@ -1527,8 +1741,8 @@ button{font:inherit}
 
     if(success && completed>=TOTAL){
       endIcon.textContent='🌌';
-      endTitle.textContent='¡Misión completada!';
-      endText.innerHTML=`Has recorrido los <strong>${TOTAL} ciclos</strong> y conseguido <strong>${score} puntos</strong>.`;
+      endTitle.textContent='FIN DE JUEGO';
+      endText.innerHTML=`Puntuación final: <strong>${score} puntos</strong>.`;
     }else{
       endIcon.textContent='🛬';
       endTitle.textContent='Fin del vuelo';
