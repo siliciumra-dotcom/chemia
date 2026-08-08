@@ -322,6 +322,23 @@ button{font:inherit}
 }
 .gate.three .answer-text{font-size:clamp(14px,1.55vw,20px);inset:25px 10px 8px}
 
+
+.gate.four .answer-zone{
+  width:23.2%;
+  min-width:150px;
+  max-width:260px;
+}
+.gate.four .answer-zone.pos-0{left:1%}
+.gate.four .answer-zone.pos-1{left:25.6%}
+.gate.four .answer-zone.pos-2{right:25.6%}
+.gate.four .answer-zone.pos-3{right:1%}
+.gate.four .answer-text{
+  font-size:clamp(12px,1.25vw,17px);
+  line-height:1.02;
+  inset:23px 7px 7px;
+}
+
+
 .gate.resolved.correct .chosen .zone-glow{box-shadow:inset 0 0 0 5px rgba(46,170,120,.85),0 0 34px rgba(46,170,120,.35)}
 .gate.resolved.wrong .chosen .zone-glow{box-shadow:inset 0 0 0 5px rgba(228,95,104,.85),0 0 34px rgba(228,95,104,.32)}
 .gate.resolved.missed .answer-zone{opacity:.58}
@@ -344,7 +361,9 @@ button{font:inherit}
 .vehicle.good{filter:drop-shadow(0 0 13px rgba(46,170,120,.95)) drop-shadow(0 17px 13px rgba(15,44,70,.24))}
 .vehicle.bad{filter:drop-shadow(0 0 13px rgba(228,95,104,.95)) drop-shadow(0 17px 13px rgba(15,44,70,.24))}
 .game.stage-3 .vehicle{width:132px;height:142px}
-.game.stage-4 .vehicle,.game.stage-5 .vehicle,.game.stage-6 .vehicle,.game.stage-7 .vehicle,.game.stage-8 .vehicle{width:134px;height:148px}
+.game.stage-4 .vehicle,.game.stage-5 .vehicle,.game.stage-6 .vehicle{width:134px;height:148px}
+.game.stage-7 .vehicle{width:146px;height:158px}
+.game.stage-8 .vehicle{width:154px;height:166px}
 
 .feedback{
   position:absolute;left:50%;bottom:225px;transform:translateX(-50%) translateY(10px) scale(.92);
@@ -573,6 +592,25 @@ button{font:inherit}
     inset:21px 5px 5px;
   }
 
+
+  .gate.four .answer-zone{
+    width:24%;
+    min-width:0;
+    max-width:none;
+  }
+  .gate.four .answer-zone.pos-0{left:.5%}
+  .gate.four .answer-zone.pos-1{left:25.25%}
+  .gate.four .answer-zone.pos-2{right:25.25%}
+  .gate.four .answer-zone.pos-3{right:.5%}
+
+  .gate.four .answer-text{
+    font-size:9px;
+    line-height:1.0;
+    inset:20px 3px 4px;
+    overflow-wrap:anywhere;
+    hyphens:auto;
+  }
+
   .vehicle{
     width:104px;
     height:116px;
@@ -582,11 +620,19 @@ button{font:inherit}
   .game.stage-3 .vehicle,
   .game.stage-4 .vehicle,
   .game.stage-5 .vehicle,
-  .game.stage-6 .vehicle,
-  .game.stage-7 .vehicle,
-  .game.stage-8 .vehicle{
+  .game.stage-6 .vehicle{
     width:110px;
     height:120px;
+  }
+
+  .game.stage-7 .vehicle{
+    width:118px;
+    height:128px;
+  }
+
+  .game.stage-8 .vehicle{
+    width:124px;
+    height:134px;
   }
 
   .touch-hint{
@@ -666,7 +712,7 @@ button{font:inherit}
           <p>
             En ordenador usa <strong>← →</strong> o <strong>A / D</strong>. En el móvil, <strong>toca y arrastra el vehículo con el dedo</strong> para atravesar la respuesta correcta.
             La dificultad cambia automáticamente: primero centenas, después centenas con decenas y al final números completos
-            con <strong>tres opciones muy parecidas</strong>.
+            con <strong>tres opciones</strong> y, en los dos últimos niveles, <strong>cuatro opciones muy parecidas</strong>.
             <br><br>
             La misión completa tiene <strong>180 ciclos</strong> y las respuestas correctas valen <strong>10, 20 o 30 puntos</strong> según la dificultad.
           </p>
@@ -695,8 +741,8 @@ button{font:inherit}
         <div class="stage-card" data-n="4" id="card4"><strong>4 · 20 ciclos · +20</strong><span>Nave · 110, 440, 580… · rápido · 2 opciones</span></div>
         <div class="stage-card" data-n="5" id="card5"><strong>5 · 20 ciclos · +20</strong><span>Nave · centenas + decenas · rápido · 3 opciones</span></div>
         <div class="stage-card" data-n="6" id="card6"><strong>6 · 30 ciclos · +30</strong><span>Todos los números · 3 opciones parecidas · análisis</span></div>
-        <div class="stage-card" data-n="7" id="card7"><strong>7 · 30 ciclos · +30</strong><span>Todos los números · 3 opciones parecidas · rápido</span></div>
-        <div class="stage-card" data-n="8" id="card8"><strong>8 · 30 ciclos · +30</strong><span>Espacio profundo · 3 opciones · velocidad máxima</span></div>
+        <div class="stage-card" data-n="7" id="card7"><strong>7 · 30 ciclos · +30</strong><span>Todos los números · 4 opciones parecidas · rápido</span></div>
+        <div class="stage-card" data-n="8" id="card8"><strong>8 · 30 ciclos · +30</strong><span>Espacio profundo · 4 opciones · velocidad máxima</span></div>
       </div>
 
       <div class="progress-wrap">
@@ -716,7 +762,7 @@ button{font:inherit}
         ❌ <strong>Respuesta incorrecta:</strong> −1 vida<br>
         💨 <strong>No atraviesas ninguna:</strong> −1 vida<br>
         ❤️ Empiezas con <strong>4 vidas</strong>.<br><br>
-        Desde la etapa 5 aparecen <strong>tres respuestas</strong>. En las etapas 6–8 los números son deliberadamente muy parecidos.
+        Desde la etapa 5 aparecen <strong>tres respuestas</strong>. En las etapas 7–8 aparecen <strong>cuatro opciones</strong> y los números son deliberadamente muy parecidos.
       </div>
       <button class="small-btn" id="pauseBtn">Pausa</button>
     </section>
@@ -733,8 +779,8 @@ button{font:inherit}
     {id:4, start:51,  end:70,  count:20, mode:'tens',     options:2, speed:178, points:20, label:'Nave · centenas + decenas · rápido · +20'},
     {id:5, start:71,  end:90,  count:20, mode:'tens',     options:3, speed:190, points:20, label:'Nave · centenas + decenas · 3 opciones · +20'},
     {id:6, start:91,  end:120, count:30, mode:'full',     options:3, speed:88,  points:30, label:'Espacio · números completos · análisis · +30'},
-    {id:7, start:121, end:150, count:30, mode:'full',     options:3, speed:126, points:30, label:'Espacio · números completos · rápido · +30'},
-    {id:8, start:151, end:180, count:30, mode:'full',     options:3, speed:172, points:30, label:'Espacio profundo · velocidad máxima · +30'}
+    {id:7, start:121, end:150, count:30, mode:'full',     options:4, speed:132, points:30, label:'Espacio avanzado · 4 opciones parecidas · rápido · +30'},
+    {id:8, start:151, end:180, count:30, mode:'full',     options:4, speed:184, points:30, label:'Espacio profundo · 4 opciones · velocidad máxima · +30'}
   ];
 
   const game = document.getElementById('game');
@@ -778,7 +824,7 @@ button{font:inherit}
   let currentStageId = 1;
 
   /* Random, but without annoying long streaks on one side/column. */
-  let recentCorrectPositions = {2:[],3:[]};
+  let recentCorrectPositions = {2:[],3:[],4:[]};
 
   const ones = ['', 'uno','dos','tres','cuatro','cinco','seis','siete','ocho','nueve'];
   const special = {
@@ -896,41 +942,58 @@ button{font:inherit}
     return result;
   }
 
-  function nearbyNumbers(n){
-    /* Prefer small differences: target and distractors should feel deceptively similar. */
+  function nearbyNumbers(n, howMany=2){
+    /*
+      Budujemy bardzo podobne dystraktory.
+      Najpierw próbujemy utrzymać tę samą dziesiątkę,
+      potem tę samą setkę, a dopiero na końcu rozszerzamy zakres.
+    */
     const candidates = new Set();
-    const offsets = [-9,-8,-7,-6,-5,-4,-3,-2,-1,1,2,3,4,5,6,7,8,9];
 
-    /* first try same hundred and same tens */
     const sameTenStart = Math.floor(n/10)*10;
-    for(const d of offsets){
+    for(const d of [-9,-8,-7,-6,-5,-4,-3,-2,-1,1,2,3,4,5,6,7,8,9]){
       const x = n + d;
-      if(x >= 100 && x <= 1000 && Math.floor(x/10)*10 === sameTenStart) candidates.add(x);
+      if(
+        x >= 100 &&
+        x <= 1000 &&
+        Math.floor(x/10)*10 === sameTenStart &&
+        x !== n
+      ){
+        candidates.add(x);
+      }
     }
 
-    /* then same hundred */
-    if(candidates.size < 2){
+    if(candidates.size < howMany){
       const sameHundred = Math.floor(n/100);
-      for(const d of offsets){
+      for(const d of [-19,-18,-17,-16,-15,-14,-13,-12,-11,-10,10,11,12,13,14,15,16,17,18,19]){
         const x = n + d;
-        if(x >= 100 && x <= 1000 && Math.floor(x/100) === sameHundred) candidates.add(x);
+        if(
+          x >= 100 &&
+          x <= 1000 &&
+          Math.floor(x/100) === sameHundred &&
+          x !== n
+        ){
+          candidates.add(x);
+        }
       }
     }
 
-    /* fallback */
-    if(candidates.size < 2){
-      for(const d of [-20,-10,10,20,-2,2,-1,1]){
-        const x = n+d;
-        if(x>=100 && x<=1000) candidates.add(x);
+    if(candidates.size < howMany){
+      for(const d of [-30,-20,-10,10,20,30,-3,3,-2,2,-1,1]){
+        const x = n + d;
+        if(x >= 100 && x <= 1000 && x !== n){
+          candidates.add(x);
+        }
       }
     }
 
-    const arr = [...candidates].filter(x=>x!==n);
+    const arr = [...candidates];
     for(let i=arr.length-1;i>0;i--){
       const j=Math.floor(Math.random()*(i+1));
       [arr[i],arr[j]]=[arr[j],arr[i]];
     }
-    return arr.slice(0,2);
+
+    return arr.slice(0,howMany);
   }
 
   function setVehicle(stageId){
@@ -1000,10 +1063,119 @@ button{font:inherit}
       <path d="M65 138 L73 138 L70 167 Z M87 138 L95 138 L90 167 Z" fill="url(#flame)"/>
     </svg>`;
 
+
+    const advancedShip = `
+    <svg viewBox="0 0 180 185" xmlns="http://www.w3.org/2000/svg" aria-label="nave avanzada">
+      <defs>
+        <linearGradient id="advBody" x1="0" x2="1">
+          <stop offset="0" stop-color="#b9d7ec"/>
+          <stop offset=".48" stop-color="#ffffff"/>
+          <stop offset="1" stop-color="#718da8"/>
+        </linearGradient>
+        <linearGradient id="advWing" y1="0" y2="1">
+          <stop stop-color="#7c83ff"/>
+          <stop offset="1" stop-color="#322c8f"/>
+        </linearGradient>
+        <linearGradient id="advGlow" y1="0" y2="1">
+          <stop stop-color="#dcfbff"/>
+          <stop offset=".35" stop-color="#63dcff"/>
+          <stop offset=".7" stop-color="#4b70ff"/>
+          <stop offset="1" stop-color="rgba(72,91,255,0)"/>
+        </linearGradient>
+        <filter id="advHalo">
+          <feGaussianBlur stdDeviation="3.5" result="b"/>
+          <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
+
+      <path d="M90 4 C68 23 60 48 61 77 L45 93 L15 119 C8 125 13 134 22 131 L59 117 L66 145 L79 151 H101 L114 145 L121 117 L158 131 C167 134 172 125 165 119 L135 93 L119 77 C120 48 112 23 90 4Z"
+            fill="url(#advBody)" stroke="#bdeaff" stroke-width="3"/>
+
+      <path d="M61 77 L45 93 L15 119 C8 125 13 134 22 131 L65 115 L70 91Z"
+            fill="url(#advWing)" stroke="#9fcfff" stroke-width="2.5"/>
+      <path d="M119 77 L135 93 L165 119 C172 125 167 134 158 131 L115 115 L110 91Z"
+            fill="url(#advWing)" stroke="#9fcfff" stroke-width="2.5"/>
+
+      <path d="M70 45 Q90 27 110 45 L112 70 Q90 82 68 70Z"
+            fill="#5ce4ff" stroke="#d6f8ff" stroke-width="3"/>
+      <path d="M78 50 Q90 41 102 50 L103 62 Q90 67 77 62Z"
+            fill="#123e71" opacity=".68"/>
+
+      <circle cx="90" cy="93" r="6" fill="#ffe36c" filter="url(#advHalo)"/>
+      <circle cx="70" cy="109" r="4" fill="#6ff6ff" filter="url(#advHalo)"/>
+      <circle cx="110" cy="109" r="4" fill="#6ff6ff" filter="url(#advHalo)"/>
+
+      <path d="M72 145 L81 149 L77 184 Z M99 149 L108 145 L103 184 Z"
+            fill="url(#advGlow)" filter="url(#advHalo)"/>
+      <path d="M87 151 H93 L90 181 Z"
+            fill="url(#advGlow)" opacity=".8"/>
+    </svg>`;
+
+    const eliteShip = `
+    <svg viewBox="0 0 195 200" xmlns="http://www.w3.org/2000/svg" aria-label="nave de espacio profundo">
+      <defs>
+        <linearGradient id="eliteBody" x1="0" x2="1">
+          <stop offset="0" stop-color="#8099b5"/>
+          <stop offset=".25" stop-color="#e7f8ff"/>
+          <stop offset=".52" stop-color="#ffffff"/>
+          <stop offset=".78" stop-color="#b7d8ec"/>
+          <stop offset="1" stop-color="#63768e"/>
+        </linearGradient>
+        <linearGradient id="eliteWing" x1="0" y1="0" x2="1" y2="1">
+          <stop stop-color="#9a6cff"/>
+          <stop offset=".5" stop-color="#594de0"/>
+          <stop offset="1" stop-color="#201a69"/>
+        </linearGradient>
+        <linearGradient id="eliteFlame" y1="0" y2="1">
+          <stop stop-color="#ffffff"/>
+          <stop offset=".18" stop-color="#7ff6ff"/>
+          <stop offset=".48" stop-color="#5798ff"/>
+          <stop offset=".72" stop-color="#8b5cff"/>
+          <stop offset="1" stop-color="rgba(120,70,255,0)"/>
+        </linearGradient>
+        <filter id="eliteGlow">
+          <feGaussianBlur stdDeviation="4" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
+
+      <path d="M97.5 3 C70 23 62 50 63 82 L47 98 L11 127 C3 134 10 145 20 140 L61 123 L67 154 L81 162 H114 L128 154 L134 123 L175 140 C185 145 192 134 184 127 L148 98 L132 82 C133 50 125 23 97.5 3Z"
+            fill="url(#eliteBody)" stroke="#c9f3ff" stroke-width="3.3"/>
+
+      <path d="M63 82 L47 98 L11 127 C3 134 10 145 20 140 L67 121 L72 95Z"
+            fill="url(#eliteWing)" stroke="#93dfff" stroke-width="2.7"/>
+      <path d="M132 82 L148 98 L184 127 C192 134 185 145 175 140 L128 121 L123 95Z"
+            fill="url(#eliteWing)" stroke="#93dfff" stroke-width="2.7"/>
+
+      <path d="M73 44 Q97.5 20 122 44 L125 72 Q98 88 70 72Z"
+            fill="#64edff" stroke="#e6fbff" stroke-width="3.2" filter="url(#eliteGlow)"/>
+      <path d="M80 48 Q98 34 115 48 L116 64 Q98 72 79 64Z"
+            fill="#12264f" opacity=".78"/>
+
+      <path d="M55 104 L28 128 L61 116Z" fill="#54e8ff" opacity=".75" filter="url(#eliteGlow)"/>
+      <path d="M140 104 L167 128 L134 116Z" fill="#54e8ff" opacity=".75" filter="url(#eliteGlow)"/>
+
+      <circle cx="97.5" cy="96" r="7" fill="#fff07a" filter="url(#eliteGlow)"/>
+      <circle cx="72" cy="119" r="4.5" fill="#7af7ff" filter="url(#eliteGlow)"/>
+      <circle cx="123" cy="119" r="4.5" fill="#7af7ff" filter="url(#eliteGlow)"/>
+
+      <path d="M72 154 L82 161 L76 199 Z"
+            fill="url(#eliteFlame)" filter="url(#eliteGlow)"/>
+      <path d="M113 161 L123 154 L119 199 Z"
+            fill="url(#eliteFlame)" filter="url(#eliteGlow)"/>
+      <path d="M91 162 H104 L97.5 194 Z"
+            fill="url(#eliteFlame)" opacity=".9" filter="url(#eliteGlow)"/>
+
+      <path d="M51 111 L37 117 M144 111 L158 117" stroke="#d8ffff" stroke-width="3" stroke-linecap="round" opacity=".85"/>
+    </svg>`;
+
+
     vehicle.innerHTML =
       stageId === 1 ? propPlane :
       stageId === 2 ? airliner :
       stageId === 3 ? satellite :
+      stageId === 7 ? advancedShip :
+      stageId === 8 ? eliteShip :
       spaceship;
   }
 
@@ -1066,30 +1238,46 @@ button{font:inherit}
       values = [wrongForTwo(number,stage)];
       values.splice(correctPos,0,number);
     }else{
-      const nearby = stage.mode === 'tens' ? nearbyTensNumbers(number) : nearbyNumbers(number);
-      values = nearby.slice(0,2);
-      while(values.length < 2){
+      const neededWrong = stage.options - 1;
+      const nearby = stage.mode === 'tens'
+        ? nearbyTensNumbers(number)
+        : nearbyNumbers(number, neededWrong);
+
+      values = nearby.slice(0,neededWrong);
+
+      while(values.length < neededWrong){
         let x;
+
         if(stage.mode === 'tens'){
           x = rand(11,99)*10;
           if(x % 100 === 0) x += 10;
           x = Math.min(990,x);
         }else{
-          x = Math.max(100,Math.min(1000,number + (values.length ? 2 : -2)));
+          /*
+            Fallback nadal trzyma liczby blisko celu,
+            zamiast rzucać zupełnie przypadkowe odpowiedzi.
+          */
+          const offsets = [-12,-8,-6,-4,-3,-2,-1,1,2,3,4,6,8,12];
+          x = number + offsets[rand(0, offsets.length-1)];
+          x = Math.max(100, Math.min(1000, x));
         }
-        if(x !== number && !values.includes(x)) values.push(x);
+
+        if(x !== number && !values.includes(x)){
+          values.push(x);
+        }
       }
+
       values.splice(correctPos,0,number);
     }
 
     const el = document.createElement('div');
-    el.className = `gate ${stage.options===2?'two':'three'}`;
+    el.className = `gate ${stage.options===2?'two':stage.options===3?'three':'four'}`;
     const id = ++gateCounter;
     el.dataset.id = id;
     el.innerHTML = values.map((v,i)=>zoneHTML(i,numberToSpanish(v))).join('');
     game.appendChild(el);
 
-    const startY = stage.options === 3 ? -220 : -180;
+    const startY = stage.options === 4 ? -245 : stage.options === 3 ? -220 : -180;
     const gate = {
       id, el, y:startY, stage, number, correctPos, values, resolved:false, speed:stage.speed
     };
@@ -1175,49 +1363,51 @@ button{font:inherit}
     const rects = zones.map(z => z.getBoundingClientRect());
 
     /*
-      Przy 3 odpowiedziach nie używamy już całej szerokości statku do
-      wyboru pola. Statek może być szeroki i zahaczać o sąsiednią odpowiedź.
-      Zamiast tego patrzymy na jego ŚRODEK i przypisujemy go do najbliższego
-      pola. Daje to dużo bardziej naturalne sterowanie na telefonie.
+      Przy 3 i 4 odpowiedziach liczy się środek statku.
+      Nie wystarczy samo zahaczenie skrzydłem o sąsiednie pole.
+      Każde pole ma własny, niepokrywający się obszar przypisania.
     */
-    if(gate.stage.options === 3){
+    if(gate.stage.options >= 3){
       const shipCenterX = (p.left + p.right) / 2;
       const shipCenterY = (p.top + p.bottom) / 2;
 
-      /*
-        Większy pionowy margines trafienia:
-        pole zaczyna reagować trochę wcześniej i kończy trochę później.
-      */
-      const verticalMargin = 34;
+      /* Tolerancja pionowa — nie wymaga idealnego momentu przelotu. */
+      const verticalMargin = gate.stage.options === 4 ? 40 : 34;
       const gateTop = Math.min(...rects.map(r => r.top)) - verticalMargin;
       const gateBottom = Math.max(...rects.map(r => r.bottom)) + verticalMargin;
 
       if(shipCenterY >= gateTop && shipCenterY <= gateBottom){
         const centers = rects.map(r => (r.left + r.right) / 2);
 
-        /* wybieramy pole, którego środek jest najbliżej środka statku */
-        let chosen = 0;
-        let bestDistance = Math.abs(shipCenterX - centers[0]);
+        /*
+          Granice pól wyznaczamy dokładnie w połowie między ich środkami.
+          To daje naturalny margines, ale nigdy nie tworzy nakładających
+          się stref, więc program nie zaliczy sąsiedniego pola.
+        */
+        const boundaries = [];
+        for(let i=0;i<centers.length-1;i++){
+          boundaries.push((centers[i] + centers[i+1]) / 2);
+        }
 
-        for(let i=1;i<centers.length;i++){
-          const d = Math.abs(shipCenterX - centers[i]);
-          if(d < bestDistance){
-            bestDistance = d;
-            chosen = i;
-          }
+        let chosen = 0;
+        while(chosen < boundaries.length && shipCenterX > boundaries[chosen]){
+          chosen++;
         }
 
         /*
-          Dodatkowy niewidzialny margines poziomy.
-          Dzięki niemu statek nie musi być idealnie wycentrowany.
+          Dodatkowa mała tolerancja tylko przy zewnętrznych krawędziach planszy.
+          Wewnętrzne granice pozostają jednoznaczne.
         */
-        const laneWidth = rects[chosen].width;
-        const horizontalMargin = Math.max(26, laneWidth * 0.22);
+        const outerMargin = gate.stage.options === 4 ? 18 : 24;
+        const leftLimit = chosen === 0
+          ? rects[0].left - outerMargin
+          : boundaries[chosen-1];
 
-        if(
-          shipCenterX >= rects[chosen].left - horizontalMargin &&
-          shipCenterX <= rects[chosen].right + horizontalMargin
-        ){
+        const rightLimit = chosen === rects.length-1
+          ? rects[rects.length-1].right + outerMargin
+          : boundaries[chosen];
+
+        if(shipCenterX >= leftLimit && shipCenterX <= rightLimit){
           resolveGate(
             gate,
             chosen === gate.correctPos ? 'correct' : 'wrong',
@@ -1228,17 +1418,14 @@ button{font:inherit}
       }
 
       const first = rects[0];
-      if(first.top > p.bottom + 46){
+      if(first.top > p.bottom + 50){
         resolveGate(gate,'missed',null);
       }
 
       return;
     }
 
-    /*
-      Dla 2 odpowiedzi zostawiamy dotychczasowe zachowanie,
-      bo tam szerokość pól jest duża i działa ono dobrze.
-    */
+    /* Przy 2 odpowiedziach zostaje klasyczna kolizja. */
     for(let i=0;i<zones.length;i++){
       const r = rects[i];
       if(overlap(p,r)){
@@ -1309,7 +1496,7 @@ button{font:inherit}
     dragBottom=null;
     lastDragX=null;
     currentStageId=1;
-    recentCorrectPositions={2:[],3:[]};
+    recentCorrectPositions={2:[],3:[],4:[]};
     vehicle.style.left='50%';
     vehicle.style.bottom='';
     vehicle.style.transform='translateX(-50%)';
