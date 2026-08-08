@@ -327,8 +327,16 @@ button{font:inherit}
 /* vehicle */
 .vehicle{
   position:absolute;left:50%;bottom:76px;width:124px;height:136px;transform:translateX(-50%);
-  z-index:26;transition:filter .14s ease,width .5s ease,height .5s ease;will-change:left,transform;
-  filter:drop-shadow(0 17px 13px rgba(15,44,70,.28))
+  z-index:26;transition:filter .14s ease,width .5s ease,height .5s ease;will-change:left,bottom,transform;
+  filter:drop-shadow(0 17px 13px rgba(15,44,70,.28));
+  touch-action:none;
+  user-select:none;
+  -webkit-user-select:none;
+  cursor:grab;
+}
+.vehicle.dragging{
+  cursor:grabbing;
+  transition:filter .14s ease,width .5s ease,height .5s ease;
 }
 .vehicle svg{display:block;width:100%;height:100%;overflow:visible}
 .vehicle.good{filter:drop-shadow(0 0 13px rgba(46,170,120,.95)) drop-shadow(0 17px 13px rgba(15,44,70,.24))}
@@ -352,6 +360,26 @@ button{font:inherit}
   width:66px;height:54px;border:none;border-radius:18px;background:rgba(255,255,255,.9);color:var(--ink);
   font-size:27px;font-weight:950;box-shadow:0 8px 20px rgba(23,50,77,.2);touch-action:none
 }
+
+.touch-hint{
+  display:none;
+  position:absolute;
+  left:50%;
+  bottom:18px;
+  transform:translateX(-50%);
+  z-index:42;
+  padding:6px 10px;
+  border-radius:999px;
+  background:rgba(11,35,57,.66);
+  color:#fff;
+  font-size:11px;
+  font-weight:800;
+  backdrop-filter:blur(5px);
+  pointer-events:none;
+  transition:opacity .25s ease;
+  white-space:nowrap;
+}
+.touch-hint.hidden{opacity:0}
 
 /* overlay */
 .overlay{
@@ -407,26 +435,131 @@ button{font:inherit}
   body{padding:0}
   .app{width:100%;gap:0}
   .game-card{border-radius:0}
-  .game{height:74vh;min-height:590px}
-  .hud{padding:10px 12px;align-items:flex-start;flex-direction:column}
-  .hud-stats{justify-content:flex-start}
-  .level-ribbon{left:9px;top:10px}
-  .cycle-ribbon{right:9px;top:10px}
-  .target{top:65px}
+
+  .game{
+    height:calc(100svh - 60px);
+    min-height:570px;
+  }
+
+  /* bardzo kompaktowy pasek u góry */
+  .hud{
+    min-height:60px;
+    padding:7px 8px;
+    flex-direction:row;
+    align-items:center;
+    gap:6px;
+  }
+  .title{
+    font-size:15px;
+    line-height:1.05;
+  }
+  .subtitle{display:none}
+  .hud-stats{
+    margin-left:auto;
+    justify-content:flex-end;
+    flex-wrap:nowrap;
+    gap:4px;
+  }
+  .stat{
+    padding:5px 7px;
+    font-size:10px;
+  }
+
+  /* mały licznik punktów */
+  .score-stat{
+    min-width:0;
+    padding:4px 7px;
+    box-shadow:none;
+  }
+  .score-label{font-size:0}
+  .score-label::after{
+    content:"⭐";
+    font-size:12px;
+  }
+  .score-stat strong{
+    min-width:20px;
+    margin-left:2px;
+    font-size:13px;
+  }
+  #lives{
+    font-size:11px;
+    letter-spacing:0;
+  }
+
+  .level-ribbon{
+    left:7px;
+    top:8px;
+    padding:6px 8px;
+  }
+  .level-ribbon strong{font-size:11px}
+  .level-ribbon span{display:none}
+
+  .cycle-ribbon{
+    right:7px;
+    top:8px;
+    padding:6px 8px;
+    font-size:10px;
+  }
+
+  .target{
+    top:48px;
+    min-width:142px;
+    padding:6px 13px 7px;
+    border-radius:16px;
+  }
+  .target small{font-size:8px}
+  #targetNumber{font-size:36px}
+
   .gate.two .answer-zone{width:44%;min-width:145px}
   .gate.two .answer-zone.pos-0{left:2%}
   .gate.two .answer-zone.pos-1{right:2%}
+
   .gate.three .answer-zone{width:31.5%;min-width:98px}
   .gate.three .answer-zone.pos-0{left:1%}
   .gate.three .answer-zone.pos-2{right:1%}
+
   .cloud-shape::before{width:65px;height:65px;top:-28px}
   .cloud-shape::after{width:78px;height:78px;top:-36px}
   .answer-text{font-size:14px;inset:25px 7px 8px}
-  .gate.three .answer-text{font-size:11px;line-height:1.04;inset:21px 5px 5px}
-  .vehicle{width:102px;height:114px;bottom:86px}
-  .game.stage-3 .vehicle,.game.stage-4 .vehicle,.game.stage-5 .vehicle,.game.stage-6 .vehicle,.game.stage-7 .vehicle{width:110px;height:120px}
-  .mobile-controls{display:flex}
-  .sidebar .panel{border-radius:0;box-shadow:none;border-left:none;border-right:none}
+  .gate.three .answer-text{
+    font-size:11px;
+    line-height:1.04;
+    inset:21px 5px 5px;
+  }
+
+  .vehicle{
+    width:104px;
+    height:116px;
+    bottom:76px;
+  }
+  .game.stage-3 .vehicle,
+  .game.stage-4 .vehicle,
+  .game.stage-5 .vehicle,
+  .game.stage-6 .vehicle,
+  .game.stage-7 .vehicle,
+  .game.stage-8 .vehicle{
+    width:110px;
+    height:120px;
+  }
+
+  /* na telefonie sterujemy bezpośrednio samolotem */
+  .mobile-controls{display:none}
+  .touch-hint{display:block}
+
+  /* +10/+20/+30 jest małym toastem i nie zasłania gry */
+  .feedback{
+    bottom:205px;
+    padding:5px 8px;
+    border-radius:10px;
+    font-size:12px;
+  }
+
+  .sidebar .panel{
+    border-radius:0;
+    box-shadow:none;
+    border-left:none;
+    border-right:none;
+  }
 }
 </style>
 </head>
@@ -440,7 +573,7 @@ button{font:inherit}
         <div class="subtitle">Cada etapa sube más alto: del suelo al espacio profundo.</div>
       </div>
       <div class="hud-stats">
-        <div class="stat score-stat">⭐ PUNTOS <strong id="score">0</strong></div>
+        <div class="stat score-stat"><span class="score-label">⭐ PUNTOS</span><strong id="score">0</strong></div>
         <div class="stat">Vidas <span id="lives">❤️❤️❤️❤️</span></div>
       </div>
     </header>
@@ -476,7 +609,8 @@ button{font:inherit}
       </div>
 
       <div class="vehicle" id="vehicle"></div>
-      <div class="feedback" id="feedback">¡Perfecto! +10</div>
+      <div class="feedback" id="feedback">+10</div>
+      <div class="touch-hint" id="touchHint">👆 Przytrzymaj i przeciągnij pojazd</div>
 
       <div class="mobile-controls">
         <button class="move-btn" id="leftBtn">←</button>
@@ -488,7 +622,7 @@ button{font:inherit}
           <div class="icon">🛩️</div>
           <h1>Del cielo al espacio</h1>
           <p>
-            Mueve el vehículo con <strong>← →</strong> o <strong>A / D</strong> y atraviesa la respuesta correcta.
+            En ordenador usa <strong>← →</strong> o <strong>A / D</strong>. En el móvil, <strong>toca y arrastra el vehículo con el dedo</strong> para atravesar la respuesta correcta.
             La dificultad cambia automáticamente: primero centenas, después centenas con decenas y al final números completos
             con <strong>tres opciones muy parecidas</strong>.
             <br><br>
@@ -582,6 +716,7 @@ button{font:inherit}
   const pauseBtn = document.getElementById('pauseBtn');
   const leftBtn = document.getElementById('leftBtn');
   const rightBtn = document.getElementById('rightBtn');
+  const touchHint = document.getElementById('touchHint');
   const cards = STAGES.map(s => document.getElementById('card'+s.id));
 
   let score = 0;
@@ -592,6 +727,12 @@ button{font:inherit}
   let planeX = 50;
   let moveDir = 0;
   let lastTs = 0;
+
+  let draggingVehicle = false;
+  let dragPointerId = null;
+  let dragTilt = 0;
+  let dragBottom = null;
+  let lastDragX = null;
   let gates = [];
   let gateCounter = 0;
   let currentStageId = 1;
@@ -919,7 +1060,10 @@ button{font:inherit}
   }
 
   function flash(ok,points=0){
-    feedback.textContent = ok ? `¡Perfecto! +${points}` : '¡Cuidado! −1 vida';
+    const compact = window.matchMedia('(max-width:700px)').matches;
+    feedback.textContent = ok
+      ? (compact ? `+${points}` : `¡Perfecto! +${points}`)
+      : (compact ? '−1 ❤️' : '¡Cuidado! −1 vida');
     feedback.className = `feedback ${ok?'good':'bad'} show`;
     vehicle.classList.remove('good','bad');
     vehicle.classList.add(ok?'good':'bad');
@@ -1004,12 +1148,17 @@ button{font:inherit}
   }
 
   function updateVehicle(dt){
+    const stage = stageForCycle(Math.min(TOTAL,completed+1));
+    const tiltAmount = stage.id === 3 ? 4 : stage.id >= 4 ? 10 : 8;
+
+    if(draggingVehicle){
+      vehicle.style.transform = `translateX(-50%) rotate(${dragTilt}deg)`;
+      return;
+    }
+
     planeX += moveDir * dt * 0.056;
     planeX = Math.max(6,Math.min(94,planeX));
     vehicle.style.left = planeX + '%';
-
-    const stage = stageForCycle(Math.min(TOTAL,completed+1));
-    const tiltAmount = stage.id === 3 ? 4 : stage.id >= 4 ? 10 : 8;
     vehicle.style.transform = `translateX(-50%) rotate(${moveDir*tiltAmount}deg)`;
   }
 
@@ -1050,9 +1199,15 @@ button{font:inherit}
     paused=false;
     planeX=50;
     moveDir=0;
+    draggingVehicle=false;
+    dragPointerId=null;
+    dragTilt=0;
+    dragBottom=null;
+    lastDragX=null;
     currentStageId=1;
     recentCorrectPositions={2:[],3:[]};
     vehicle.style.left='50%';
+    vehicle.style.bottom='';
     vehicle.style.transform='translateX(-50%)';
     applyStage(STAGES[0]);
     targetNumber.textContent='500';
@@ -1065,6 +1220,12 @@ button{font:inherit}
     startOverlay.classList.add('hidden');
     endOverlay.classList.add('hidden');
     pauseBtn.textContent='Pausa';
+
+    if(touchHint){
+      touchHint.classList.remove('hidden');
+      setTimeout(()=>touchHint.classList.add('hidden'),6500);
+    }
+
     spawnGate();
   }
 
@@ -1083,6 +1244,92 @@ button{font:inherit}
       endText.innerHTML=`Has llegado al ciclo <strong>${completed}</strong> de ${TOTAL} con <strong>${score} puntos</strong>.`;
     }
   }
+
+
+  function moveVehicleToPointer(e){
+    if(!draggingVehicle) return;
+
+    const rect = game.getBoundingClientRect();
+    const vRect = vehicle.getBoundingClientRect();
+
+    /* lewo/prawo — cały pojazd pozostaje w obrębie planszy */
+    const halfW = vRect.width / 2;
+    const xPx = Math.max(
+      halfW + 4,
+      Math.min(rect.width - halfW - 4, e.clientX - rect.left)
+    );
+
+    const newX = (xPx / rect.width) * 100;
+
+    if(lastDragX !== null){
+      const dx = e.clientX - lastDragX;
+      dragTilt = Math.max(-12, Math.min(12, dx * 0.8));
+    }
+    lastDragX = e.clientX;
+
+    planeX = newX;
+    vehicle.style.left = planeX + '%';
+
+    /*
+      Można ruszać również trochę góra/dół.
+      Zakres jest ograniczony do dolnej części planszy,
+      żeby nie zepsuć mechaniki nadlatujących odpowiedzi.
+    */
+    const centerFromBottom = rect.bottom - e.clientY;
+    const halfH = vRect.height / 2;
+    const minBottom = 46;
+    const maxBottom = Math.max(150, rect.height * 0.43);
+
+    dragBottom = Math.max(
+      minBottom,
+      Math.min(maxBottom, centerFromBottom - halfH)
+    );
+
+    vehicle.style.bottom = dragBottom + 'px';
+  }
+
+  vehicle.addEventListener('pointerdown', e=>{
+    if(!running || paused) return;
+
+    draggingVehicle = true;
+    dragPointerId = e.pointerId;
+    lastDragX = e.clientX;
+    dragTilt = 0;
+    moveDir = 0;
+
+    vehicle.classList.add('dragging');
+
+    if(vehicle.setPointerCapture){
+      try{ vehicle.setPointerCapture(e.pointerId); }catch(_){}
+    }
+
+    if(touchHint) touchHint.classList.add('hidden');
+    e.preventDefault();
+  });
+
+  vehicle.addEventListener('pointermove', e=>{
+    if(!draggingVehicle || e.pointerId !== dragPointerId) return;
+    moveVehicleToPointer(e);
+    e.preventDefault();
+  });
+
+  function finishVehicleDrag(e){
+    if(!draggingVehicle) return;
+    if(e && dragPointerId !== null && e.pointerId !== dragPointerId) return;
+
+    draggingVehicle = false;
+    dragPointerId = null;
+    lastDragX = null;
+    dragTilt = 0;
+
+    vehicle.classList.remove('dragging');
+    vehicle.style.transform = 'translateX(-50%) rotate(0deg)';
+  }
+
+  vehicle.addEventListener('pointerup', finishVehicleDrag);
+  vehicle.addEventListener('pointercancel', finishVehicleDrag);
+  vehicle.addEventListener('lostpointercapture', finishVehicleDrag);
+
 
   function setMove(dir){moveDir=dir}
 
