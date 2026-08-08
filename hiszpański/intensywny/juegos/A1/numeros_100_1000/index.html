@@ -1172,16 +1172,82 @@ button{font:inherit}
 
     const p = vehicle.getBoundingClientRect();
     const zones = [...gate.el.querySelectorAll('.answer-zone')];
+    const rects = zones.map(z => z.getBoundingClientRect());
 
+    /*
+      Przy 3 odpowiedziach nie używamy już całej szerokości statku do
+      wyboru pola. Statek może być szeroki i zahaczać o sąsiednią odpowiedź.
+      Zamiast tego patrzymy na jego ŚRODEK i przypisujemy go do najbliższego
+      pola. Daje to dużo bardziej naturalne sterowanie na telefonie.
+    */
+    if(gate.stage.options === 3){
+      const shipCenterX = (p.left + p.right) / 2;
+      const shipCenterY = (p.top + p.bottom) / 2;
+
+      /*
+        Większy pionowy margines trafienia:
+        pole zaczyna reagować trochę wcześniej i kończy trochę później.
+      */
+      const verticalMargin = 34;
+      const gateTop = Math.min(...rects.map(r => r.top)) - verticalMargin;
+      const gateBottom = Math.max(...rects.map(r => r.bottom)) + verticalMargin;
+
+      if(shipCenterY >= gateTop && shipCenterY <= gateBottom){
+        const centers = rects.map(r => (r.left + r.right) / 2);
+
+        /* wybieramy pole, którego środek jest najbliżej środka statku */
+        let chosen = 0;
+        let bestDistance = Math.abs(shipCenterX - centers[0]);
+
+        for(let i=1;i<centers.length;i++){
+          const d = Math.abs(shipCenterX - centers[i]);
+          if(d < bestDistance){
+            bestDistance = d;
+            chosen = i;
+          }
+        }
+
+        /*
+          Dodatkowy niewidzialny margines poziomy.
+          Dzięki niemu statek nie musi być idealnie wycentrowany.
+        */
+        const laneWidth = rects[chosen].width;
+        const horizontalMargin = Math.max(26, laneWidth * 0.22);
+
+        if(
+          shipCenterX >= rects[chosen].left - horizontalMargin &&
+          shipCenterX <= rects[chosen].right + horizontalMargin
+        ){
+          resolveGate(
+            gate,
+            chosen === gate.correctPos ? 'correct' : 'wrong',
+            chosen
+          );
+          return;
+        }
+      }
+
+      const first = rects[0];
+      if(first.top > p.bottom + 46){
+        resolveGate(gate,'missed',null);
+      }
+
+      return;
+    }
+
+    /*
+      Dla 2 odpowiedzi zostawiamy dotychczasowe zachowanie,
+      bo tam szerokość pól jest duża i działa ono dobrze.
+    */
     for(let i=0;i<zones.length;i++){
-      const r = zones[i].getBoundingClientRect();
+      const r = rects[i];
       if(overlap(p,r)){
         resolveGate(gate, i===gate.correctPos?'correct':'wrong', i);
         return;
       }
     }
 
-    const first = zones[0].getBoundingClientRect();
+    const first = rects[0];
     if(first.top > p.bottom + 30){
       resolveGate(gate,'missed',null);
     }
