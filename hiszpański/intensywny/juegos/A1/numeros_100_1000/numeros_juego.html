@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vuelo de números — 100–1000</title>
+<style>
+:root{
+  --ink:#17324d;
+  --muted:#61788e;
+  --white:#fff;
+  --good:#2eaa78;
+  --bad:#e45f68;
+  --gold:#f2c75b;
+  --shadow:0 20px 55px rgba(19,56,89,.18);
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+  color:var(--ink);
+  background:#eaf6fc;
+}
+button{font:inherit}
+.app{
+  width:min(1220px,100%);
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 320px;
+  gap:18px;
+}
+.game-card,.panel{
+  background:rgba(255,255,255,.94);
+  border:1px solid rgba(23,50,77,.08);
+  border-radius:28px;
+  box-shadow:var(--shadow);
+  overflow:hidden;
+}
+.hud{
+  min-height:84px;
+  padding:14px 18px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  background:rgba(255,255,255,.95);
+  border-bottom:1px solid rgba(23,50,77,.07);
+}
+.title{font-size:clamp(19px,2.1vw,28px);font-weight:950;letter-spacing:-.4px}
+.title b{color:#2d7fc4}
+.subtitle{font-size:12px;color:var(--muted);margin-top:3px;font-weight:650}
+.hud-stats{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.stat{padding:8px 11px;border-radius:999px;background:#f2f7fb;font-weight:850;font-size:13px;white-space:nowrap}
+.stat strong{font-size:15px}
+.score-stat{
+  background:linear-gradient(180deg,#fff6cf,#ffe9a0);
+  border:1px solid rgba(205,151,24,.24);
+  box-shadow:0 5px 14px rgba(181,128,15,.12);
+  min-width:122px;
+  text-align:center;
+}
+.score-stat strong{
+  display:inline-block;
+  min-width:34px;
+  font-size:20px;
+  color:#9b6500;
+  margin-left:4px;
+  transition:transform .16s ease;
+}
+.score-stat.bump strong{transform:scale(1.32)}
+#lives{letter-spacing:1px}
+
+.game{
+  position:relative;
+  height:min(78vh,790px);
+  min-height:620px;
+  overflow:hidden;
+  isolation:isolate;
+  transition:background 1s ease;
+}
+
+/* ---------- WORLD / ENVIRONMENTS ---------- */
+.game.stage-1{
+  background:
+    linear-gradient(180deg,#77c7f0 0%,#bce8fa 48%,#ddf4fb 68%,#9bd780 69%,#75ba65 100%);
+}
+.game.stage-2{
+  background:
+    linear-gradient(180deg,#4ba9df 0%,#8fd4f2 52%,#d9f4ff 100%);
+}
+.game.stage-3{
+  background:
+    radial-gradient(circle at 50% 115%,#5ba8da 0 24%,#235a8c 31%,#112b4a 47%,#071529 68%,#030912 100%);
+}
+.game.stage-4{
+  background:
+    radial-gradient(circle at 14% 16%,rgba(76,128,206,.32),transparent 24%),
+    radial-gradient(circle at 80% 26%,rgba(147,78,182,.25),transparent 27%),
+    linear-gradient(180deg,#05091a,#090d25 48%,#02040c);
+}
+.game.stage-5{
+  background:
+    radial-gradient(circle at 18% 28%,rgba(136,73,187,.32),transparent 26%),
+    radial-gradient(circle at 76% 70%,rgba(40,116,174,.22),transparent 30%),
+    linear-gradient(180deg,#070817,#0b0b20 52%,#02030a);
+}
+.game.stage-6{
+  background:
+    radial-gradient(circle at 72% 20%,rgba(49,131,204,.28),transparent 22%),
+    radial-gradient(circle at 18% 74%,rgba(185,70,144,.22),transparent 28%),
+    linear-gradient(180deg,#050713,#0a0e26 58%,#02030a);
+}
+.game.stage-7,
+.game.stage-8{
+  background:
+    radial-gradient(circle at 50% 45%,rgba(54,145,218,.16),transparent 30%),
+    linear-gradient(180deg,#02040c,#06081a 58%,#010208);
+}
+
+/* land */
+.landscape{position:absolute;inset:auto 0 0;height:32%;z-index:1;pointer-events:none;transition:opacity .8s ease}
+.game:not(.stage-1) .landscape{opacity:0}
+.hill{position:absolute;bottom:-20%;border-radius:50% 50% 0 0;background:#6db65d}
+.h1{left:-10%;width:55%;height:72%}
+.h2{left:28%;width:52%;height:56%;background:#84c96e}
+.h3{right:-12%;width:55%;height:78%;background:#62ad56}
+.road{
+  position:absolute;left:50%;bottom:-2%;width:85px;height:70%;
+  transform:translateX(-50%) perspective(140px) rotateX(14deg);
+  background:linear-gradient(90deg,#777 0 45%,#f4d35e 45% 55%,#777 55%);
+  clip-path:polygon(44% 0,56% 0,100% 100%,0 100%);
+  opacity:.72
+}
+
+/* planet glow */
+.planet{
+  position:absolute;left:50%;bottom:-250px;width:740px;height:360px;transform:translateX(-50%);
+  border-radius:50%;
+  background:
+    radial-gradient(circle at 42% 26%,rgba(255,255,255,.9),transparent 2%),
+    radial-gradient(circle at 55% 22%,#78d1e8 0 5%,transparent 6%),
+    radial-gradient(circle at 46% 18%,#3ca0ce 0 16%,#246494 25%,#15395e 45%,#0d2037 66%,transparent 67%);
+  box-shadow:0 -18px 75px rgba(79,183,232,.4);
+  opacity:0;z-index:1;transition:opacity .9s ease
+}
+.game.stage-3 .planet{opacity:1}
+
+/* stars */
+.starfield,.warpfield{position:absolute;inset:0;z-index:0;pointer-events:none}
+.starfield::before,.starfield::after{
+  content:"";position:absolute;inset:-20%;
+  background-image:
+    radial-gradient(circle,#fff 0 1px,transparent 1.4px),
+    radial-gradient(circle,rgba(164,211,255,.95) 0 1.2px,transparent 1.6px),
+    radial-gradient(circle,rgba(255,255,255,.72) 0 .8px,transparent 1.2px);
+  background-size:83px 83px,127px 127px,47px 47px;
+  background-position:10px 20px,40px 70px,13px 35px;
+  opacity:0;
+  transition:opacity .8s ease;
+  animation:starDrift 9s linear infinite;
+}
+.starfield::after{transform:scale(1.2);animation-duration:14s;opacity:0}
+.game.stage-3 .starfield::before,
+.game.stage-4 .starfield::before,
+.game.stage-5 .starfield::before,
+.game.stage-6 .starfield::before,
+.game.stage-7 .starfield::before{opacity:.78}
+.game.stage-4 .starfield::after,
+.game.stage-5 .starfield::after,
+.game.stage-6 .starfield::after,
+.game.stage-7 .starfield::after{opacity:.42}
+@keyframes starDrift{from{translate:0 -8%}to{translate:0 16%}}
+
+.warpfield{
+  opacity:0;
+  background:
+    repeating-linear-gradient(90deg,transparent 0 5.5%,rgba(255,255,255,.08) 5.6% 5.75%,transparent 5.9% 11%);
+  filter:blur(.6px);
+}
+.game.stage-7 .warpfield{opacity:.55;animation:warp 1.45s linear infinite}
+.game.stage-8 .warpfield{opacity:1;animation:warp .95s linear infinite}
+@keyframes warp{from{transform:translateY(-12%)}to{transform:translateY(18%)}}
+
+/* sky decorative clouds */
+.decor-cloud{
+  position:absolute;width:130px;height:42px;border-radius:60px;background:rgba(255,255,255,.42);
+  z-index:2;filter:blur(.2px);pointer-events:none;
+}
+.decor-cloud::before,.decor-cloud::after{
+  content:"";position:absolute;background:inherit;border-radius:50%
+}
+.decor-cloud::before{width:62px;height:62px;left:18px;top:-29px}
+.decor-cloud::after{width:82px;height:82px;right:14px;top:-42px}
+.dc1{left:6%;top:-160px;animation:decorFall 12s linear infinite -4s}
+.dc2{right:11%;top:-190px;transform:scale(.65);animation:decorFall 15s linear infinite -10s}
+.dc3{left:45%;top:-110px;transform:scale(.48);animation:decorFall 18s linear infinite -2s}
+.game.stage-3 .decor-cloud,.game.stage-4 .decor-cloud,.game.stage-5 .decor-cloud,.game.stage-6 .decor-cloud,.game.stage-7 .decor-cloud,.game.stage-8 .decor-cloud{display:none}
+@keyframes decorFall{from{translate:0 -120px}to{translate:0 980px}}
+
+
+.game.stage-8 .decor-cloud{display:none}
+.game.stage-8 .target{background:rgba(12,25,47,.84);color:#fff;border-color:rgba(147,203,255,.32)}
+.game.stage-8 .target small{color:#a7c6df}
+.game.stage-8 .cycle-ribbon{background:rgba(10,22,40,.82);color:#fff;border:1px solid rgba(160,210,255,.2)}
+.game.stage-8 .space-shape{display:block;background:
+  radial-gradient(circle at 16% 34%,rgba(255,255,255,.92) 0 2px,transparent 3px),
+  radial-gradient(circle at 74% 62%,rgba(138,205,255,.86) 0 2px,transparent 3px),
+  radial-gradient(circle at 52% 26%,rgba(255,222,245,.85) 0 1.5px,transparent 2.5px),
+  radial-gradient(ellipse at center,rgba(77,100,205,.46),rgba(69,47,132,.28) 54%,rgba(18,19,50,.18) 70%,transparent 73%);
+  border:1px solid rgba(156,184,255,.36);
+  box-shadow:0 0 50px rgba(78,160,255,.38),inset 0 0 40px rgba(255,255,255,.12)}
+.game.stage-8 .cloud-shape{display:none}
+.game.stage-8 .answer-text{color:#f6fbff;text-shadow:0 2px 7px rgba(0,0,0,.65)}
+.game.stage-8 .vehicle{width:134px;height:148px}
+
+/* target */
+.target{
+  position:absolute;top:16px;left:50%;transform:translateX(-50%);z-index:35;
+  min-width:185px;padding:9px 20px 10px;text-align:center;border-radius:20px;
+  background:rgba(255,255,255,.93);border:1px solid rgba(255,255,255,.7);
+  box-shadow:0 12px 30px rgba(15,49,77,.16);backdrop-filter:blur(8px)
+}
+.target small{font-size:10px;letter-spacing:1.15px;text-transform:uppercase;font-weight:900;color:#70869a}
+#targetNumber{font-size:clamp(35px,5vw,59px);font-weight:1000;line-height:1;letter-spacing:-1px}
+.game.stage-3 .target,.game.stage-4 .target,.game.stage-5 .target,.game.stage-6 .target,.game.stage-7 .target,.game.stage-8 .target{
+  background:rgba(12,25,47,.84);color:#fff;border-color:rgba(147,203,255,.32)
+}
+.game.stage-3 .target small,.game.stage-4 .target small,.game.stage-5 .target small,.game.stage-6 .target small,.game.stage-7 .target small,.game.stage-8 .target small{color:#a7c6df}
+
+.level-ribbon,.cycle-ribbon{
+  position:absolute;top:18px;z-index:35;padding:9px 12px;border-radius:14px;
+  box-shadow:0 9px 22px rgba(17,50,82,.15);font-weight:900
+}
+.level-ribbon{left:16px;background:rgba(16,51,81,.88);color:#fff}
+.level-ribbon strong{display:block;font-size:14px}
+.level-ribbon span{display:block;font-size:10px;opacity:.78;margin-top:1px}
+.cycle-ribbon{right:16px;background:rgba(255,255,255,.9);font-size:13px}
+.game.stage-3 .cycle-ribbon,.game.stage-4 .cycle-ribbon,.game.stage-5 .cycle-ribbon,.game.stage-6 .cycle-ribbon,.game.stage-7 .cycle-ribbon,.game.stage-8 .cycle-ribbon{
+  background:rgba(10,22,40,.82);color:#fff;border:1px solid rgba(160,210,255,.2)
+}
+
+/* gates */
+.gate{
+  position:absolute;left:0;top:0;width:100%;height:138px;z-index:14;pointer-events:none;will-change:transform
+}
+.answer-zone{
+  position:absolute;top:0;height:124px;filter:drop-shadow(0 15px 14px rgba(23,66,100,.18))
+}
+.gate.two .answer-zone{width:39%;min-width:245px;max-width:370px}
+.gate.two .answer-zone.pos-0{left:5%}
+.gate.two .answer-zone.pos-1{right:5%}
+
+.gate.three .answer-zone{width:30.5%;min-width:190px;max-width:320px}
+.gate.three .answer-zone.pos-0{left:1.8%}
+.gate.three .answer-zone.pos-1{left:50%;transform:translateX(-50%)}
+.gate.three .answer-zone.pos-2{right:1.8%}
+
+/* cloud gates in sky */
+.cloud-shape{
+  position:absolute;inset:16px 0 0;background:linear-gradient(180deg,#fff,#f5fbff 62%,#e3f2fa);
+  border-radius:66px;border:2px solid rgba(255,255,255,.82);
+  box-shadow:inset 0 -12px 18px rgba(88,161,204,.1),inset 0 8px 12px rgba(255,255,255,.85)
+}
+.cloud-shape::before,.cloud-shape::after{
+  content:"";position:absolute;border-radius:50%;
+  background:radial-gradient(circle at 42% 30%,#fff 0 42%,#edf8fd 74%,#dfeef7 100%);
+  border:2px solid rgba(255,255,255,.65)
+}
+.cloud-shape::before{width:96px;height:96px;left:17%;top:-47px}
+.cloud-shape::after{width:122px;height:122px;right:14%;top:-62px}
+
+/* orbital / space gates */
+.space-shape{position:absolute;inset:4px 0 0;border-radius:58px;display:none}
+.game.stage-3 .space-shape,
+.game.stage-4 .space-shape,
+.game.stage-5 .space-shape,
+.game.stage-6 .space-shape,
+.game.stage-7 .space-shape,.game.stage-8 .space-shape{display:block}
+.game.stage-3 .cloud-shape,
+.game.stage-4 .cloud-shape,
+.game.stage-5 .cloud-shape,
+.game.stage-6 .cloud-shape,
+.game.stage-7 .cloud-shape,.game.stage-8 .cloud-shape{display:none}
+
+.game.stage-3 .space-shape{
+  background:
+    radial-gradient(circle at 20% 50%,rgba(181,226,255,.9) 0 3%,transparent 4%),
+    radial-gradient(circle at 72% 32%,rgba(255,255,255,.85) 0 2%,transparent 3%),
+    radial-gradient(ellipse at center,rgba(96,177,230,.45),rgba(35,85,129,.28) 58%,rgba(12,33,57,.10) 72%,transparent 74%);
+  border:1px solid rgba(144,212,255,.42);
+  box-shadow:0 0 30px rgba(64,154,211,.2),inset 0 0 32px rgba(128,206,255,.14)
+}
+.game.stage-4 .space-shape,
+.game.stage-5 .space-shape,
+.game.stage-6 .space-shape,
+.game.stage-7 .space-shape,
+.game.stage-8 .space-shape{
+  background:
+    radial-gradient(circle at 16% 34%,rgba(255,255,255,.92) 0 2px,transparent 3px),
+    radial-gradient(circle at 74% 62%,rgba(138,205,255,.86) 0 2px,transparent 3px),
+    radial-gradient(circle at 52% 26%,rgba(255,222,245,.85) 0 1.5px,transparent 2.5px),
+    radial-gradient(ellipse at center,rgba(91,88,188,.40),rgba(84,47,122,.25) 54%,rgba(18,19,50,.18) 70%,transparent 73%);
+  border:1px solid rgba(156,154,255,.32);
+  box-shadow:0 0 34px rgba(117,94,204,.18),inset 0 0 36px rgba(163,127,222,.12)
+}
+.game.stage-6 .space-shape{box-shadow:0 0 38px rgba(67,147,226,.26),inset 0 0 38px rgba(83,139,209,.16)}
+.game.stage-7 .space-shape,
+.game.stage-8 .space-shape{box-shadow:0 0 46px rgba(89,172,255,.34),inset 0 0 38px rgba(255,255,255,.12)}
+
+.zone-glow{position:absolute;inset:0;border-radius:68px;transition:.14s}
+.answer-text{
+  position:absolute;z-index:5;inset:28px 16px 10px;display:flex;align-items:center;justify-content:center;
+  text-align:center;font-size:clamp(16px,1.85vw,24px);line-height:1.08;font-weight:950;color:#183651;text-shadow:0 1px 0 #fff
+}
+.game.stage-3 .answer-text,.game.stage-4 .answer-text,.game.stage-5 .answer-text,.game.stage-6 .answer-text,.game.stage-7 .answer-text,.game.stage-8 .answer-text{
+  color:#f6fbff;text-shadow:0 2px 7px rgba(0,0,0,.65)
+}
+.gate.three .answer-text{font-size:clamp(14px,1.55vw,20px);inset:25px 10px 8px}
+
+.gate.resolved.correct .chosen .zone-glow{box-shadow:inset 0 0 0 5px rgba(46,170,120,.85),0 0 34px rgba(46,170,120,.35)}
+.gate.resolved.wrong .chosen .zone-glow{box-shadow:inset 0 0 0 5px rgba(228,95,104,.85),0 0 34px rgba(228,95,104,.32)}
+.gate.resolved.missed .answer-zone{opacity:.58}
+
+/* vehicle */
+.vehicle{
+  position:absolute;left:50%;bottom:76px;width:124px;height:136px;transform:translateX(-50%);
+  z-index:26;transition:filter .14s ease,width .5s ease,height .5s ease;will-change:left,transform;
+  filter:drop-shadow(0 17px 13px rgba(15,44,70,.28))
+}
+.vehicle svg{display:block;width:100%;height:100%;overflow:visible}
+.vehicle.good{filter:drop-shadow(0 0 13px rgba(46,170,120,.95)) drop-shadow(0 17px 13px rgba(15,44,70,.24))}
+.vehicle.bad{filter:drop-shadow(0 0 13px rgba(228,95,104,.95)) drop-shadow(0 17px 13px rgba(15,44,70,.24))}
+.game.stage-3 .vehicle{width:132px;height:142px}
+.game.stage-4 .vehicle,.game.stage-5 .vehicle,.game.stage-6 .vehicle,.game.stage-7 .vehicle,.game.stage-8 .vehicle{width:134px;height:148px}
+
+.feedback{
+  position:absolute;left:50%;bottom:225px;transform:translateX(-50%) translateY(10px) scale(.92);
+  z-index:38;padding:9px 14px;border-radius:14px;color:#fff;font-size:17px;font-weight:950;opacity:0;
+  pointer-events:none;transition:.16s ease;box-shadow:0 10px 25px rgba(0,0,0,.16)
+}
+.feedback.show{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}
+.feedback.good{background:var(--good)}
+.feedback.bad{background:var(--bad)}
+
+.mobile-controls{
+  display:none;position:absolute;bottom:18px;left:50%;transform:translateX(-50%);z-index:44;gap:18px
+}
+.move-btn{
+  width:66px;height:54px;border:none;border-radius:18px;background:rgba(255,255,255,.9);color:var(--ink);
+  font-size:27px;font-weight:950;box-shadow:0 8px 20px rgba(23,50,77,.2);touch-action:none
+}
+
+/* overlay */
+.overlay{
+  position:absolute;inset:0;z-index:70;display:flex;align-items:center;justify-content:center;padding:24px;
+  background:rgba(224,244,255,.82);backdrop-filter:blur(8px)
+}
+.overlay.hidden{display:none}
+.modal{
+  width:min(560px,100%);padding:28px;border-radius:28px;background:rgba(255,255,255,.97);
+  box-shadow:0 22px 60px rgba(17,61,98,.24);text-align:center
+}
+.modal .icon{font-size:58px;line-height:1}
+.modal h1{margin:12px 0 8px;font-size:clamp(28px,5vw,42px)}
+.modal p{color:var(--muted);line-height:1.55;margin:0 0 18px}
+.primary{
+  border:none;width:100%;padding:13px 16px;border-radius:15px;font-weight:950;font-size:15px;color:#fff;
+  background:linear-gradient(180deg,#388bd0,#2873ba);cursor:pointer;box-shadow:0 9px 18px rgba(50,127,199,.22)
+}
+
+/* sidebar */
+.sidebar{display:flex;flex-direction:column;gap:16px}
+.panel{padding:20px;overflow:visible}
+.panel h2,.panel h3{margin:0 0 12px}
+.mission{display:grid;gap:9px}
+.stage-card{
+  position:relative;padding:11px 11px 11px 43px;border-radius:15px;background:#f5f8fb;border:2px solid transparent
+}
+.stage-card::before{
+  content:attr(data-n);position:absolute;left:11px;top:11px;width:24px;height:24px;display:grid;place-items:center;
+  border-radius:50%;background:#dfeaf4;color:#4b647c;font-weight:950;font-size:12px
+}
+.stage-card strong{display:block;font-size:13px;margin-bottom:2px}
+.stage-card span{display:block;font-size:11px;color:var(--muted);line-height:1.3}
+.stage-card.active{background:#edf7ff;border-color:#75b9e8}
+.stage-card.done{background:#effaf5}
+.stage-card.done::before{content:"✓";background:#cfeedd;color:#14734b}
+
+.progress-wrap{margin-top:16px}
+.progress-label{display:flex;justify-content:space-between;gap:10px;font-size:12px;font-weight:850;color:#5d7388;margin-bottom:7px}
+.progress{height:11px;background:#edf2f6;border-radius:999px;overflow:hidden}
+.progress>div{height:100%;width:0;background:linear-gradient(90deg,#2f7dc4,#75c0ef);transition:width .25s ease}
+.rules{font-size:13px;line-height:1.56;color:#536b82}
+.rules strong{color:var(--ink)}
+.small-btn{
+  width:100%;margin-top:12px;padding:11px 13px;border:none;border-radius:14px;background:#eef3f7;color:var(--ink);font-weight:900;cursor:pointer
+}
+
+@media(max-width:960px){
+  .app{grid-template-columns:1fr}
+  .sidebar{grid-row:2}
+}
+@media(max-width:700px){
+  body{padding:0}
+  .app{width:100%;gap:0}
+  .game-card{border-radius:0}
+  .game{height:74vh;min-height:590px}
+  .hud{padding:10px 12px;align-items:flex-start;flex-direction:column}
+  .hud-stats{justify-content:flex-start}
+  .level-ribbon{left:9px;top:10px}
+  .cycle-ribbon{right:9px;top:10px}
+  .target{top:65px}
+  .gate.two .answer-zone{width:44%;min-width:145px}
+  .gate.two .answer-zone.pos-0{left:2%}
+  .gate.two .answer-zone.pos-1{right:2%}
+  .gate.three .answer-zone{width:31.5%;min-width:98px}
+  .gate.three .answer-zone.pos-0{left:1%}
+  .gate.three .answer-zone.pos-2{right:1%}
+  .cloud-shape::before{width:65px;height:65px;top:-28px}
+  .cloud-shape::after{width:78px;height:78px;top:-36px}
+  .answer-text{font-size:14px;inset:25px 7px 8px}
+  .gate.three .answer-text{font-size:11px;line-height:1.04;inset:21px 5px 5px}
+  .vehicle{width:102px;height:114px;bottom:86px}
+  .game.stage-3 .vehicle,.game.stage-4 .vehicle,.game.stage-5 .vehicle,.game.stage-6 .vehicle,.game.stage-7 .vehicle{width:110px;height:120px}
+  .mobile-controls{display:flex}
+  .sidebar .panel{border-radius:0;box-shadow:none;border-left:none;border-right:none}
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+  <main class="game-card">
+    <header class="hud">
+      <div>
+        <div class="title">✈️ <b>Vuelo de números</b> · 100–1000</div>
+        <div class="subtitle">Cada etapa sube más alto: del suelo al espacio profundo.</div>
+      </div>
+      <div class="hud-stats">
+        <div class="stat score-stat">⭐ PUNTOS <strong id="score">0</strong></div>
+        <div class="stat">Vidas <span id="lives">❤️❤️❤️❤️</span></div>
+      </div>
+    </header>
+
+    <section class="game stage-1" id="game">
+      <div class="starfield"></div>
+      <div class="warpfield"></div>
+
+      <div class="landscape">
+        <div class="hill h1"></div>
+        <div class="hill h2"></div>
+        <div class="hill h3"></div>
+        <div class="road"></div>
+      </div>
+      <div class="planet"></div>
+
+      <div class="decor-cloud dc1"></div>
+      <div class="decor-cloud dc2"></div>
+      <div class="decor-cloud dc3"></div>
+
+      <div class="level-ribbon">
+        <strong id="stageName">Etapa 1</strong>
+        <span id="stageDesc">Avioneta · centenas · lento</span>
+      </div>
+
+      <div class="target">
+        <small>Número objetivo</small>
+        <div id="targetNumber">500</div>
+      </div>
+
+      <div class="cycle-ribbon">
+        Ciclo <span id="cycleTop">1</span>/180
+      </div>
+
+      <div class="vehicle" id="vehicle"></div>
+      <div class="feedback" id="feedback">¡Perfecto! +10</div>
+
+      <div class="mobile-controls">
+        <button class="move-btn" id="leftBtn">←</button>
+        <button class="move-btn" id="rightBtn">→</button>
+      </div>
+
+      <div class="overlay" id="startOverlay">
+        <div class="modal">
+          <div class="icon">🛩️</div>
+          <h1>Del cielo al espacio</h1>
+          <p>
+            Mueve el vehículo con <strong>← →</strong> o <strong>A / D</strong> y atraviesa la respuesta correcta.
+            La dificultad cambia automáticamente: primero centenas, después centenas con decenas y al final números completos
+            con <strong>tres opciones muy parecidas</strong>.
+            <br><br>
+            La misión completa tiene <strong>180 ciclos</strong> y las respuestas correctas valen <strong>10, 20 o 30 puntos</strong> según la dificultad.
+          </p>
+          <button class="primary" id="startBtn">Empezar</button>
+        </div>
+      </div>
+
+      <div class="overlay hidden" id="endOverlay">
+        <div class="modal">
+          <div class="icon" id="endIcon">🏆</div>
+          <h1 id="endTitle">¡Misión completada!</h1>
+          <p id="endText"></p>
+          <button class="primary" id="restartBtn">Jugar otra vez</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <aside class="sidebar">
+    <section class="panel">
+      <h2>Etapas</h2>
+      <div class="mission">
+        <div class="stage-card active" data-n="1" id="card1"><strong>1 · 15 ciclos · +10</strong><span>Avioneta · 100, 200, 300… · lento</span></div>
+        <div class="stage-card" data-n="2" id="card2"><strong>2 · 15 ciclos · +10</strong><span>Avión · 100, 200, 300… · rápido</span></div>
+        <div class="stage-card" data-n="3" id="card3"><strong>3 · 20 ciclos · +20</strong><span>Satélite · 110, 440, 580… · lento</span></div>
+        <div class="stage-card" data-n="4" id="card4"><strong>4 · 20 ciclos · +20</strong><span>Nave · 110, 440, 580… · rápido · 2 opciones</span></div>
+        <div class="stage-card" data-n="5" id="card5"><strong>5 · 20 ciclos · +20</strong><span>Nave · centenas + decenas · rápido · 3 opciones</span></div>
+        <div class="stage-card" data-n="6" id="card6"><strong>6 · 30 ciclos · +30</strong><span>Todos los números · 3 opciones parecidas · análisis</span></div>
+        <div class="stage-card" data-n="7" id="card7"><strong>7 · 30 ciclos · +30</strong><span>Todos los números · 3 opciones parecidas · rápido</span></div>
+        <div class="stage-card" data-n="8" id="card8"><strong>8 · 30 ciclos · +30</strong><span>Espacio profundo · 3 opciones · velocidad máxima</span></div>
+      </div>
+
+      <div class="progress-wrap">
+        <div class="progress-label">
+          <span>Progreso total</span>
+          <span><b id="cycleSide">0</b>/180</span>
+        </div>
+        <div class="progress"><div id="progressBar"></div></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h3>Reglas</h3>
+      <div class="rules">
+        ⭐ <strong>Puntuación:</strong> +10 / +20 / +30 según la etapa<br>
+        ✅ <strong>Respuesta correcta:</strong> suma puntos<br>
+        ❌ <strong>Respuesta incorrecta:</strong> −1 vida<br>
+        💨 <strong>No atraviesas ninguna:</strong> −1 vida<br>
+        ❤️ Empiezas con <strong>4 vidas</strong>.<br><br>
+        Desde la etapa 5 aparecen <strong>tres respuestas</strong>. En las etapas 6–8 los números son deliberadamente muy parecidos.
+      </div>
+      <button class="small-btn" id="pauseBtn">Pausa</button>
+    </section>
+  </aside>
+</div>
+
+<script>
+(() => {
+  const TOTAL = 180;
+  const STAGES = [
+    {id:1, start:1,   end:15,  count:15, mode:'hundreds', options:2, speed:105, points:10, label:'Avioneta · centenas · lento · +10'},
+    {id:2, start:16,  end:30,  count:15, mode:'hundreds', options:2, speed:168, points:10, label:'Avión · centenas · rápido · +10'},
+    {id:3, start:31,  end:50,  count:20, mode:'tens',     options:2, speed:118, points:20, label:'Satélite · centenas + decenas · lento · +20'},
+    {id:4, start:51,  end:70,  count:20, mode:'tens',     options:2, speed:178, points:20, label:'Nave · centenas + decenas · rápido · +20'},
+    {id:5, start:71,  end:90,  count:20, mode:'tens',     options:3, speed:190, points:20, label:'Nave · centenas + decenas · 3 opciones · +20'},
+    {id:6, start:91,  end:120, count:30, mode:'full',     options:3, speed:88,  points:30, label:'Espacio · números completos · análisis · +30'},
+    {id:7, start:121, end:150, count:30, mode:'full',     options:3, speed:126, points:30, label:'Espacio · números completos · rápido · +30'},
+    {id:8, start:151, end:180, count:30, mode:'full',     options:3, speed:172, points:30, label:'Espacio profundo · velocidad máxima · +30'}
+  ];
+
+  const game = document.getElementById('game');
+  const vehicle = document.getElementById('vehicle');
+  const targetNumber = document.getElementById('targetNumber');
+  const scoreEl = document.getElementById('score');
+  const livesEl = document.getElementById('lives');
+  const cycleTop = document.getElementById('cycleTop');
+  const cycleSide = document.getElementById('cycleSide');
+  const progressBar = document.getElementById('progressBar');
+  const stageName = document.getElementById('stageName');
+  const stageDesc = document.getElementById('stageDesc');
+  const feedback = document.getElementById('feedback');
+  const startOverlay = document.getElementById('startOverlay');
+  const endOverlay = document.getElementById('endOverlay');
+  const endIcon = document.getElementById('endIcon');
+  const endTitle = document.getElementById('endTitle');
+  const endText = document.getElementById('endText');
+  const startBtn = document.getElementById('startBtn');
+  const restartBtn = document.getElementById('restartBtn');
+  const pauseBtn = document.getElementById('pauseBtn');
+  const leftBtn = document.getElementById('leftBtn');
+  const rightBtn = document.getElementById('rightBtn');
+  const cards = STAGES.map(s => document.getElementById('card'+s.id));
+
+  let score = 0;
+  let lives = 4;
+  let completed = 0;
+  let running = false;
+  let paused = false;
+  let planeX = 50;
+  let moveDir = 0;
+  let lastTs = 0;
+  let gates = [];
+  let gateCounter = 0;
+  let currentStageId = 1;
+
+  /* Random, but without annoying long streaks on one side/column. */
+  let recentCorrectPositions = {2:[],3:[]};
+
+  const ones = ['', 'uno','dos','tres','cuatro','cinco','seis','siete','ocho','nueve'];
+  const special = {
+    10:'diez',11:'once',12:'doce',13:'trece',14:'catorce',15:'quince',
+    16:'dieciséis',17:'diecisiete',18:'dieciocho',19:'diecinueve',
+    20:'veinte',21:'veintiuno',22:'veintidós',23:'veintitrés',24:'veinticuatro',
+    25:'veinticinco',26:'veintiséis',27:'veintisiete',28:'veintiocho',29:'veintinueve'
+  };
+  const tens = {30:'treinta',40:'cuarenta',50:'cincuenta',60:'sesenta',70:'setenta',80:'ochenta',90:'noventa'};
+  const hundreds = {200:'doscientos',300:'trescientos',400:'cuatrocientos',500:'quinientos',600:'seiscientos',700:'setecientos',800:'ochocientos',900:'novecientos'};
+
+  function numberToSpanish(n){
+    if(n === 1000) return 'mil';
+    if(n === 100) return 'cien';
+
+    let text = '';
+    if(n > 100){
+      const h = Math.floor(n/100)*100;
+      text = h === 100 ? 'ciento' : hundreds[h];
+      n %= 100;
+      if(n) text += ' ';
+    }
+    if(n === 0) return text.trim();
+    if(n < 10) return (text + ones[n]).trim();
+    if(n <= 29) return (text + special[n]).trim();
+
+    const t = Math.floor(n/10)*10;
+    const u = n % 10;
+    text += tens[t];
+    if(u) text += ' y ' + ones[u];
+    return text.trim();
+  }
+
+  function rand(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+
+  function stageForCycle(cycle){
+    return STAGES.find(s => cycle >= s.start && cycle <= s.end) || STAGES[STAGES.length-1];
+  }
+
+  function nextCorrectPosition(count){
+    const history = recentCorrectPositions[count];
+    let choices = Array.from({length:count},(_,i)=>i);
+
+    /* Never allow three correct answers in exactly the same lane. */
+    if(history.length >= 2 && history[history.length-1] === history[history.length-2]){
+      choices = choices.filter(i => i !== history[history.length-1]);
+    }
+
+    /* If one lane has clearly dominated the last few questions, gently reduce it. */
+    if(history.length >= 5){
+      const lastFive = history.slice(-5);
+      const counts = choices.map(i => lastFive.filter(x=>x===i).length);
+      const min = Math.min(...counts);
+      const balanced = choices.filter((i,idx)=>counts[idx] <= min+1);
+      if(balanced.length) choices = balanced;
+    }
+
+    const pos = choices[Math.floor(Math.random()*choices.length)];
+    history.push(pos);
+    if(history.length > 8) history.shift();
+    return pos;
+  }
+
+  function numberForStage(stage){
+    if(stage.mode === 'hundreds'){
+      return rand(1,10)*100;
+    }
+    if(stage.mode === 'tens'){
+      let n;
+      do{
+        n = rand(11,99)*10;
+      }while(n % 100 === 0);
+      return n;
+    }
+    return rand(100,1000);
+  }
+
+  function wrongForTwo(n,stage){
+    let candidate = n;
+    let guard = 0;
+    while(candidate === n && guard++ < 100){
+      if(stage.mode === 'hundreds'){
+        candidate = rand(1,10)*100;
+      }else{
+        candidate = rand(11,99)*10;
+        if(candidate % 100 === 0) candidate += 10;
+        candidate = Math.min(candidate,990);
+      }
+    }
+    return candidate === n ? (n === 1000 ? 900 : n+100) : candidate;
+  }
+
+  function nearbyTensNumbers(n){
+    const candidates = [];
+    const offsets = [-30,-20,-10,10,20,30];
+    for(const d of offsets){
+      const x = n + d;
+      if(x >= 110 && x <= 990 && x % 10 === 0 && x !== n) candidates.push(x);
+    }
+
+    /* Prefer numbers from the same hundred whenever possible. */
+    const sameHundred = candidates.filter(x => Math.floor(x/100) === Math.floor(n/100));
+    const pool = sameHundred.length >= 2 ? sameHundred : candidates;
+
+    for(let i=pool.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      [pool[i],pool[j]]=[pool[j],pool[i]];
+    }
+
+    const result = pool.slice(0,2);
+    while(result.length < 2){
+      let x = rand(11,99)*10;
+      if(x % 100 !== 0 && x !== n && !result.includes(x)) result.push(x);
+    }
+    return result;
+  }
+
+  function nearbyNumbers(n){
+    /* Prefer small differences: target and distractors should feel deceptively similar. */
+    const candidates = new Set();
+    const offsets = [-9,-8,-7,-6,-5,-4,-3,-2,-1,1,2,3,4,5,6,7,8,9];
+
+    /* first try same hundred and same tens */
+    const sameTenStart = Math.floor(n/10)*10;
+    for(const d of offsets){
+      const x = n + d;
+      if(x >= 100 && x <= 1000 && Math.floor(x/10)*10 === sameTenStart) candidates.add(x);
+    }
+
+    /* then same hundred */
+    if(candidates.size < 2){
+      const sameHundred = Math.floor(n/100);
+      for(const d of offsets){
+        const x = n + d;
+        if(x >= 100 && x <= 1000 && Math.floor(x/100) === sameHundred) candidates.add(x);
+      }
+    }
+
+    /* fallback */
+    if(candidates.size < 2){
+      for(const d of [-20,-10,10,20,-2,2,-1,1]){
+        const x = n+d;
+        if(x>=100 && x<=1000) candidates.add(x);
+      }
+    }
+
+    const arr = [...candidates].filter(x=>x!==n);
+    for(let i=arr.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      [arr[i],arr[j]]=[arr[j],arr[i]];
+    }
+    return arr.slice(0,2);
+  }
+
+  function setVehicle(stageId){
+    const propPlane = `
+    <svg viewBox="0 0 150 150" xmlns="http://www.w3.org/2000/svg" aria-label="avioneta">
+      <defs>
+        <linearGradient id="p1" x1="0" x2="1"><stop offset="0" stop-color="#f5fbff"/><stop offset=".6" stop-color="#ffffff"/><stop offset="1" stop-color="#d9edf8"/></linearGradient>
+        <linearGradient id="p2" y1="0" y2="1"><stop stop-color="#e86c57"/><stop offset="1" stop-color="#b54237"/></linearGradient>
+      </defs>
+      <ellipse cx="75" cy="139" rx="16" ry="6" fill="rgba(16,52,78,.18)"/>
+      <path d="M75 17 C64 28 61 45 62 64 L56 73 L17 83 C12 85 12 92 18 94 L58 96 L62 119 L48 132 C45 135 47 139 51 139 L66 134 C68 142 71 147 75 147 C79 147 82 142 84 134 L99 139 C103 139 105 135 102 132 L88 119 L92 96 L132 94 C138 92 138 85 133 83 L94 73 L88 64 C89 45 86 28 75 17Z" fill="url(#p1)" stroke="#173a59" stroke-width="3.2"/>
+      <path d="M57 73 L17 83 C12 85 12 92 18 94 L59 96 L65 80Z" fill="url(#p2)" stroke="#173a59" stroke-width="3"/>
+      <path d="M93 73 L133 83 C138 85 138 92 132 94 L91 96 L85 80Z" fill="url(#p2)" stroke="#173a59" stroke-width="3"/>
+      <path d="M67 50 Q75 42 83 50 L84 62 Q75 67 66 62Z" fill="#94d9f2" stroke="#173a59" stroke-width="2.4"/>
+      <circle cx="75" cy="13" r="8" fill="#f4c75b" stroke="#173a59" stroke-width="2"/>
+      <path d="M75 13 L49 7 M75 13 L101 7" stroke="#173a59" stroke-width="3.3" stroke-linecap="round"/>
+    </svg>`;
+
+    const airliner = `
+    <svg viewBox="0 0 150 160" xmlns="http://www.w3.org/2000/svg" aria-label="avión">
+      <defs>
+        <linearGradient id="a1" x1="0" x2="1"><stop offset="0" stop-color="#e9f7ff"/><stop offset=".5" stop-color="#fff"/><stop offset="1" stop-color="#cfe7f6"/></linearGradient>
+        <linearGradient id="a2" y1="0" y2="1"><stop stop-color="#4e9bd7"/><stop offset="1" stop-color="#2868a0"/></linearGradient>
+      </defs>
+      <path d="M75 5 C65 18 61 35 61 57 L54 69 L10 86 C5 88 6 95 12 97 L56 99 L62 122 L42 139 C39 142 41 147 46 147 L66 140 C68 150 71 156 75 156 C79 156 82 150 84 140 L104 147 C109 147 111 142 108 139 L88 122 L94 99 L138 97 C144 95 145 88 140 86 L96 69 L89 57 C89 35 85 18 75 5Z" fill="url(#a1)" stroke="#153b5d" stroke-width="3.4"/>
+      <path d="M54 69 L10 86 C5 88 6 95 12 97 L57 99 L64 82Z" fill="url(#a2)" stroke="#153b5d" stroke-width="3"/>
+      <path d="M96 69 L140 86 C145 88 144 95 138 97 L93 99 L86 82Z" fill="url(#a2)" stroke="#153b5d" stroke-width="3"/>
+      <path d="M66 38 Q75 29 84 38 L85 54 Q75 59 65 54Z" fill="#7fd1ef" stroke="#153b5d" stroke-width="2.5"/>
+      <path d="M70 111 H80 L82 129 H68Z" fill="#e7665f" stroke="#153b5d" stroke-width="2.2"/>
+      <circle cx="75" cy="72" r="4.5" fill="#f3c958" stroke="#153b5d" stroke-width="2"/>
+      <circle cx="75" cy="84" r="4.5" fill="#f3c958" stroke="#153b5d" stroke-width="2"/>
+    </svg>`;
+
+    const satellite = `
+    <svg viewBox="0 0 170 160" xmlns="http://www.w3.org/2000/svg" aria-label="satélite">
+      <defs>
+        <linearGradient id="s1" x1="0" x2="1"><stop stop-color="#eaf2f8"/><stop offset=".5" stop-color="#bccbd8"/><stop offset="1" stop-color="#7f93a6"/></linearGradient>
+        <linearGradient id="s2" y1="0" y2="1"><stop stop-color="#2c77bc"/><stop offset="1" stop-color="#163f74"/></linearGradient>
+      </defs>
+      <g transform="translate(85 82)">
+        <rect x="-28" y="-34" width="56" height="68" rx="10" fill="url(#s1)" stroke="#d9ecfa" stroke-width="2.5"/>
+        <circle cx="0" cy="-3" r="16" fill="#18314f" stroke="#9dd8ff" stroke-width="3"/>
+        <circle cx="-5" cy="-8" r="4" fill="#bfeeff"/>
+        <path d="M-52 -12 H-30 M30 -12 H52 M-52 12 H-30 M30 12 H52" stroke="#d7e7f4" stroke-width="4"/>
+        <rect x="-80" y="-31" width="28" height="62" rx="2" fill="url(#s2)" stroke="#9ed2ff" stroke-width="2"/>
+        <rect x="52" y="-31" width="28" height="62" rx="2" fill="url(#s2)" stroke="#9ed2ff" stroke-width="2"/>
+        <path d="M-73 -31 V31 M-66 -31 V31 M-59 -31 V31 M59 -31 V31 M66 -31 V31 M73 -31 V31" stroke="rgba(196,232,255,.65)" stroke-width="1"/>
+        <path d="M-80 -10 H-52 M-80 10 H-52 M52 -10 H80 M52 10 H80" stroke="rgba(196,232,255,.65)" stroke-width="1"/>
+        <path d="M0 34 V56" stroke="#d7e7f4" stroke-width="4"/>
+        <ellipse cx="0" cy="61" rx="22" ry="8" fill="#9ba8b5" stroke="#d7e7f4" stroke-width="2"/>
+        <path d="M-20 61 Q0 89 20 61" fill="none" stroke="#d7e7f4" stroke-width="3"/>
+      </g>
+    </svg>`;
+
+    const spaceship = `
+    <svg viewBox="0 0 160 170" xmlns="http://www.w3.org/2000/svg" aria-label="nave espacial">
+      <defs>
+        <linearGradient id="n1" x1="0" x2="1"><stop stop-color="#e8f3fb"/><stop offset=".48" stop-color="#ffffff"/><stop offset="1" stop-color="#a8bed1"/></linearGradient>
+        <linearGradient id="n2" y1="0" y2="1"><stop stop-color="#6a72df"/><stop offset="1" stop-color="#3f3e94"/></linearGradient>
+        <linearGradient id="flame" y1="0" y2="1"><stop stop-color="#fff5a8"/><stop offset=".35" stop-color="#ffae4c"/><stop offset=".75" stop-color="#ff5a5f"/><stop offset="1" stop-color="rgba(255,80,91,0)"/></linearGradient>
+      </defs>
+      <path d="M80 5 C60 22 52 48 53 75 L37 95 L18 118 C14 123 19 129 25 127 L53 116 L61 138 H99 L107 116 L135 127 C141 129 146 123 142 118 L123 95 L107 75 C108 48 100 22 80 5Z" fill="url(#n1)" stroke="#bfe6ff" stroke-width="3"/>
+      <path d="M53 75 L37 95 L18 118 C14 123 19 129 25 127 L58 114 L64 92Z" fill="url(#n2)" stroke="#bfe6ff" stroke-width="2.5"/>
+      <path d="M107 75 L123 95 L142 118 C146 123 141 129 135 127 L102 114 L96 92Z" fill="url(#n2)" stroke="#bfe6ff" stroke-width="2.5"/>
+      <path d="M65 47 Q80 34 95 47 L97 70 Q80 79 63 70Z" fill="#70d5f2" stroke="#d8f2ff" stroke-width="2.6"/>
+      <circle cx="80" cy="91" r="5" fill="#f7cb59"/>
+      <path d="M65 138 L73 138 L70 167 Z M87 138 L95 138 L90 167 Z" fill="url(#flame)"/>
+    </svg>`;
+
+    vehicle.innerHTML =
+      stageId === 1 ? propPlane :
+      stageId === 2 ? airliner :
+      stageId === 3 ? satellite :
+      spaceship;
+  }
+
+  function applyStage(stage){
+    currentStageId = stage.id;
+    game.className = 'game stage-' + stage.id;
+    stageName.textContent = 'Etapa ' + stage.id;
+    stageDesc.textContent = stage.label;
+    setVehicle(stage.id);
+
+    cards.forEach((card,i)=>{
+      const s = STAGES[i];
+      card.classList.toggle('active', s.id === stage.id);
+      card.classList.toggle('done', completed >= s.end);
+    });
+  }
+
+  function updateHUD(){
+    const nextCycle = Math.min(TOTAL, completed + 1);
+    const stage = stageForCycle(nextCycle);
+
+    scoreEl.textContent = score;
+    livesEl.textContent = '❤️'.repeat(lives) + '🖤'.repeat(4-lives);
+    cycleTop.textContent = nextCycle;
+    cycleSide.textContent = completed;
+    progressBar.style.width = (completed/TOTAL*100) + '%';
+
+    if(stage.id !== currentStageId) applyStage(stage);
+    else{
+      cards.forEach((card,i)=>{
+        const s=STAGES[i];
+        card.classList.toggle('active', s.id===stage.id && completed<TOTAL);
+        card.classList.toggle('done', completed>=s.end);
+      });
+    }
+  }
+
+  function zoneHTML(pos,text){
+    return `
+      <div class="answer-zone pos-${pos}">
+        <div class="cloud-shape"></div>
+        <div class="space-shape"></div>
+        <div class="zone-glow"></div>
+        <div class="answer-text">${text}</div>
+      </div>`;
+  }
+
+  function spawnGate(){
+    if(!running || completed >= TOTAL || lives <= 0) return;
+
+    const cycle = completed + 1;
+    const stage = stageForCycle(cycle);
+    if(stage.id !== currentStageId) applyStage(stage);
+
+    const number = numberForStage(stage);
+    const correctPos = nextCorrectPosition(stage.options);
+
+    let values;
+    if(stage.options === 2){
+      values = [wrongForTwo(number,stage)];
+      values.splice(correctPos,0,number);
+    }else{
+      const nearby = stage.mode === 'tens' ? nearbyTensNumbers(number) : nearbyNumbers(number);
+      values = nearby.slice(0,2);
+      while(values.length < 2){
+        let x;
+        if(stage.mode === 'tens'){
+          x = rand(11,99)*10;
+          if(x % 100 === 0) x += 10;
+          x = Math.min(990,x);
+        }else{
+          x = Math.max(100,Math.min(1000,number + (values.length ? 2 : -2)));
+        }
+        if(x !== number && !values.includes(x)) values.push(x);
+      }
+      values.splice(correctPos,0,number);
+    }
+
+    const el = document.createElement('div');
+    el.className = `gate ${stage.options===2?'two':'three'}`;
+    const id = ++gateCounter;
+    el.dataset.id = id;
+    el.innerHTML = values.map((v,i)=>zoneHTML(i,numberToSpanish(v))).join('');
+    game.appendChild(el);
+
+    const startY = stage.options === 3 ? -220 : -180;
+    const gate = {
+      id, el, y:startY, stage, number, correctPos, values, resolved:false, speed:stage.speed
+    };
+    gates.push(gate);
+
+    targetNumber.textContent = number;
+    updateHUD();
+  }
+
+  function flash(ok,points=0){
+    feedback.textContent = ok ? `¡Perfecto! +${points}` : '¡Cuidado! −1 vida';
+    feedback.className = `feedback ${ok?'good':'bad'} show`;
+    vehicle.classList.remove('good','bad');
+    vehicle.classList.add(ok?'good':'bad');
+
+    if(ok){
+      const scoreBox = scoreEl.closest('.score-stat');
+      if(scoreBox){
+        scoreBox.classList.remove('bump');
+        void scoreBox.offsetWidth;
+        scoreBox.classList.add('bump');
+        setTimeout(()=>scoreBox.classList.remove('bump'),180);
+      }
+    }
+
+    setTimeout(()=>{
+      feedback.classList.remove('show');
+      vehicle.classList.remove('good','bad');
+    },420);
+  }
+
+  function resolveGate(gate,result,chosenPos=null){
+    if(gate.resolved) return;
+    gate.resolved = true;
+    gate.el.classList.add('resolved',result);
+
+    if(chosenPos !== null){
+      const chosen = gate.el.querySelector('.answer-zone.pos-'+chosenPos);
+      if(chosen) chosen.classList.add('chosen');
+    }
+
+    if(result === 'correct'){
+      score += gate.stage.points;
+      updateHUD();
+      flash(true,gate.stage.points);
+    }else{
+      lives--;
+      updateHUD();
+      flash(false,0);
+    }
+
+    completed++;
+    updateHUD();
+
+    if(completed >= TOTAL){
+      setTimeout(()=>endGame(true),520);
+      return;
+    }
+    if(lives <= 0){
+      setTimeout(()=>endGame(false),520);
+      return;
+    }
+
+    /* continuous flight: old gate keeps moving away, next gate already starts entering */
+    setTimeout(()=> {
+      if(running && !paused && lives>0 && completed<TOTAL) spawnGate();
+      else if(running && lives>0 && completed<TOTAL) spawnGate();
+    }, 150);
+  }
+
+  function overlap(a,b){
+    return !(a.right<b.left || a.left>b.right || a.bottom<b.top || a.top>b.bottom);
+  }
+
+  function checkGate(gate){
+    if(gate.resolved) return;
+
+    const p = vehicle.getBoundingClientRect();
+    const zones = [...gate.el.querySelectorAll('.answer-zone')];
+
+    for(let i=0;i<zones.length;i++){
+      const r = zones[i].getBoundingClientRect();
+      if(overlap(p,r)){
+        resolveGate(gate, i===gate.correctPos?'correct':'wrong', i);
+        return;
+      }
+    }
+
+    const first = zones[0].getBoundingClientRect();
+    if(first.top > p.bottom + 30){
+      resolveGate(gate,'missed',null);
+    }
+  }
+
+  function updateVehicle(dt){
+    planeX += moveDir * dt * 0.056;
+    planeX = Math.max(6,Math.min(94,planeX));
+    vehicle.style.left = planeX + '%';
+
+    const stage = stageForCycle(Math.min(TOTAL,completed+1));
+    const tiltAmount = stage.id === 3 ? 4 : stage.id >= 4 ? 10 : 8;
+    vehicle.style.transform = `translateX(-50%) rotate(${moveDir*tiltAmount}deg)`;
+  }
+
+  function loop(ts){
+    requestAnimationFrame(loop);
+    if(!running || paused){ lastTs = ts; return; }
+    if(!lastTs) lastTs = ts;
+
+    const dt = Math.min(32,ts-lastTs);
+    lastTs = ts;
+
+    updateVehicle(dt);
+
+    for(const gate of gates){
+      gate.y += gate.speed*(dt/1000);
+      gate.el.style.transform = `translateY(${gate.y}px)`;
+      checkGate(gate);
+    }
+
+    const gr = game.getBoundingClientRect();
+    gates = gates.filter(g=>{
+      const r = g.el.getBoundingClientRect();
+      if(r.top > gr.bottom + 190){
+        g.el.remove();
+        return false;
+      }
+      return true;
+    });
+  }
+
+  function reset(){
+    gates.forEach(g=>g.el.remove());
+    gates=[];
+    score=0;
+    lives=4;
+    completed=0;
+    running=false;
+    paused=false;
+    planeX=50;
+    moveDir=0;
+    currentStageId=1;
+    recentCorrectPositions={2:[],3:[]};
+    vehicle.style.left='50%';
+    vehicle.style.transform='translateX(-50%)';
+    applyStage(STAGES[0]);
+    targetNumber.textContent='500';
+    updateHUD();
+  }
+
+  function startGame(){
+    reset();
+    running=true;
+    startOverlay.classList.add('hidden');
+    endOverlay.classList.add('hidden');
+    pauseBtn.textContent='Pausa';
+    spawnGate();
+  }
+
+  function endGame(success){
+    running=false;
+    paused=false;
+    endOverlay.classList.remove('hidden');
+
+    if(success && completed>=TOTAL){
+      endIcon.textContent='🌌';
+      endTitle.textContent='¡Misión completada!';
+      endText.innerHTML=`Has recorrido los <strong>${TOTAL} ciclos</strong> y conseguido <strong>${score} puntos</strong>.`;
+    }else{
+      endIcon.textContent='🛬';
+      endTitle.textContent='Fin del vuelo';
+      endText.innerHTML=`Has llegado al ciclo <strong>${completed}</strong> de ${TOTAL} con <strong>${score} puntos</strong>.`;
+    }
+  }
+
+  function setMove(dir){moveDir=dir}
+
+  document.addEventListener('keydown',e=>{
+    if(['ArrowLeft','a','A'].includes(e.key)){e.preventDefault();setMove(-1)}
+    if(['ArrowRight','d','D'].includes(e.key)){e.preventDefault();setMove(1)}
+    if(e.key===' ' && running){
+      e.preventDefault();
+      paused=!paused;
+      pauseBtn.textContent=paused?'Continuar':'Pausa';
+    }
+  });
+
+  document.addEventListener('keyup',e=>{
+    if(['ArrowLeft','ArrowRight','a','A','d','D'].includes(e.key)) setMove(0);
+  });
+
+  function bindHold(btn,dir){
+    btn.addEventListener('pointerdown',e=>{e.preventDefault();setMove(dir)});
+    ['pointerup','pointercancel','pointerleave'].forEach(type=>{
+      btn.addEventListener(type,e=>{e.preventDefault();setMove(0)});
+    });
+  }
+  bindHold(leftBtn,-1);
+  bindHold(rightBtn,1);
+
+  pauseBtn.addEventListener('click',()=>{
+    if(!running)return;
+    paused=!paused;
+    pauseBtn.textContent=paused?'Continuar':'Pausa';
+  });
+
+  startBtn.addEventListener('click',startGame);
+  restartBtn.addEventListener('click',startGame);
+
+  reset();
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
