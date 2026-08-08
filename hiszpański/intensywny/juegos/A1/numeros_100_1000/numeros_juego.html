@@ -75,6 +75,8 @@ button{font:inherit}
 
 .game{
   position:relative;
+  touch-action:none;
+  overscroll-behavior:none;
   height:min(78vh,790px);
   min-height:620px;
   overflow:hidden;
@@ -338,7 +340,7 @@ button{font:inherit}
   cursor:grabbing;
   transition:filter .14s ease,width .5s ease,height .5s ease;
 }
-.vehicle svg{display:block;width:100%;height:100%;overflow:visible}
+.vehicle svg{display:block;width:100%;height:100%;overflow:visible;pointer-events:none}
 .vehicle.good{filter:drop-shadow(0 0 13px rgba(46,170,120,.95)) drop-shadow(0 17px 13px rgba(15,44,70,.24))}
 .vehicle.bad{filter:drop-shadow(0 0 13px rgba(228,95,104,.95)) drop-shadow(0 17px 13px rgba(15,44,70,.24))}
 .game.stage-3 .vehicle{width:132px;height:142px}
@@ -380,6 +382,25 @@ button{font:inherit}
   white-space:nowrap;
 }
 .touch-hint.hidden{opacity:0}
+
+
+.vehicle::after{
+  content:"";
+  position:absolute;
+  left:-26px;
+  right:-26px;
+  top:-26px;
+  bottom:-26px;
+  background:transparent;
+}
+@media(max-width:700px){
+  .vehicle::after{
+    left:-42px;
+    right:-42px;
+    top:-42px;
+    bottom:-42px;
+  }
+}
 
 /* overlay */
 .overlay{
@@ -604,6 +625,8 @@ button{font:inherit}
         <div id="targetNumber">500</div>
       </div>
 
+      <div id="versionBadge" style="position:absolute;left:10px;bottom:10px;z-index:80;padding:4px 7px;border-radius:8px;background:rgba(0,0,0,.45);color:white;font-size:9px;font-weight:800;pointer-events:none">MOBILE v2</div>
+
       <div class="cycle-ribbon">
         Ciclo <span id="cycleTop">1</span>/180
       </div>
@@ -611,13 +634,7 @@ button{font:inherit}
       <div class="vehicle" id="vehicle"></div>
       <div class="feedback" id="feedback">+10</div>
       <div class="touch-hint" id="touchHint">👆 Przytrzymaj i przeciągnij pojazd</div>
-
-      <div class="mobile-controls">
-        <button class="move-btn" id="leftBtn">←</button>
-        <button class="move-btn" id="rightBtn">→</button>
-      </div>
-
-      <div class="overlay" id="startOverlay">
+<div class="overlay" id="startOverlay">
         <div class="modal">
           <div class="icon">🛩️</div>
           <h1>Del cielo al espacio</h1>
@@ -714,8 +731,6 @@ button{font:inherit}
   const startBtn = document.getElementById('startBtn');
   const restartBtn = document.getElementById('restartBtn');
   const pauseBtn = document.getElementById('pauseBtn');
-  const leftBtn = document.getElementById('leftBtn');
-  const rightBtn = document.getElementById('rightBtn');
   const touchHint = document.getElementById('touchHint');
   const cards = STAGES.map(s => document.getElementById('card'+s.id));
 
@@ -1246,89 +1261,98 @@ button{font:inherit}
   }
 
 
-  function moveVehicleToPointer(e){
+
+  function moveVehicleFromTouch(e){
     if(!draggingVehicle) return;
 
     const rect = game.getBoundingClientRect();
     const vRect = vehicle.getBoundingClientRect();
 
-    /* lewo/prawo — cały pojazd pozostaje w obrębie planszy */
     const halfW = vRect.width / 2;
-    const xPx = Math.max(
+    const x = Math.max(
       halfW + 4,
       Math.min(rect.width - halfW - 4, e.clientX - rect.left)
     );
 
-    const newX = (xPx / rect.width) * 100;
-
     if(lastDragX !== null){
-      const dx = e.clientX - lastDragX;
-      dragTilt = Math.max(-12, Math.min(12, dx * 0.8));
+      dragTilt = Math.max(-12, Math.min(12, (e.clientX - lastDragX) * 0.85));
     }
     lastDragX = e.clientX;
 
-    planeX = newX;
+    planeX = (x / rect.width) * 100;
     vehicle.style.left = planeX + '%';
 
-    /*
-      Można ruszać również trochę góra/dół.
-      Zakres jest ograniczony do dolnej części planszy,
-      żeby nie zepsuć mechaniki nadlatujących odpowiedzi.
-    */
-    const centerFromBottom = rect.bottom - e.clientY;
+    /* limited vertical movement */
     const halfH = vRect.height / 2;
-    const minBottom = 46;
+    const fromBottom = rect.bottom - e.clientY - halfH;
+    const minBottom = 45;
     const maxBottom = Math.max(150, rect.height * 0.43);
+    vehicle.style.bottom = Math.max(minBottom, Math.min(maxBottom, fromBottom)) + 'px';
 
-    dragBottom = Math.max(
-      minBottom,
-      Math.min(maxBottom, centerFromBottom - halfH)
-    );
-
-    vehicle.style.bottom = dragBottom + 'px';
+    vehicle.style.transform = `translateX(-50%) rotate(${dragTilt}deg)`;
   }
 
-  vehicle.addEventListener('pointerdown', e=>{
+  function startVehicleDrag(e){
     if(!running || paused) return;
-
     draggingVehicle = true;
-    dragPointerId = e.pointerId;
+    dragPointerId = e.pointerId ?? null;
     lastDragX = e.clientX;
     dragTilt = 0;
     moveDir = 0;
-
     vehicle.classList.add('dragging');
-
-    if(vehicle.setPointerCapture){
-      try{ vehicle.setPointerCapture(e.pointerId); }catch(_){}
-    }
-
     if(touchHint) touchHint.classList.add('hidden');
     e.preventDefault();
-  });
+  }
 
-  vehicle.addEventListener('pointermove', e=>{
-    if(!draggingVehicle || e.pointerId !== dragPointerId) return;
-    moveVehicleToPointer(e);
-    e.preventDefault();
-  });
-
-  function finishVehicleDrag(e){
+  function stopVehicleDrag(e){
     if(!draggingVehicle) return;
-    if(e && dragPointerId !== null && e.pointerId !== dragPointerId) return;
+    if(e && dragPointerId !== null && e.pointerId !== undefined && e.pointerId !== dragPointerId) return;
 
     draggingVehicle = false;
     dragPointerId = null;
     lastDragX = null;
     dragTilt = 0;
-
     vehicle.classList.remove('dragging');
     vehicle.style.transform = 'translateX(-50%) rotate(0deg)';
   }
 
-  vehicle.addEventListener('pointerup', finishVehicleDrag);
-  vehicle.addEventListener('pointercancel', finishVehicleDrag);
-  vehicle.addEventListener('lostpointercapture', finishVehicleDrag);
+  /* Pointer Events — Android, iPhone/iPad, touch laptops */
+  vehicle.addEventListener('pointerdown', startVehicleDrag, {passive:false});
+  window.addEventListener('pointermove', e=>{
+    if(!draggingVehicle) return;
+    if(dragPointerId !== null && e.pointerId !== dragPointerId) return;
+    moveVehicleFromTouch(e);
+    e.preventDefault();
+  }, {passive:false});
+  window.addEventListener('pointerup', stopVehicleDrag, {passive:false});
+  window.addEventListener('pointercancel', stopVehicleDrag, {passive:false});
+
+  /* Fallback for older touch implementations */
+  vehicle.addEventListener('touchstart', e=>{
+    if(!running || paused || !e.touches.length) return;
+    const t = e.touches[0];
+    startVehicleDrag({
+      clientX:t.clientX,
+      clientY:t.clientY,
+      pointerId:null,
+      preventDefault:()=>e.preventDefault()
+    });
+  }, {passive:false});
+
+  window.addEventListener('touchmove', e=>{
+    if(!draggingVehicle || !e.touches.length) return;
+    const t = e.touches[0];
+    moveVehicleFromTouch({
+      clientX:t.clientX,
+      clientY:t.clientY,
+      preventDefault:()=>e.preventDefault()
+    });
+    e.preventDefault();
+  }, {passive:false});
+
+  window.addEventListener('touchend', e=>{
+    if(draggingVehicle) stopVehicleDrag(null);
+  }, {passive:false});
 
 
   function setMove(dir){moveDir=dir}
@@ -1347,15 +1371,6 @@ button{font:inherit}
     if(['ArrowLeft','ArrowRight','a','A','d','D'].includes(e.key)) setMove(0);
   });
 
-  function bindHold(btn,dir){
-    btn.addEventListener('pointerdown',e=>{e.preventDefault();setMove(dir)});
-    ['pointerup','pointercancel','pointerleave'].forEach(type=>{
-      btn.addEventListener(type,e=>{e.preventDefault();setMove(0)});
-    });
-  }
-  bindHold(leftBtn,-1);
-  bindHold(rightBtn,1);
-
   pauseBtn.addEventListener('click',()=>{
     if(!running)return;
     paused=!paused;
@@ -1371,3 +1386,11 @@ button{font:inherit}
 </script>
 </body>
 </html>
+
+<style>
+.mobile-controls{display:none !important;}
+@media(max-width:700px){
+  .mobile-controls{display:none !important;}
+  #versionBadge{display:block !important;}
+}
+</style>
