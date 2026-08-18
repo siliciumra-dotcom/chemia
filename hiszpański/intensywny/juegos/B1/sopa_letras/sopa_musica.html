@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sopa de letras – Música</title>
+<style>
+:root{
+  --bg:#f6f7fb; --card:#ffffff; --text:#1d2433; --muted:#667085;
+  --line:#d9deea; --accent:#6757d9; --accent-soft:#ece9ff;
+  --found:#dff7e8; --found-border:#7dcf9d; --wrong:#ffe8e8;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+body{padding:18px 14px 40px}
+.app{width:min(100%,980px);margin:0 auto}
+header{display:flex;gap:16px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;margin-bottom:14px}
+h1{font-size:clamp(1.55rem,4vw,2.35rem);margin:0 0 4px;line-height:1.05}
+.subtitle{margin:0;color:var(--muted);font-size:.98rem}
+.controls{display:flex;gap:8px;flex-wrap:wrap}
+button{appearance:none;border:1px solid var(--line);background:#fff;color:var(--text);border-radius:12px;padding:10px 14px;font-weight:750;cursor:pointer;box-shadow:0 1px 2px rgba(20,26,40,.04)}
+button:hover{border-color:#b9c1d2}
+button.primary{background:var(--accent);border-color:var(--accent);color:white}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(250px,320px);gap:16px;align-items:start}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:0 6px 24px rgba(31,38,60,.06)}
+.board-panel{padding:12px}
+.instructions{display:flex;gap:8px;align-items:flex-start;background:#f8f9fd;border:1px solid #e5e8f0;border-radius:12px;padding:9px 11px;margin-bottom:10px;color:#4b5565;font-size:.9rem;line-height:1.35}
+.instructions b{color:var(--text)}
+.grid-wrap{width:100%;overflow:hidden;border-radius:14px}
+.grid{display:grid;gap:2px;width:100%;aspect-ratio:1/1;user-select:none;-webkit-user-select:none;touch-action:none;-webkit-touch-callout:none}
+.cell{display:flex;align-items:center;justify-content:center;aspect-ratio:1/1;border:1px solid #e2e6ef;border-radius:6px;background:#fff;font-weight:800;font-size:clamp(.66rem,2.35vw,1rem);line-height:1;cursor:pointer;transition:background .07s,border-color .07s,transform .07s}
+.cell.preview{background:var(--accent-soft);border-color:#a89ef2}
+.cell.tap-start{outline:3px solid rgba(103,87,217,.35);outline-offset:-2px;background:#f4f2ff}
+.cell.found{background:var(--found);border-color:var(--found-border);color:#175f36}
+.cell.wrong{background:var(--wrong);border-color:#f3aaaa}
+.side{padding:16px}
+.progress-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+.progress-label{font-weight:800}.counter{font-variant-numeric:tabular-nums;color:var(--muted);font-weight:800}
+.progress{height:10px;background:#edf0f5;border-radius:999px;overflow:hidden;margin-bottom:14px}
+.progress>div{height:100%;width:0;background:var(--accent);transition:width .25s ease}
+.words{display:grid;gap:7px}
+.word{display:flex;align-items:center;gap:8px;padding:8px 9px;border-radius:10px;border:1px solid transparent;font-size:.92rem}
+.word::before{content:'○';color:#98a2b3;font-weight:900}
+.word.found{background:var(--found);border-color:#b9e6c9;color:#1c6339}
+.word.found::before{content:'✓';color:#18864b}
+.word-label{min-width:0}
+.word.found .word-label{text-decoration:line-through;text-decoration-thickness:2px}
+.translation{display:none;margin-left:auto;color:#176a3c;font-weight:800;font-size:.84em;text-align:right}
+.word.found .translation{display:inline}
+.status{min-height:24px;margin-top:12px;text-align:center;font-weight:750;color:var(--muted)}
+.status.good{color:#18864b}.status.bad{color:#b42318}
+.legend{font-size:.82rem;color:var(--muted);margin-top:14px;line-height:1.4}
+.complete{display:none;margin-top:12px;background:#fff7d7;border:1px solid #efd879;border-radius:12px;padding:11px 12px;font-weight:800;text-align:center}
+.complete.show{display:block;animation:pop .28s ease}
+@keyframes pop{0%{transform:scale(.96);opacity:.3}100%{transform:scale(1);opacity:1}}
+@media(max-width:760px){
+  body{padding:10px 8px 28px}.layout{grid-template-columns:1fr}.side{padding:13px}
+  .board-panel{padding:8px}.instructions{font-size:.82rem;margin-bottom:8px;padding:8px 9px}
+  .grid{gap:1px}.cell{border-radius:4px;font-size:clamp(.56rem,3.8vw,.9rem)}
+  header{align-items:flex-start}.controls{width:100%}.controls button{flex:1}
+  .words{grid-template-columns:repeat(2,minmax(0,1fr))}.word{font-size:.8rem;padding:7px 6px;min-width:0}
+}
+@media(max-width:430px){.words{grid-template-columns:1fr 1fr}.word{font-size:.76rem;align-items:flex-start;flex-wrap:wrap}.translation{width:100%;margin-left:22px;text-align:left}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div>
+      <h1>🎵 Sopa de letras: música</h1>
+      <p class="subtitle">Encuentra el vocabulario esencial sobre canciones, conciertos y artistas.</p>
+    </div>
+    <div class="controls">
+      <button id="resetBtn">Reiniciar</button>
+      <button id="newBtn" class="primary">Nueva sopa</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <section class="panel board-panel">
+      <div class="instructions">
+        <span>☝️</span>
+        <span><b>Arrastra</b> desde la primera hasta la última letra, o <b>toca dos veces</b>: primero el inicio y después el final. Las palabras pueden aparecer en horizontal, vertical y diagonal, en los dos sentidos.</span>
+      </div>
+      <div class="grid-wrap"><div id="grid" class="grid" aria-label="Sopa de letras"></div></div>
+      <div id="status" class="status">Busca la primera palabra.</div>
+      <div id="complete" class="complete">🎉 ¡Perfecto! Has encontrado todas las palabras.</div>
+    </section>
+
+    <aside class="panel side">
+      <div class="progress-row"><span class="progress-label">Palabras</span><span id="counter" class="counter">0 / 0</span></div>
+      <div class="progress"><div id="progressBar"></div></div>
+      <div id="words" class="words"></div>
+      <div class="legend">Las tildes se eliminan dentro de la cuadrícula para que la selección sea más cómoda: <b>canción → CANCION</b>.</div>
+    </aside>
+  </div>
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  const SIZE = 16;
+  const ENTRIES = [{"label": "la letra", "key": "letra", "translation": "tekst piosenki"}, {"label": "el ritmo", "key": "ritmo", "translation": "rytm"}, {"label": "la melodía", "key": "melodía", "translation": "melodia"}, {"label": "la voz", "key": "voz", "translation": "głos"}, {"label": "el estribillo", "key": "estribillo", "translation": "refren"}, {"label": "el videoclip", "key": "videoclip", "translation": "teledysk"}, {"label": "un álbum", "key": "álbum", "translation": "album"}, {"label": "un disco", "key": "disco", "translation": "płyta"}, {"label": "un tema", "key": "tema", "translation": "utwór"}, {"label": "una canción", "key": "canción", "translation": "piosenka"}, {"label": "un éxito", "key": "éxito", "translation": "przebój / hit"}, {"label": "un concierto", "key": "concierto", "translation": "koncert"}, {"label": "un festival", "key": "festival", "translation": "festiwal"}, {"label": "una gira", "key": "gira", "translation": "trasa koncertowa"}];
+  const DIRECTIONS = [
+    [0,1], [0,-1], [1,0], [-1,0],
+    [1,1], [1,-1], [-1,1], [-1,-1]
+  ];
+  const FILL_LETTERS = 'ABCDEFGHIJKLMNÑOPQRSTUVWXYZ';
+
+  const gridEl = document.getElementById('grid');
+  const wordsEl = document.getElementById('words');
+  const counterEl = document.getElementById('counter');
+  const progressEl = document.getElementById('progressBar');
+  const statusEl = document.getElementById('status');
+  const completeEl = document.getElementById('complete');
+
+  const normalize = s => s.toLocaleUpperCase('es-ES').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^A-ZÑ]/g,'');
+  const words = ENTRIES.map(item => ({label:item.label, translation:item.translation, key:normalize(item.key)}));
+
+  let board = [];
+  let placements = [];
+  let found = new Set();
+  let dragging = false;
+  let moved = false;
+  let startCell = null;
+  let lastCell = null;
+  let previewPath = [];
+  let tapStart = null;
+
+  function shuffled(array){
+    const a = [...array];
+    for(let i=a.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [a[i],a[j]]=[a[j],a[i]];
+    }
+    return a;
+  }
+
+  function emptyBoard(){
+    return Array.from({length:SIZE},()=>Array(SIZE).fill(''));
+  }
+
+  function canPlace(b, word, r, c, dr, dc){
+    const er = r + dr*(word.length-1);
+    const ec = c + dc*(word.length-1);
+    if(er<0 || er>=SIZE || ec<0 || ec>=SIZE) return false;
+    for(let i=0;i<word.length;i++){
+      const rr=r+dr*i, cc=c+dc*i;
+      if(b[rr][cc] && b[rr][cc]!==word[i]) return false;
+    }
+    return true;
+  }
+
+  function placeWordExact(b, word, direction){
+    const [dr,dc] = direction;
+    const starts = [];
+    for(let r=0;r<SIZE;r++) for(let c=0;c<SIZE;c++) starts.push([r,c]);
+    for(const [r,c] of shuffled(starts)){
+      if(!canPlace(b,word,r,c,dr,dc)) continue;
+      const cells=[];
+      for(let i=0;i<word.length;i++){
+        const rr=r+dr*i, cc=c+dc*i;
+        b[rr][cc]=word[i];
+        cells.push([rr,cc]);
+      }
+      return {dr,dc,cells};
+    }
+    return null;
+  }
+
+  function placeWordAny(b, word){
+    for(const direction of shuffled(DIRECTIONS)){
+      const p=placeWordExact(b,word,direction);
+      if(p) return p;
+    }
+    return null;
+  }
+
+  function buildPuzzle(){
+    const ordered = [...words].sort((a,b)=>b.key.length-a.key.length);
+    for(let fullTry=0; fullTry<120; fullTry++){
+      const b=emptyBoard();
+      const ps=[];
+      let ok=true;
+      // The first eight words are forced into the eight possible directions.
+      // Therefore every newly generated puzzle really contains horizontal,
+      // vertical and diagonal words in both senses.
+      const offset = Math.floor(Math.random()*DIRECTIONS.length);
+      for(let i=0;i<ordered.length;i++){
+        const p = i < DIRECTIONS.length
+          ? placeWordExact(b, ordered[i].key, DIRECTIONS[(offset+i)%DIRECTIONS.length])
+          : placeWordAny(b, ordered[i].key);
+        if(!p){ok=false;break;}
+        ps.push({key:ordered[i].key,label:ordered[i].label,translation:ordered[i].translation,...p});
+      }
+      if(ok){
+        for(let r=0;r<SIZE;r++) for(let c=0;c<SIZE;c++) if(!b[r][c]) b[r][c]=FILL_LETTERS[Math.floor(Math.random()*FILL_LETTERS.length)];
+        board=b; placements=ps; return;
+      }
+    }
+    throw new Error('No se ha podido generar la sopa.');
+  }
+
+  function render(){
+    found.clear(); tapStart=null; clearPreview(); completeEl.classList.remove('show');
+    gridEl.innerHTML=''; wordsEl.innerHTML='';
+    gridEl.style.gridTemplateColumns=`repeat(${SIZE},1fr)`;
+
+    for(let r=0;r<SIZE;r++) for(let c=0;c<SIZE;c++){
+      const el=document.createElement('div');
+      el.className='cell'; el.textContent=board[r][c];
+      el.dataset.r=r; el.dataset.c=c;
+      gridEl.appendChild(el);
+    }
+    for(const w of words){
+      const el=document.createElement('div');
+      el.className='word'; el.dataset.key=w.key;
+      const label=document.createElement('span'); label.className='word-label'; label.textContent=w.label;
+      const translation=document.createElement('span'); translation.className='translation'; translation.textContent=`→ ${w.translation}`;
+      el.append(label,translation);
+      wordsEl.appendChild(el);
+    }
+    updateProgress(); setStatus('Busca la primera palabra.');
+  }
+
+  function cellFromElement(el){
+    const cell=el?.closest?.('.cell');
+    if(!cell || !gridEl.contains(cell)) return null;
+    return {r:+cell.dataset.r,c:+cell.dataset.c,el:cell};
+  }
+
+  function cellAtPoint(x,y){
+    return cellFromElement(document.elementFromPoint(x,y));
+  }
+
+  function cellEl(r,c){return gridEl.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`)}
+
+  function snappedPath(a,b){
+    if(!a||!b) return [];
+    let dr=b.r-a.r, dc=b.c-a.c;
+    if(dr===0 && dc===0) return [{r:a.r,c:a.c,el:cellEl(a.r,a.c)}];
+    const ar=Math.abs(dr), ac=Math.abs(dc);
+    let sr=0, sc=0, steps=0;
+
+    // Snap to the nearest of the 8 legal directions. This is deliberately forgiving on touch screens.
+    if(ar > ac*1.55){sr=Math.sign(dr); sc=0; steps=ar;}
+    else if(ac > ar*1.55){sr=0; sc=Math.sign(dc); steps=ac;}
+    else {sr=Math.sign(dr); sc=Math.sign(dc); steps=Math.max(ar,ac);}
+
+    let maxSteps=Infinity;
+    if(sr>0) maxSteps=Math.min(maxSteps,SIZE-1-a.r);
+    if(sr<0) maxSteps=Math.min(maxSteps,a.r);
+    if(sc>0) maxSteps=Math.min(maxSteps,SIZE-1-a.c);
+    if(sc<0) maxSteps=Math.min(maxSteps,a.c);
+    steps=Math.min(steps,maxSteps);
+
+    const path=[];
+    for(let i=0;i<=steps;i++){
+      const r=a.r+sr*i,c=a.c+sc*i;
+      path.push({r,c,el:cellEl(r,c)});
+    }
+    return path;
+  }
+
+  function clearPreview(){
+    for(const x of previewPath) x.el?.classList.remove('preview','wrong');
+    previewPath=[];
+    gridEl.querySelectorAll('.tap-start').forEach(el=>el.classList.remove('tap-start'));
+  }
+
+  function showPreview(path){
+    for(const x of previewPath) x.el?.classList.remove('preview','wrong');
+    previewPath=path;
+    for(const x of path) if(!x.el.classList.contains('found')) x.el.classList.add('preview');
+  }
+
+  function selectionKey(path){return path.map(x=>board[x.r][x.c]).join('')}
+
+  function finishSelection(path){
+    if(!path.length){clearPreview();return;}
+    const seq=selectionKey(path);
+    const rev=[...seq].reverse().join('');
+    const match=words.find(w => !found.has(w.key) && (w.key===seq || w.key===rev));
+    if(match){
+      found.add(match.key);
+      for(const x of path){x.el.classList.remove('preview','wrong');x.el.classList.add('found');}
+      document.querySelector(`.word[data-key="${match.key}"]`)?.classList.add('found');
+      previewPath=[];
+      setStatus(`✓ ${match.label} — ${match.translation}`, true);
+      updateProgress();
+      if(found.size===words.length){completeEl.classList.add('show');setStatus('¡Todas encontradas!',true);}
+    }else{
+      for(const x of path) if(!x.el.classList.contains('found')) x.el.classList.add('wrong');
+      setStatus('No es una palabra de la lista. Prueba otra dirección.', false);
+      setTimeout(()=>{for(const x of path)x.el?.classList.remove('preview','wrong'); if(previewPath===path) previewPath=[];},260);
+    }
+  }
+
+  function updateProgress(){
+    counterEl.textContent=`${found.size} / ${words.length}`;
+    progressEl.style.width=`${(found.size/words.length)*100}%`;
+  }
+
+  function setStatus(msg, good=null){
+    statusEl.textContent=msg;
+    statusEl.classList.toggle('good',good===true);
+    statusEl.classList.toggle('bad',good===false);
+  }
+
+  function handleTap(cell){
+    if(!tapStart){
+      clearPreview(); tapStart=cell; cell.el.classList.add('tap-start');
+      setStatus('Ahora toca la última letra.');
+      return;
+    }
+    const first=tapStart; tapStart=null;
+    const path=snappedPath(first,cell);
+    clearPreview(); showPreview(path); finishSelection(path);
+  }
+
+  gridEl.addEventListener('pointerdown',e=>{
+    const cell=cellFromElement(e.target); if(!cell) return;
+    e.preventDefault(); dragging=true; moved=false; startCell=cell; lastCell=cell;
+    clearPreview(); showPreview([cell]);
+  });
+
+  gridEl.addEventListener('pointermove',e=>{
+    if(!dragging) return;
+    e.preventDefault();
+    const cell=cellAtPoint(e.clientX,e.clientY); if(!cell) return;
+    if(cell.r!==lastCell.r || cell.c!==lastCell.c) moved=true;
+    lastCell=cell; showPreview(snappedPath(startCell,cell));
+  });
+
+  window.addEventListener('pointerup',e=>{
+    if(!dragging) return;
+    dragging=false;
+    if(!moved){
+      clearPreview(); handleTap(startCell);
+    }else{
+      tapStart=null; gridEl.querySelectorAll('.tap-start').forEach(el=>el.classList.remove('tap-start'));
+      finishSelection(previewPath);
+    }
+    startCell=null; lastCell=null;
+  },{passive:false});
+
+  window.addEventListener('pointercancel',()=>{
+    dragging=false; startCell=null; lastCell=null; clearPreview();
+  });
+
+  document.getElementById('resetBtn').addEventListener('click',()=>render());
+  document.getElementById('newBtn').addEventListener('click',()=>{buildPuzzle();render();});
+
+  buildPuzzle(); render();
+})();
+</script>
+</body>
+</html>
