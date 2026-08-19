@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Sopa de letras A1 — En el restaurante y la cafetería</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&display=swap');
+
+*{box-sizing:border-box}
+:root{
+  --ink:#203047;
+  --muted:#708094;
+  --cream:#fffaf1;
+  --line:#e8dcc8;
+  --red:#c94f3b;
+  --orange:#e89b45;
+  --green:#31916c;
+  --blue:#496ec2;
+}
+body{
+  margin:0;
+  min-height:100vh;
+  font-family:Poppins,system-ui,sans-serif;
+  color:var(--ink);
+  background:
+    radial-gradient(circle at 10% 8%,rgba(255,255,255,.24),transparent 24%),
+    linear-gradient(135deg,#d85b44,#d69042 48%,#49765f);
+  padding:18px;
+}
+.wrap{width:min(1150px,100%);margin:auto}
+.shell{
+  background:rgba(255,255,255,.97);
+  border-radius:28px;
+  box-shadow:0 24px 70px rgba(40,28,20,.25);
+  overflow:hidden;
+}
+header{
+  padding:24px 28px 19px;
+  background:linear-gradient(135deg,#fff8eb,#fff);
+  border-bottom:1px solid var(--line);
+}
+.topline{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.badge{display:inline-flex;align-items:center;gap:7px;background:#fff0dc;color:#9b5724;padding:7px 11px;border-radius:999px;font-size:12px;font-weight:900}
+h1{margin:8px 0 4px;font-size:clamp(27px,5vw,45px);line-height:1.05}
+.subtitle{margin:0;color:var(--muted);font-size:14px}
+.stats{display:flex;gap:8px;flex-wrap:wrap}
+.stat{background:#f4f6fa;border:1px solid #e2e6ee;border-radius:14px;padding:8px 12px;font-weight:900;font-size:13px}
+main{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:22px;padding:24px}
+.boardBox{min-width:0}
+.instructions{
+  background:#eef4ff;border:1px solid #d3def7;border-radius:16px;padding:12px 14px;
+  font-size:13px;line-height:1.5;margin-bottom:14px;
+}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(15,1fr);
+  gap:4px;
+  touch-action:none;
+  user-select:none;
+  -webkit-user-select:none;
+}
+.cell{
+  aspect-ratio:1/1;
+  min-width:0;
+  display:grid;
+  place-items:center;
+  border:1px solid #eadfce;
+  border-radius:8px;
+  background:#fffaf2;
+  font-weight:900;
+  font-size:clamp(11px,2vw,18px);
+  cursor:pointer;
+  transition:.12s transform,.12s background,.12s box-shadow;
+}
+.cell:hover{transform:translateY(-1px);background:#fff3dd}
+.cell.selecting{background:#ffe0a8;box-shadow:inset 0 0 0 2px #e9a64c}
+.cell.found{background:#dff3e8;color:#1f6c4d;border-color:#9ed5b9;box-shadow:inset 0 0 0 2px #68b28c}
+.cell.wrong{animation:wrong .38s ease;background:#ffdcd6}
+.cell.hint{animation:hint 1s ease 2}
+.side{display:flex;flex-direction:column;gap:14px}
+.panel{background:#fffaf3;border:1px solid var(--line);border-radius:20px;padding:17px}
+.panel h2{font-size:17px;margin:0 0 12px}
+.words{display:grid;gap:7px}
+.word{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding:9px 10px;border-radius:12px;background:white;border:1px solid #e8dfd2;
+  font-size:13px;font-weight:850;transition:.2s;
+}
+.word small{display:none;color:var(--muted);font-weight:600;text-align:right}
+.word.found{background:#e5f5ec;border-color:#b7dfc9;color:#246c4f;text-decoration:line-through}
+.word.found small{display:block;text-decoration:none}
+.actions{display:grid;gap:8px}
+button{
+  border:0;border-radius:13px;padding:11px 13px;font:inherit;font-weight:900;cursor:pointer;
+  color:white;background:var(--red);transition:.15s transform,.15s opacity;
+}
+button:hover{transform:translateY(-1px)}
+button.secondary{background:#e9edf5;color:#38465b}
+button.hintBtn{background:var(--blue)}
+.note{font-size:12px;line-height:1.5;color:var(--muted)}
+.toast{
+  position:fixed;left:50%;bottom:25px;transform:translate(-50%,25px);
+  opacity:0;pointer-events:none;z-index:20;background:#24354e;color:white;
+  padding:11px 16px;border-radius:999px;font-weight:900;font-size:13px;
+  transition:.25s;
+}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.finish{
+  position:fixed;inset:0;background:rgba(23,31,42,.55);display:none;place-items:center;
+  padding:18px;z-index:30;
+}
+.finish.show{display:grid}
+.finishCard{
+  width:min(450px,100%);background:white;border-radius:25px;padding:28px;text-align:center;
+  box-shadow:0 24px 70px rgba(0,0,0,.25)
+}
+.finishCard .big{font-size:65px}
+.finishCard h2{font-size:30px;margin:4px 0}
+@keyframes wrong{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+@keyframes hint{50%{background:#cddcff;box-shadow:0 0 0 4px rgba(73,110,194,.18)}}
+@media(max-width:820px){
+  body{padding:8px}
+  header{padding:20px 16px 15px}
+  main{grid-template-columns:1fr;padding:14px;gap:14px}
+  .side{display:grid;grid-template-columns:1fr 1fr}
+  .grid{gap:2px}
+  .cell{border-radius:5px;font-size:clamp(10px,3.2vw,16px)}
+}
+@media(max-width:520px){
+  .side{grid-template-columns:1fr}
+  .grid{gap:1px}
+  .cell{border-radius:4px;border-width:1px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <section class="shell">
+    <header>
+      <div class="topline">
+        <div>
+          <span class="badge">🍽️ ☕ A1 · COMIDA Y BEBIDA</span>
+          <h1>🔎 Sopa de letras</h1>
+          <p class="subtitle">En el restaurante y la cafetería — acciones útiles para pedir.</p>
+        </div>
+        <div class="stats">
+          <div class="stat">✅ <span id="foundCount">0</span>/11</div>
+          <div class="stat">⏱️ <span id="time">00:00</span></div>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="boardBox">
+        <div class="instructions">
+          <b>¿Cómo jugar?</b> Arrastra desde la primera letra hasta la última.
+          Las palabras pueden estar en horizontal, vertical o diagonal, también al revés.
+        </div>
+        <div id="grid" class="grid" aria-label="Sopa de letras"></div>
+      </section>
+
+      <aside class="side">
+        <section class="panel">
+          <h2>📝 Busca 11 palabras</h2>
+          <div id="words" class="words"></div>
+        </section>
+
+        <section class="panel">
+          <h2>🎮 Acciones</h2>
+          <div class="actions">
+            <button id="hintBtn" class="hintBtn">💡 Una pista</button>
+            <button id="resetBtn" class="secondary">↻ Reiniciar</button>
+          </div>
+          <p class="note">
+            La pista solo marca durante un momento la primera letra de una palabra que todavía no has encontrado.
+          </p>
+        </section>
+      </aside>
+    </main>
+  </section>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<div id="finish" class="finish">
+  <div class="finishCard">
+    <div class="big">🎉</div>
+    <h2>¡Muy bien!</h2>
+    <p>Has encontrado las 11 palabras.</p>
+    <p><b>Tiempo:</b> <span id="finishTime">00:00</span></p>
+    <button id="playAgain">Jugar otra vez</button>
+  </div>
+</div>
+
+<script>
+const GRID = [["F", "V", "W", "Y", "B", "L", "Y", "K", "G", "D", "Ñ", "D", "C", "J", "P"], ["N", "X", "B", "J", "P", "G", "G", "X", "E", "E", "P", "E", "R", "R", "A"], ["L", "E", "C", "F", "O", "U", "K", "R", "I", "D", "E", "P", "A", "A", "L"], ["B", "E", "Q", "K", "H", "N", "J", "H", "A", "H", "Ñ", "V", "B", "T", "R"], ["G", "L", "C", "R", "A", "M", "O", "T", "S", "D", "E", "M", "O", "L", "M"], ["R", "E", "M", "N", "E", "N", "H", "Y", "M", "L", "C", "Y", "R", "Z", "Z"], ["H", "G", "D", "H", "W", "R", "C", "R", "L", "U", "H", "W", "P", "Z", "J"], ["F", "I", "L", "O", "D", "H", "M", "I", "R", "N", "A", "Z", "N", "O", "N"], ["H", "R", "J", "I", "L", "R", "A", "R", "K", "L", "J", "Y", "B", "V", "E"], ["F", "K", "V", "T", "R", "A", "E", "R", "E", "R", "E", "U", "Q", "D", "V"], ["L", "Q", "J", "V", "J", "B", "Ñ", "A", "E", "B", "W", "C", "Ñ", "M", "Ñ"], ["K", "C", "V", "B", "Q", "V", "J", "G", "M", "M", "E", "Q", "V", "Ñ", "S"], ["N", "F", "E", "R", "E", "C", "K", "A", "O", "K", "Q", "B", "F", "O", "E"], ["X", "R", "U", "Q", "T", "F", "L", "P", "N", "O", "C", "U", "R", "Y", "Q"], ["N", "C", "O", "M", "E", "R", "I", "V", "R", "E", "S", "Z", "N", "X", "A"]];
+const SOLUTIONS = {"LLEVAR": [[6, 8], [5, 9], [4, 10], [3, 11], [2, 12], [1, 13]], "QUERER": [[9, 12], [9, 11], [9, 10], [9, 9], [9, 8], [9, 7]], "SERVIR": [[14, 10], [14, 9], [14, 8], [14, 7], [14, 6], [14, 5]], "ELEGIR": [[3, 1], [4, 1], [5, 1], [6, 1], [7, 1], [8, 1]], "PROBAR": [[6, 12], [5, 12], [4, 12], [3, 12], [2, 12], [1, 12]], "PEDIR": [[2, 11], [2, 10], [2, 9], [2, 8], [2, 7]], "TRAER": [[9, 3], [9, 4], [9, 5], [9, 6], [9, 7]], "TOMAR": [[4, 7], [4, 6], [4, 5], [4, 4], [4, 3]], "COMER": [[14, 1], [14, 2], [14, 3], [14, 4], [14, 5]], "BEBER": [[12, 11], [11, 10], [10, 9], [9, 8], [8, 7]], "PAGAR": [[13, 7], [12, 7], [11, 7], [10, 7], [9, 7]]};
+const MEANINGS = {"PEDIR": "zamawiać / prosić", "TRAER": "przynosić", "LLEVAR": "zabierać / brać na wynos", "TOMAR": "brać / pić", "COMER": "jeść", "BEBER": "pić", "QUERER": "chcieć", "SERVIR": "podawać / serwować", "PAGAR": "płacić", "ELEGIR": "wybierać", "PROBAR": "próbować"};
+const WORD_ORDER = ["PEDIR", "TRAER", "LLEVAR", "TOMAR", "COMER", "BEBER", "QUERER", "SERVIR", "PAGAR", "ELEGIR", "PROBAR"];
+
+const gridEl = document.getElementById('grid');
+const wordsEl = document.getElementById('words');
+const toast = document.getElementById('toast');
+const finish = document.getElementById('finish');
+
+let found = new Set();
+let dragging = false;
+let startCell = null;
+let currentPath = [];
+let startedAt = Date.now();
+let timerId = null;
+
+function key(r,c){ return `${r},${c}`; }
+
+function renderGrid(){
+  gridEl.innerHTML = '';
+  GRID.forEach((row,r)=>row.forEach((letter,c)=>{
+    const cell = document.createElement('div');
+    cell.className='cell';
+    cell.textContent=letter;
+    cell.dataset.r=r;
+    cell.dataset.c=c;
+    gridEl.appendChild(cell);
+  }));
+}
+
+function renderWords(){
+  wordsEl.innerHTML = WORD_ORDER.map(w=>`
+    <div class="word" data-word="${w}">
+      <span>${w.toLowerCase()}</span>
+      <small>${MEANINGS[w]}</small>
+    </div>`).join('');
+}
+
+function cellAt(r,c){ return gridEl.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`); }
+
+function pointerCell(e){
+  const el = document.elementFromPoint(e.clientX,e.clientY);
+  return el?.closest?.('.cell') || null;
+}
+
+function pathBetween(a,b){
+  const r1=+a.dataset.r,c1=+a.dataset.c,r2=+b.dataset.r,c2=+b.dataset.c;
+  const dr=r2-r1, dc=c2-c1;
+  const adr=Math.abs(dr), adc=Math.abs(dc);
+  if(!(dr===0 || dc===0 || adr===adc)) return [];
+  const steps=Math.max(adr,adc);
+  const sr=steps?dr/steps:0, sc=steps?dc/steps:0;
+  const path=[];
+  for(let i=0;i<=steps;i++) path.push([r1+sr*i,c1+sc*i]);
+  return path;
+}
+
+function clearSelecting(){
+  document.querySelectorAll('.cell.selecting').forEach(c=>c.classList.remove('selecting'));
+}
+
+function showPath(path){
+  clearSelecting();
+  path.forEach(([r,c])=>cellAt(r,c)?.classList.add('selecting'));
+}
+
+function normalizeCoords(coords){
+  return coords.map(([r,c])=>key(r,c)).join('|');
+}
+
+function findWordForPath(path){
+  const normal=normalizeCoords(path);
+  const reversed=normalizeCoords([...path].reverse());
+  for(const [word,coords] of Object.entries(SOLUTIONS)){
+    const sol=normalizeCoords(coords);
+    if(sol===normal || sol===reversed) return word;
+  }
+  return null;
+}
+
+function flashToast(text){
+  toast.textContent=text;
+  toast.classList.add('show');
+  clearTimeout(flashToast.t);
+  flashToast.t=setTimeout(()=>toast.classList.remove('show'),1300);
+}
+
+function markFound(word){
+  found.add(word);
+  SOLUTIONS[word].forEach(([r,c])=>{
+    const cell=cellAt(r,c);
+    cell.classList.remove('selecting');
+    cell.classList.add('found');
+  });
+  wordsEl.querySelector(`[data-word="${word}"]`)?.classList.add('found');
+  document.getElementById('foundCount').textContent=found.size;
+  flashToast(`✅ ${word.toLowerCase()}`);
+  if(found.size===WORD_ORDER.length){
+    clearInterval(timerId);
+    document.getElementById('finishTime').textContent=document.getElementById('time').textContent;
+    setTimeout(()=>finish.classList.add('show'),450);
+  }
+}
+
+function wrongSelection(path){
+  clearSelecting();
+  path.forEach(([r,c])=>cellAt(r,c)?.classList.add('wrong'));
+  setTimeout(()=>path.forEach(([r,c])=>cellAt(r,c)?.classList.remove('wrong')),420);
+}
+
+gridEl.addEventListener('pointerdown',e=>{
+  const cell=e.target.closest('.cell');
+  if(!cell) return;
+  e.preventDefault();
+  dragging=true;
+  startCell=cell;
+  currentPath=[[+cell.dataset.r,+cell.dataset.c]];
+  showPath(currentPath);
+  gridEl.setPointerCapture?.(e.pointerId);
+});
+
+gridEl.addEventListener('pointermove',e=>{
+  if(!dragging || !startCell) return;
+  e.preventDefault();
+  const cell=pointerCell(e);
+  if(!cell) return;
+  const path=pathBetween(startCell,cell);
+  if(path.length){
+    currentPath=path;
+    showPath(path);
+  }
+});
+
+function finishDrag(){
+  if(!dragging) return;
+  dragging=false;
+  const path=[...currentPath];
+  startCell=null;
+  currentPath=[];
+  const word=findWordForPath(path);
+  if(word && !found.has(word)) markFound(word);
+  else if(word && found.has(word)){ clearSelecting(); flashToast('Esta palabra ya está encontrada 🙂'); }
+  else wrongSelection(path);
+}
+
+gridEl.addEventListener('pointerup',e=>{e.preventDefault();finishDrag();});
+gridEl.addEventListener('pointercancel',finishDrag);
+
+document.getElementById('hintBtn').onclick=()=>{
+  const left=WORD_ORDER.filter(w=>!found.has(w));
+  if(!left.length) return;
+  const word=left[Math.floor(Math.random()*left.length)];
+  const [r,c]=SOLUTIONS[word][0];
+  const cell=cellAt(r,c);
+  cell.classList.remove('hint');
+  void cell.offsetWidth;
+  cell.classList.add('hint');
+  flashToast(`💡 Empieza por “${word[0]}”`);
+};
+
+function resetGame(){
+  found.clear();
+  startedAt=Date.now();
+  document.getElementById('foundCount').textContent='0';
+  finish.classList.remove('show');
+  renderGrid();
+  renderWords();
+  clearInterval(timerId);
+  timerId=setInterval(updateTimer,250);
+  updateTimer();
+}
+
+document.getElementById('resetBtn').onclick=resetGame;
+document.getElementById('playAgain').onclick=resetGame;
+
+function updateTimer(){
+  const sec=Math.floor((Date.now()-startedAt)/1000);
+  const m=Math.floor(sec/60),s=sec%60;
+  document.getElementById('time').textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
+renderGrid();
+renderWords();
+timerId=setInterval(updateTimer,250);
+updateTimer();
+</script>
+</body>
+</html>
