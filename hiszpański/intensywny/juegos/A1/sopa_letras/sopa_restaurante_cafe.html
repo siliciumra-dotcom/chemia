@@ -75,6 +75,7 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:22px;padding:24p
 }
 .cell:hover{transform:translateY(-1px);background:#fff3dd}
 .cell.selecting{background:#ffe0a8;box-shadow:inset 0 0 0 2px #e9a64c}
+.cell.tapStart{background:#cfe8ff;box-shadow:inset 0 0 0 3px #4f8edc,0 0 0 3px rgba(79,142,220,.15)}
 .cell.found{background:#dff3e8;color:#1f6c4d;border-color:#9ed5b9;box-shadow:inset 0 0 0 2px #68b28c}
 .cell.wrong{animation:wrong .38s ease;background:#ffdcd6}
 .cell.hint{animation:hint 1s ease 2}
@@ -88,7 +89,8 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:22px;padding:24p
   font-size:13px;font-weight:850;transition:.2s;
 }
 .word small{display:none;color:var(--muted);font-weight:600;text-align:right}
-.word.found{background:#e5f5ec;border-color:#b7dfc9;color:#246c4f;text-decoration:line-through}
+.word.found{background:#e5f5ec;border-color:#b7dfc9;color:#246c4f}
+.word.found > span{text-decoration:line-through}
 .word.found small{display:block;text-decoration:none}
 .actions{display:grid;gap:8px}
 button{
@@ -154,7 +156,7 @@ button.hintBtn{background:var(--blue)}
     <main>
       <section class="boardBox">
         <div class="instructions">
-          <b>¿Cómo jugar?</b> Arrastra desde la primera letra hasta la última.
+          <b>¿Cómo jugar?</b> Puedes <b>hacer clic en la primera letra y después en la última</b>, o arrastrar de una a otra.
           Las palabras pueden estar en horizontal, vertical o diagonal, también al revés.
         </div>
         <div id="grid" class="grid" aria-label="Sopa de letras"></div>
@@ -208,6 +210,8 @@ let found = new Set();
 let dragging = false;
 let startCell = null;
 let currentPath = [];
+let movedDuringDrag = false;
+let tapStartCell = null;
 let startedAt = Date.now();
 let timerId = null;
 
@@ -254,6 +258,58 @@ function pathBetween(a,b){
 
 function clearSelecting(){
   document.querySelectorAll('.cell.selecting').forEach(c=>c.classList.remove('selecting'));
+}
+
+function clearTapStart(){
+  document.querySelectorAll('.cell.tapStart').forEach(c=>c.classList.remove('tapStart'));
+  tapStartCell = null;
+}
+
+function evaluatePath(path){
+  if(!path.length) return;
+  const word=findWordForPath(path);
+  if(word && !found.has(word)){
+    clearSelecting();
+    clearTapStart();
+    markFound(word);
+  }else if(word && found.has(word)){
+    clearSelecting();
+    clearTapStart();
+    flashToast('Esta palabra ya está encontrada 🙂');
+  }else{
+    clearTapStart();
+    wrongSelection(path);
+  }
+}
+
+function handleTap(cell){
+  if(!tapStartCell){
+    clearSelecting();
+    clearTapStart();
+    tapStartCell=cell;
+    cell.classList.add('tapStart');
+    flashToast('Ahora pulsa la última letra');
+    return;
+  }
+
+  if(cell===tapStartCell){
+    clearTapStart();
+    flashToast('Selección cancelada');
+    return;
+  }
+
+  const path=pathBetween(tapStartCell,cell);
+  if(!path.length){
+    clearTapStart();
+    tapStartCell=cell;
+    cell.classList.add('tapStart');
+    flashToast('Elige una letra en línea recta o diagonal');
+    return;
+  }
+
+  showPath(path);
+  clearTapStart();
+  setTimeout(()=>evaluatePath(path),80);
 }
 
 function showPath(path){
@@ -310,9 +366,9 @@ gridEl.addEventListener('pointerdown',e=>{
   if(!cell) return;
   e.preventDefault();
   dragging=true;
+  movedDuringDrag=false;
   startCell=cell;
   currentPath=[[+cell.dataset.r,+cell.dataset.c]];
-  showPath(currentPath);
   gridEl.setPointerCapture?.(e.pointerId);
 });
 
@@ -321,27 +377,46 @@ gridEl.addEventListener('pointermove',e=>{
   e.preventDefault();
   const cell=pointerCell(e);
   if(!cell) return;
+  if(cell!==startCell) movedDuringDrag=true;
   const path=pathBetween(startCell,cell);
   if(path.length){
     currentPath=path;
-    showPath(path);
+    if(movedDuringDrag) showPath(path);
   }
 });
 
-function finishDrag(){
+function finishPointer(e){
   if(!dragging) return;
   dragging=false;
+
+  const clickedCell = e ? pointerCell(e) || startCell : startCell;
   const path=[...currentPath];
+  const wasDrag=movedDuringDrag;
+
   startCell=null;
   currentPath=[];
-  const word=findWordForPath(path);
-  if(word && !found.has(word)) markFound(word);
-  else if(word && found.has(word)){ clearSelecting(); flashToast('Esta palabra ya está encontrada 🙂'); }
-  else wrongSelection(path);
+  movedDuringDrag=false;
+
+  if(wasDrag){
+    clearTapStart();
+    evaluatePath(path);
+  }else if(clickedCell){
+    clearSelecting();
+    handleTap(clickedCell);
+  }
 }
 
-gridEl.addEventListener('pointerup',e=>{e.preventDefault();finishDrag();});
-gridEl.addEventListener('pointercancel',finishDrag);
+gridEl.addEventListener('pointerup',e=>{
+  e.preventDefault();
+  finishPointer(e);
+});
+gridEl.addEventListener('pointercancel',()=>{
+  dragging=false;
+  startCell=null;
+  currentPath=[];
+  movedDuringDrag=false;
+  clearSelecting();
+});
 
 document.getElementById('hintBtn').onclick=()=>{
   const left=WORD_ORDER.filter(w=>!found.has(w));
@@ -357,6 +432,8 @@ document.getElementById('hintBtn').onclick=()=>{
 
 function resetGame(){
   found.clear();
+  clearSelecting();
+  clearTapStart();
   startedAt=Date.now();
   document.getElementById('foundCount').textContent='0';
   finish.classList.remove('show');
