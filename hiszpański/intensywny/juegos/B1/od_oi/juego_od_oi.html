@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Juego interactivo para practicar los pronombres de objeto directo e indirecto en español." />
+  <title>¿Qué? ¿A quién? · OD + OI</title>
+
+  <style>
+    :root{
+      --bg:#07131f;
+      --bg2:#0d2235;
+      --panel:#10283b;
+      --panel2:#0b1d2c;
+      --text:#edf7ff;
+      --muted:#9db3c5;
+      --line:rgba(255,255,255,.12);
+
+      --subject:#f7b77c;
+      --verb:#f7df87;
+      --direct:#8fd4e6;
+      --indirect:#eda5c2;
+
+      --green:#55d6a5;
+      --red:#ff7b85;
+      --cyan:#5de4f4;
+      --shadow:0 20px 60px rgba(0,0,0,.25);
+    }
+
+    *{box-sizing:border-box}
+
+    body{
+      margin:0;
+      min-height:100vh;
+      color:var(--text);
+      font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 15% 0%, rgba(93,228,244,.11), transparent 35%),
+        radial-gradient(circle at 90% 10%, rgba(237,165,194,.10), transparent 35%),
+        linear-gradient(160deg,var(--bg),var(--bg2));
+    }
+
+    button,input{font:inherit}
+
+    .app{
+      width:min(1180px, calc(100% - 28px));
+      margin:0 auto;
+      padding:28px 0 54px;
+    }
+
+    header{
+      display:flex;
+      gap:20px;
+      align-items:flex-end;
+      justify-content:space-between;
+      margin-bottom:20px;
+    }
+
+    .eyebrow{
+      color:var(--cyan);
+      text-transform:uppercase;
+      letter-spacing:.14em;
+      font-size:.75rem;
+      font-weight:800;
+      margin-bottom:7px;
+    }
+
+    h1{
+      margin:0;
+      font-size:clamp(2rem,5vw,4.7rem);
+      line-height:.93;
+      letter-spacing:-.055em;
+    }
+
+    .subtitle{
+      max-width:720px;
+      margin:12px 0 0;
+      color:var(--muted);
+      line-height:1.55;
+    }
+
+    .top-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      justify-content:flex-end;
+    }
+
+    button{
+      border:0;
+      cursor:pointer;
+      border-radius:14px;
+      padding:11px 15px;
+      font-weight:800;
+      transition:.18s ease;
+    }
+
+    button:hover{transform:translateY(-1px)}
+    button:active{transform:translateY(1px)}
+
+    .btn-secondary{
+      background:rgba(255,255,255,.08);
+      color:var(--text);
+      border:1px solid var(--line);
+    }
+
+    .btn-primary{
+      background:var(--cyan);
+      color:#05202a;
+    }
+
+    .btn-good{
+      background:var(--green);
+      color:#06251c;
+    }
+
+    .btn-warn{
+      background:rgba(255,123,133,.15);
+      color:#ffc8cd;
+      border:1px solid rgba(255,123,133,.35);
+    }
+
+    .statusbar{
+      display:grid;
+      grid-template-columns:repeat(4,1fr) auto;
+      gap:10px;
+      margin-bottom:18px;
+    }
+
+    .pile-stat,.score-stat{
+      background:rgba(4,16,27,.55);
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:12px 14px;
+      min-height:66px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+
+    .pile-stat .dot{
+      width:13px;height:13px;border-radius:4px;flex:0 0 auto;
+      box-shadow:0 0 0 4px rgba(255,255,255,.05);
+    }
+
+    .pile-stat small,.score-stat small{
+      color:var(--muted);
+      display:block;
+      font-size:.72rem;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+      margin-bottom:2px;
+    }
+
+    .pile-stat strong,.score-stat strong{
+      font-size:1.15rem;
+    }
+
+    .game-panel{
+      background:linear-gradient(180deg,rgba(16,40,59,.94),rgba(9,28,43,.96));
+      border:1px solid var(--line);
+      border-radius:28px;
+      padding:22px;
+      box-shadow:var(--shadow);
+    }
+
+    .round-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      margin-bottom:14px;
+    }
+
+    .round-label{
+      color:var(--muted);
+      font-size:.88rem;
+    }
+
+    .mode-chip{
+      display:inline-flex;
+      align-items:center;
+      gap:7px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.06);
+      padding:7px 10px;
+      border-radius:999px;
+      color:#dce9f2;
+      font-size:.82rem;
+      font-weight:800;
+    }
+
+    .cards{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:12px;
+    }
+
+    .card{
+      min-height:190px;
+      border-radius:22px;
+      padding:17px;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      color:#111820;
+      box-shadow:0 14px 28px rgba(0,0,0,.16);
+      border:1px dashed rgba(0,0,0,.32);
+      position:relative;
+      overflow:hidden;
+    }
+
+    .card::after{
+      content:"";
+      position:absolute;
+      width:120px;height:120px;border-radius:50%;
+      background:rgba(255,255,255,.20);
+      right:-50px;bottom:-55px;
+    }
+
+    .card.subject{background:var(--subject)}
+    .card.verb{background:var(--verb)}
+    .card.direct{background:var(--direct)}
+    .card.indirect{background:var(--indirect)}
+
+    .card-kicker{
+      text-transform:uppercase;
+      font-size:.72rem;
+      letter-spacing:.11em;
+      font-weight:900;
+      opacity:.65;
+    }
+
+    .card-value{
+      font-size:clamp(1.35rem,2.55vw,2.65rem);
+      font-weight:950;
+      line-height:1.02;
+      letter-spacing:-.035em;
+      position:relative;
+      z-index:2;
+    }
+
+    .empty-card{
+      opacity:.32;
+      filter:grayscale(1);
+    }
+
+    .task{
+      margin-top:18px;
+      border-top:1px solid var(--line);
+      padding-top:18px;
+    }
+
+    .task-title{
+      margin:0 0 7px;
+      font-size:1.05rem;
+    }
+
+    .instruction{
+      margin:0 0 14px;
+      color:var(--muted);
+      line-height:1.5;
+    }
+
+    .answer-row{
+      display:grid;
+      grid-template-columns:1fr auto;
+      gap:10px;
+    }
+
+    .answer-input{
+      width:100%;
+      border:1px solid rgba(255,255,255,.18);
+      background:#071826;
+      color:var(--text);
+      border-radius:15px;
+      padding:14px 16px;
+      outline:none;
+      font-size:1.08rem;
+    }
+
+    .answer-input:focus{
+      border-color:var(--cyan);
+      box-shadow:0 0 0 3px rgba(93,228,244,.12);
+    }
+
+    .answer-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:10px;
+    }
+
+    .feedback{
+      min-height:54px;
+      margin-top:13px;
+      border-radius:15px;
+      padding:12px 14px;
+      display:none;
+      line-height:1.45;
+    }
+
+    .feedback.show{display:block}
+    .feedback.ok{
+      background:rgba(85,214,165,.12);
+      border:1px solid rgba(85,214,165,.35);
+      color:#b9f5df;
+    }
+    .feedback.bad{
+      background:rgba(255,123,133,.10);
+      border:1px solid rgba(255,123,133,.32);
+      color:#ffd1d5;
+    }
+    .feedback.info{
+      background:rgba(93,228,244,.09);
+      border:1px solid rgba(93,228,244,.28);
+      color:#cff9ff;
+    }
+
+    .hintbox{
+      display:none;
+      margin-top:10px;
+      padding:12px 14px;
+      border-radius:15px;
+      background:rgba(255,255,255,.055);
+      border:1px solid var(--line);
+      color:#dbe7ef;
+      line-height:1.5;
+    }
+    .hintbox.show{display:block}
+
+    .oral-panel{
+      display:none;
+      border:1px solid var(--line);
+      background:#071826;
+      border-radius:16px;
+      padding:15px;
+      margin-top:10px;
+    }
+    .oral-panel.show{display:block}
+
+    .solution{
+      display:none;
+      margin-top:10px;
+      font-size:1.35rem;
+      font-weight:950;
+      color:#b8f8e0;
+    }
+    .solution.show{display:block}
+
+    .help{
+      margin-top:18px;
+      display:grid;
+      grid-template-columns:1.2fr .8fr;
+      gap:14px;
+    }
+
+    details,.mini-panel{
+      background:rgba(4,16,27,.52);
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:14px 16px;
+    }
+
+    summary{
+      cursor:pointer;
+      font-weight:900;
+    }
+
+    .rules{
+      color:#c5d3de;
+      line-height:1.6;
+      margin:10px 0 0;
+      padding-left:20px;
+    }
+
+    .mini-panel h3{
+      margin:0 0 8px;
+      font-size:1rem;
+    }
+
+    .legend-row{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      color:var(--muted);
+      font-size:.83rem;
+    }
+
+    .legend{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+    }
+
+    .legend i{
+      width:10px;height:10px;border-radius:3px;display:inline-block;
+    }
+
+    .source{
+      margin-top:20px;
+      color:#70889b;
+      text-align:center;
+      font-size:.75rem;
+      line-height:1.5;
+    }
+
+    .victory{
+      display:none;
+      text-align:center;
+      padding:36px 18px;
+    }
+    .victory.show{display:block}
+    .victory h2{
+      font-size:clamp(2rem,5vw,4rem);
+      margin:0 0 8px;
+    }
+    .victory p{
+      color:var(--muted);
+      margin:0 0 18px;
+    }
+
+    .hidden{display:none!important}
+
+    @media (max-width:850px){
+      header{align-items:flex-start;flex-direction:column}
+      .top-actions{justify-content:flex-start}
+      .statusbar{grid-template-columns:repeat(2,1fr)}
+      .score-stat{grid-column:1 / -1}
+      .cards{grid-template-columns:repeat(2,1fr)}
+      .card{min-height:155px}
+      .help{grid-template-columns:1fr}
+    }
+
+    @media (max-width:520px){
+      .app{width:min(100% - 18px,1180px);padding-top:18px}
+      .game-panel{padding:14px;border-radius:22px}
+      .cards{grid-template-columns:1fr 1fr;gap:8px}
+      .card{min-height:135px;padding:13px;border-radius:17px}
+      .card-value{font-size:1.32rem}
+      .answer-row{grid-template-columns:1fr}
+      .answer-row .btn-primary{width:100%}
+      .answer-actions button{flex:1 1 auto}
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header>
+      <div>
+        <div class="eyebrow">Pronombres OD + OI · presente</div>
+        <h1>¿Qué? ¿A quién?</h1>
+        <p class="subtitle">
+          Saca una ficha de cada montón. Conjuga el verbo según el sujeto y sustituye
+          el objeto indirecto y el objeto directo por sus pronombres.
+        </p>
+      </div>
+
+      <div class="top-actions">
+        <button class="btn-secondary" id="modeBtn">🎤 Modo oral</button>
+        <button class="btn-secondary" id="exampleBtn">Ver ejemplo</button>
+        <button class="btn-secondary" id="resetBtn">Nueva partida</button>
+      </div>
+    </header>
+
+    <section class="statusbar">
+      <div class="pile-stat">
+        <div><small>Sujetos</small><strong id="countSubject">15</strong></div>
+        <span class="dot" style="background:var(--subject)"></span>
+      </div>
+      <div class="pile-stat">
+        <div><small>Verbos</small><strong id="countVerb">15</strong></div>
+        <span class="dot" style="background:var(--verb)"></span>
+      </div>
+      <div class="pile-stat">
+        <div><small>OD</small><strong id="countDirect">15</strong></div>
+        <span class="dot" style="background:var(--direct)"></span>
+      </div>
+      <div class="pile-stat">
+        <div><small>OI</small><strong id="countIndirect">15</strong></div>
+        <span class="dot" style="background:var(--indirect)"></span>
+      </div>
+      <div class="score-stat">
+        <div><small>Resueltas</small><strong><span id="solved">0</span>/15</strong></div>
+        <div><small>Racha</small><strong>🔥 <span id="streak">0</span></strong></div>
+      </div>
+    </section>
+
+    <section class="game-panel">
+      <div id="gameArea">
+        <div class="round-head">
+          <div class="round-label" id="roundLabel">Pulsa «Sacar fichas» para empezar.</div>
+          <span class="mode-chip" id="modeChip">⌨️ Modo escrito</span>
+        </div>
+
+        <div class="cards">
+          <article class="card subject empty-card" id="subjectCard">
+            <div class="card-kicker">Sujeto</div>
+            <div class="card-value" id="subjectValue">—</div>
+          </article>
+
+          <article class="card verb empty-card" id="verbCard">
+            <div class="card-kicker">Verbo</div>
+            <div class="card-value" id="verbValue">—</div>
+          </article>
+
+          <article class="card direct empty-card" id="directCard">
+            <div class="card-kicker">Objeto directo</div>
+            <div class="card-value" id="directValue">—</div>
+          </article>
+
+          <article class="card indirect empty-card" id="indirectCard">
+            <div class="card-kicker">Objeto indirecto</div>
+            <div class="card-value" id="indirectValue">—</div>
+          </article>
+        </div>
+
+        <div class="task">
+          <h2 class="task-title">Transforma la frase</h2>
+          <p class="instruction" id="instruction">
+            Primero saca las cuatro fichas.
+          </p>
+
+          <div id="writtenMode">
+            <div class="answer-row">
+              <input
+                class="answer-input"
+                id="answerInput"
+                type="text"
+                autocomplete="off"
+                spellcheck="false"
+                placeholder="Ej.: Se lo doy."
+                disabled
+              />
+              <button class="btn-primary" id="checkBtn" disabled>Comprobar</button>
+            </div>
+          </div>
+
+          <div class="oral-panel" id="oralPanel">
+            Di la respuesta en voz alta. Cuando estés listo/a, pulsa «Mostrar solución».
+            <div class="solution" id="oralSolution"></div>
+          </div>
+
+          <div class="answer-actions">
+            <button class="btn-good" id="drawBtn">🎴 Sacar fichas</button>
+            <button class="btn-secondary" id="hintBtn" disabled>💡 Pista</button>
+            <button class="btn-secondary" id="showBtn" disabled>👁 Mostrar solución</button>
+            <button class="btn-warn" id="nonsenseBtn" disabled>🤨 No tiene sentido</button>
+          </div>
+
+          <div class="hintbox" id="hintBox"></div>
+          <div class="feedback" id="feedback"></div>
+        </div>
+      </div>
+
+      <div class="victory" id="victory">
+        <h2>🏆 ¡Montones vacíos!</h2>
+        <p>Has resuelto las 15 combinaciones y usado correctamente OD + OI.</p>
+        <button class="btn-primary" id="playAgainBtn">Jugar otra vez</button>
+      </div>
+    </section>
+
+    <section class="help">
+      <details>
+        <summary>Cómo se juega</summary>
+        <ol class="rules">
+          <li>Saca una ficha de cada color: sujeto, verbo, objeto directo y objeto indirecto.</li>
+          <li>Conjuga el verbo según el sujeto.</li>
+          <li>Sustituye el objeto indirecto por <b>me, te, le, nos, os, les</b>.</li>
+          <li>Sustituye el objeto directo por <b>lo, la, los, las</b>.</li>
+          <li>Si aparecen <b>le/les + lo/la/los/las</b>, cambia <b>le/les</b> por <b>se</b>.</li>
+          <li>Una respuesta correcta elimina las cuatro fichas de los montones.</li>
+          <li>Si la combinación no tiene sentido, pulsa «No tiene sentido»: las fichas vuelven a los montones.</li>
+          <li>Ganas cuando vacías los cuatro montones.</li>
+        </ol>
+      </details>
+
+      <div class="mini-panel">
+        <h3>Colores</h3>
+        <div class="legend-row">
+          <span class="legend"><i style="background:var(--subject)"></i>Sujeto</span>
+          <span class="legend"><i style="background:var(--verb)"></i>Verbo</span>
+          <span class="legend"><i style="background:var(--direct)"></i>OD</span>
+          <span class="legend"><i style="background:var(--indirect)"></i>OI</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="source">
+      Adaptación digital de la actividad «¿Qué? ¿A quién?» · Equipo docente de AIL Madrid.
+    </div>
+  </main>
+
+<script>
+(() => {
+  const subjects = [
+    {text:"Yo", person:"yo"},
+    {text:"Elena", person:"el"},
+    {text:"Mi madre", person:"el"},
+    {text:"Mis amigos", person:"ellos"},
+    {text:"Ramona y Andrés", person:"ellos"},
+    {text:"Adela y yo", person:"nosotros"},
+    {text:"Tú", person:"tu"},
+    {text:"El ladrón", person:"el"},
+    {text:"La abuela", person:"el"},
+    {text:"Vosotros", person:"vosotros"},
+    {text:"Nosotros", person:"nosotros"},
+    {text:"El padre", person:"el"},
+    {text:"El cliente", person:"el"},
+    {text:"Linda y Edu", person:"ellos"},
+    {text:"Antonia", person:"el"}
+  ];
+
+  const verbs = [
+    {inf:"Dar", forms:{yo:"doy",tu:"das",el:"da",nosotros:"damos",vosotros:"dais",ellos:"dan"}},
+    {inf:"Regalar", forms:{yo:"regalo",tu:"regalas",el:"regala",nosotros:"regalamos",vosotros:"regaláis",ellos:"regalan"}},
+    {inf:"Cocinar", forms:{yo:"cocino",tu:"cocinas",el:"cocina",nosotros:"cocinamos",vosotros:"cocináis",ellos:"cocinan"}},
+    {inf:"Traer", forms:{yo:"traigo",tu:"traes",el:"trae",nosotros:"traemos",vosotros:"traéis",ellos:"traen"}},
+    {inf:"Contar", forms:{yo:"cuento",tu:"cuentas",el:"cuenta",nosotros:"contamos",vosotros:"contáis",ellos:"cuentan"}},
+    {inf:"Devolver", forms:{yo:"devuelvo",tu:"devuelves",el:"devuelve",nosotros:"devolvemos",vosotros:"devolvéis",ellos:"devuelven"}},
+    {inf:"Poner", forms:{yo:"pongo",tu:"pones",el:"pone",nosotros:"ponemos",vosotros:"ponéis",ellos:"ponen"}},
+    {inf:"Robar", forms:{yo:"robo",tu:"robas",el:"roba",nosotros:"robamos",vosotros:"robáis",ellos:"roban"}},
+    {inf:"Echar", forms:{yo:"echo",tu:"echas",el:"echa",nosotros:"echamos",vosotros:"echáis",ellos:"echan"}},
+    {inf:"Prestar", forms:{yo:"presto",tu:"prestas",el:"presta",nosotros:"prestamos",vosotros:"prestáis",ellos:"prestan"}},
+    {inf:"Escribir", forms:{yo:"escribo",tu:"escribes",el:"escribe",nosotros:"escribimos",vosotros:"escribís",ellos:"escriben"}},
+    {inf:"Peinar", forms:{yo:"peino",tu:"peinas",el:"peina",nosotros:"peinamos",vosotros:"peináis",ellos:"peinan"}},
+    {inf:"Pedir", forms:{yo:"pido",tu:"pides",el:"pide",nosotros:"pedimos",vosotros:"pedís",ellos:"piden"}},
+    {inf:"Servir", forms:{yo:"sirvo",tu:"sirves",el:"sirve",nosotros:"servimos",vosotros:"servís",ellos:"sirven"}},
+    {inf:"Repetir", forms:{yo:"repito",tu:"repites",el:"repite",nosotros:"repetimos",vosotros:"repetís",ellos:"repiten"}}
+  ];
+
+  const directs = [
+    {text:"Un abrazo", pron:"lo"},
+    {text:"Una caja de bombones", pron:"la"},
+    {text:"Una tarta", pron:"la"},
+    {text:"Los libros", pron:"los"},
+    {text:"Las noticias", pron:"las"},
+    {text:"Las chuches", pron:"las"},
+    {text:"El sombrero", pron:"lo"},
+    {text:"El paraguas", pron:"lo"},
+    {text:"Las especias", pron:"las"},
+    {text:"Los auriculares", pron:"los"},
+    {text:"Las cartas", pron:"las"},
+    {text:"El pelo", pron:"lo"},
+    {text:"La cuenta", pron:"la"},
+    {text:"El vino", pron:"lo"},
+    {text:"Las preguntas", pron:"las"}
+  ];
+
+  const indirects = [
+    {text:"A ellos", pron:"les"},
+    {text:"A mí", pron:"me"},
+    {text:"A ti", pron:"te"},
+    {text:"A nosotros", pron:"nos"},
+    {text:"A Marcos", pron:"le"},
+    {text:"A Lourdes y a Joaquín", pron:"les"},
+    {text:"A mí y a Ruth", pron:"nos"},
+    {text:"A mi madre", pron:"le"},
+    {text:"Al pollo", pron:"le"},
+    {text:"A nosotros", pron:"nos"},
+    {text:"A ti y a Lucas", pron:"os"},
+    {text:"A las niñas", pron:"les"},
+    {text:"A la camarera", pron:"le"},
+    {text:"A nosotros", pron:"nos"},
+    {text:"A vosotras", pron:"os"}
+  ];
+
+  let pools = {};
+  let current = null;
+  let solved = 0;
+  let streak = 0;
+  let round = 0;
+  let hintLevel = 0;
+  let oralMode = false;
+
+  const $ = id => document.getElementById(id);
+
+  function freshPools(){
+    pools = {
+      subject: subjects.map((x,i)=>i),
+      verb: verbs.map((x,i)=>i),
+      direct: directs.map((x,i)=>i),
+      indirect: indirects.map((x,i)=>i)
+    };
+  }
+
+  function randomFrom(arr){
+    return arr[Math.floor(Math.random()*arr.length)];
+  }
+
+  function normalize(str){
+    return str
+      .trim()
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g,"")
+      .replace(/[¿?¡!.,;:]/g,"")
+      .replace(/\s+/g," ");
+  }
+
+  function expectedFor(c){
+    const s = subjects[c.subject];
+    const v = verbs[c.verb];
+    const d = directs[c.direct];
+    const i = indirects[c.indirect];
+
+    let oi = i.pron;
+    if(oi === "le" || oi === "les") oi = "se";
+
+    const verb = v.forms[s.person];
+    return {
+      answer: `${oi} ${d.pron} ${verb}`,
+      withSubject: `${s.text} ${oi} ${d.pron} ${verb}`,
+      oiOriginal: i.pron,
+      oiCombined: oi,
+      od: d.pron,
+      verb
+    };
+  }
+
+  function updateCounts(){
+    $("countSubject").textContent = pools.subject.length;
+    $("countVerb").textContent = pools.verb.length;
+    $("countDirect").textContent = pools.direct.length;
+    $("countIndirect").textContent = pools.indirect.length;
+    $("solved").textContent = solved;
+    $("streak").textContent = streak;
+  }
+
+  function setCard(id, text, active=true){
+    $(id+"Value").textContent = text;
+    $(id+"Card").classList.toggle("empty-card", !active);
+  }
+
+  function clearMessages(){
+    $("feedback").className = "feedback";
+    $("feedback").innerHTML = "";
+    $("hintBox").className = "hintbox";
+    $("hintBox").innerHTML = "";
+    $("oralSolution").className = "solution";
+    $("oralSolution").textContent = "";
+    hintLevel = 0;
+  }
+
+  function draw(){
+    if(pools.subject.length === 0){
+      finish();
+      return;
+    }
+
+    clearMessages();
+    $("answerInput").value = "";
+
+    current = {
+      subject: randomFrom(pools.subject),
+      verb: randomFrom(pools.verb),
+      direct: randomFrom(pools.direct),
+      indirect: randomFrom(pools.indirect)
+    };
+
+    round++;
+    setCard("subject", subjects[current.subject].text);
+    setCard("verb", verbs[current.verb].inf);
+    setCard("direct", directs[current.direct].text);
+    setCard("indirect", indirects[current.indirect].text);
+
+    $("roundLabel").textContent = `Ronda ${round} · Quedan ${pools.subject.length} fichas en cada montón.`;
+    $("instruction").innerHTML =
+      `Forma primero la idea completa y después sustitúyela por <b>OI + OD + verbo conjugado</b>.`;
+
+    $("answerInput").disabled = false;
+    $("checkBtn").disabled = false;
+    $("hintBtn").disabled = false;
+    $("showBtn").disabled = false;
+    $("nonsenseBtn").disabled = false;
+    $("drawBtn").textContent = "🎴 Cambiar combinación";
+
+    if(!oralMode) setTimeout(()=>$("answerInput").focus(), 50);
+  }
+
+  function removeIndex(poolName, index){
+    pools[poolName] = pools[poolName].filter(x => x !== index);
+  }
+
+  function markSolved(){
+    removeIndex("subject", current.subject);
+    removeIndex("verb", current.verb);
+    removeIndex("direct", current.direct);
+    removeIndex("indirect", current.indirect);
+    solved++;
+    streak++;
+    updateCounts();
+
+    $("answerInput").disabled = true;
+    $("checkBtn").disabled = true;
+    $("hintBtn").disabled = true;
+    $("showBtn").disabled = true;
+    $("nonsenseBtn").disabled = true;
+
+    if(pools.subject.length === 0){
+      setTimeout(finish, 700);
+    }else{
+      $("drawBtn").textContent = "➡️ Siguiente ronda";
+    }
+  }
+
+  function check(){
+    if(!current) return;
+    const exp = expectedFor(current);
+    const user = normalize($("answerInput").value);
+    const ok = user === normalize(exp.answer) || user === normalize(exp.withSubject);
+
+    if(ok){
+      $("feedback").className = "feedback show ok";
+      $("feedback").innerHTML = `✅ <b>¡Correcto!</b> ${capitalize(exp.answer)}. Las cuatro fichas salen de los montones.`;
+      markSolved();
+    }else{
+      streak = 0;
+      updateCounts();
+      $("feedback").className = "feedback show bad";
+      $("feedback").innerHTML =
+        `❌ Todavía no. Comprueba el orden: <b>OI + OD + verbo</b>. Puedes pedir una pista.`;
+    }
+  }
+
+  function showHint(){
+    if(!current) return;
+    const exp = expectedFor(current);
+    hintLevel = Math.min(hintLevel + 1, 3);
+
+    let html = "";
+    if(hintLevel === 1){
+      html = `💡 Verbo: <b>${verbs[current.verb].inf}</b> con <b>${subjects[current.subject].text}</b> → <b>${exp.verb}</b>.`;
+    }else if(hintLevel === 2){
+      html = `💡 OD: <b>${directs[current.direct].text}</b> → <b>${exp.od}</b>.`;
+    }else{
+      const original = exp.oiOriginal;
+      html = `💡 OI: <b>${indirects[current.indirect].text}</b> → <b>${original}</b>` +
+        ((original==="le" || original==="les") ? `, pero delante de ${exp.od} cambia a <b>se</b>.` : `.`);
+    }
+
+    $("hintBox").className = "hintbox show";
+    $("hintBox").innerHTML = html;
+  }
+
+  function reveal(){
+    if(!current) return;
+    const exp = expectedFor(current);
+    const pretty = capitalize(exp.answer) + ".";
+    $("feedback").className = "feedback show info";
+    $("feedback").innerHTML =
+      `👁 Solución: <b>${pretty}</b><br><span style="color:#9db3c5">` +
+      `${indirects[current.indirect].text} → ${exp.oiOriginal}${exp.oiOriginal!==exp.oiCombined ? " → se" : ""} · ` +
+      `${directs[current.direct].text} → ${exp.od} · ${verbs[current.verb].inf} → ${exp.verb}</span>`;
+    $("oralSolution").textContent = pretty;
+    $("oralSolution").className = "solution show";
+  }
+
+  function nonsense(){
+    if(!current) return;
+    streak = 0;
+    updateCounts();
+    $("feedback").className = "feedback show info";
+    $("feedback").innerHTML =
+      `🤨 Combinación marcada como «sin sentido». Las cuatro fichas vuelven a sus montones, como en el juego original.`;
+    current = null;
+    $("answerInput").disabled = true;
+    $("checkBtn").disabled = true;
+    $("hintBtn").disabled = true;
+    $("showBtn").disabled = true;
+    $("nonsenseBtn").disabled = true;
+    $("drawBtn").textContent = "🎴 Sacar otra combinación";
+  }
+
+  function capitalize(s){
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  }
+
+  function finish(){
+    $("gameArea").classList.add("hidden");
+    $("victory").classList.add("show");
+  }
+
+  function reset(){
+    freshPools();
+    current = null;
+    solved = 0;
+    streak = 0;
+    round = 0;
+    hintLevel = 0;
+
+    $("gameArea").classList.remove("hidden");
+    $("victory").classList.remove("show");
+
+    setCard("subject","—",false);
+    setCard("verb","—",false);
+    setCard("direct","—",false);
+    setCard("indirect","—",false);
+
+    $("roundLabel").textContent = "Pulsa «Sacar fichas» para empezar.";
+    $("instruction").textContent = "Primero saca las cuatro fichas.";
+    $("answerInput").value = "";
+    $("answerInput").disabled = true;
+    $("checkBtn").disabled = true;
+    $("hintBtn").disabled = true;
+    $("showBtn").disabled = true;
+    $("nonsenseBtn").disabled = true;
+    $("drawBtn").textContent = "🎴 Sacar fichas";
+    clearMessages();
+    updateCounts();
+  }
+
+  function toggleMode(){
+    oralMode = !oralMode;
+    $("writtenMode").classList.toggle("hidden", oralMode);
+    $("oralPanel").classList.toggle("show", oralMode);
+    $("modeBtn").textContent = oralMode ? "⌨️ Modo escrito" : "🎤 Modo oral";
+    $("modeChip").textContent = oralMode ? "🎤 Modo oral" : "⌨️ Modo escrito";
+    clearMessages();
+  }
+
+  function showExample(){
+    $("feedback").className = "feedback show info";
+    $("feedback").innerHTML =
+      `<b>Ejemplo:</b> Yo + Dar + Un abrazo + A ellos<br>` +
+      `Doy un abrazo a ellos → <b>Se lo doy.</b><br>` +
+      `<span style="color:#9db3c5">les + lo → se lo</span>`;
+  }
+
+  $("drawBtn").addEventListener("click", draw);
+  $("checkBtn").addEventListener("click", check);
+  $("hintBtn").addEventListener("click", showHint);
+  $("showBtn").addEventListener("click", reveal);
+  $("nonsenseBtn").addEventListener("click", nonsense);
+  $("resetBtn").addEventListener("click", reset);
+  $("playAgainBtn").addEventListener("click", reset);
+  $("modeBtn").addEventListener("click", toggleMode);
+  $("exampleBtn").addEventListener("click", showExample);
+
+  $("answerInput").addEventListener("keydown", e => {
+    if(e.key === "Enter" && !$("checkBtn").disabled) check();
+  });
+
+  reset();
+})();
+</script>
+</body>
+</html>
