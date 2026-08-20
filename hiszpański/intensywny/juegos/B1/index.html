@@ -27,6 +27,9 @@
       --primary: #667eea;
       --primary-dark: #5264d6;
 
+      --pronombres: #e58a37;
+      --pronombres-dark: #c66d20;
+
       --medical: #3a9d7d;
       --medical-dark: #2f8067;
 
@@ -182,6 +185,33 @@
 
       box-shadow:
         0 25px 55px rgba(32, 27, 70, 0.3);
+    }
+
+    /* PRONOMBRES OD / OI */
+
+    .card.pronombres::before {
+      background: linear-gradient(
+        90deg,
+        var(--pronombres),
+        #f2b85f
+      );
+    }
+
+    .pronombres .icon {
+      background: #fff0df;
+    }
+
+    .pronombres .tag {
+      color: var(--pronombres-dark);
+      background: #fff0df;
+    }
+
+    .pronombres .button {
+      background: var(--pronombres);
+    }
+
+    .pronombres .button:hover {
+      background: var(--pronombres-dark);
     }
 
     /* MEDICAL CARDS */
@@ -413,6 +443,39 @@
           href="tiempos/index.html"
         >
           Entrar
+          <span aria-hidden="true">→</span>
+        </a>
+
+      </article>
+
+
+      <!-- PRONOMBRES OD / OI -->
+
+      <article class="card pronombres">
+
+        <div class="icon">
+          🔄
+        </div>
+
+        <span class="tag">
+          Gramática · OD/OI
+        </span>
+
+        <h2>
+          ¿Qué? ¿A quién?
+        </h2>
+
+        <p>
+          Practica los pronombres de objeto directo e indirecto.
+          Combina sujeto, verbo, objeto directo y objeto indirecto
+          y transforma la frase usando pronombres.
+        </p>
+
+        <a
+          class="button"
+          href="od_oi/juego_od_oi.html"
+        >
+          Jugar
           <span aria-hidden="true">→</span>
         </a>
 
