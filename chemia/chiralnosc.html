@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Zadania maturalne — budowa cząsteczki i chiralność V2.1</title>
+<style>
+:root{
+  --ink:#17232b;
+  --paper:#f4f0e6;
+  --paper2:#fbf8f0;
+  --grid:#9eb3bd33;
+  --cobalt:#2457d6;
+  --acid:#d9ff45;
+  --orange:#ff7a31;
+  --green:#167a52;
+  --red:#c43d34;
+  --steel:#29353d;
+  --steel2:#1d272d;
+  --line:#17232b;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  color:var(--ink);
+  font-family:Arial,Helvetica,sans-serif;
+  background:
+    linear-gradient(rgba(35,60,70,.035) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(35,60,70,.035) 1px,transparent 1px),
+    #dfe5e2;
+  background-size:32px 32px;
+}
+body:before{
+  content:"";
+  position:fixed;inset:0;pointer-events:none;
+  background:linear-gradient(120deg,#ffffff7a,transparent 35%,#6e817811 70%,transparent);
+}
+.app{max-width:1260px;margin:0 auto;padding:28px 24px 42px;position:relative}
+.top{
+  min-height:92px;display:flex;align-items:flex-end;justify-content:space-between;gap:22px;
+  border-bottom:4px solid var(--ink);padding:0 2px 15px;margin-bottom:20px;position:relative;
+}
+.top:after{content:"";position:absolute;left:0;bottom:-10px;width:88px;height:6px;background:var(--orange)}
+.title{font-family:Georgia,'Times New Roman',serif;font-size:clamp(30px,4vw,48px);font-weight:700;line-height:.96;letter-spacing:-.035em;max-width:760px}
+.title:before{content:"STEREO LAB / MATURA";display:block;font-family:'Courier New',monospace;font-size:12px;letter-spacing:.18em;font-weight:700;color:var(--cobalt);margin-bottom:10px}
+.pill{
+  background:var(--acid);border:3px solid var(--ink);border-radius:0;padding:10px 15px;
+  font-family:'Courier New',monospace;font-size:15px;font-weight:900;white-space:nowrap;
+  box-shadow:6px 6px 0 var(--ink);transform:rotate(-1deg)
+}
+.card{background:transparent;border:0;border-radius:0;box-shadow:none}
+.main{padding:0}
+.progress{height:12px;background:#bcc7c4;border:2px solid var(--ink);border-radius:0;overflow:hidden;margin:0 0 18px}
+.progress>div{height:100%;background:repeating-linear-gradient(135deg,var(--cobalt) 0 11px,#163b9d 11px 22px);transition:width .2s}
+.task{
+  position:relative;background:var(--paper2);border:2px solid var(--ink);border-left:14px solid var(--orange);
+  border-radius:0;padding:23px 30px 22px 28px;margin:0 12px 22px 0;font-size:17px;line-height:1.62;font-weight:600;
+  box-shadow:10px 10px 0 #71807a36;transform:rotate(-.15deg)
+}
+.task:before{content:"ZADANIE";position:absolute;right:16px;top:-13px;background:var(--ink);color:#fff;padding:5px 9px;font:800 11px/1 'Courier New',monospace;letter-spacing:.14em}
+.task b{font-weight:900}
+.task .eq{display:block;text-align:center;margin:13px 0 9px;font:800 19px/1.45 'Courier New',monospace;color:#102d78}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:18px;align-items:stretch}
+.buildArea{
+  border:3px solid var(--ink);border-radius:0;min-height:510px;position:relative;overflow:hidden;
+  background-color:#f8f6ed;
+  background-image:
+    linear-gradient(var(--grid) 1px,transparent 1px),
+    linear-gradient(90deg,var(--grid) 1px,transparent 1px),
+    linear-gradient(#6d879029 1px,transparent 1px),
+    linear-gradient(90deg,#6d879029 1px,transparent 1px);
+  background-size:20px 20px,20px 20px,100px 100px,100px 100px;
+  box-shadow:inset 0 0 0 7px #f8f6ed, inset 0 0 0 9px #70838c66, 9px 9px 0 #71807a36;
+}
+.buildArea:before{content:"OBSZAR ROBOCZY";position:absolute;left:18px;top:15px;z-index:2;font:800 11px/1 'Courier New',monospace;letter-spacing:.16em;color:#60727a;background:#f8f6ed;padding:4px 6px}
+.buildArea svg{width:100%;height:510px;display:block}
+.side{
+  position:relative;border:3px solid var(--ink);border-radius:0;background:var(--steel);color:#f8f7ef;
+  padding:19px 18px 18px;display:flex;flex-direction:column;gap:14px;box-shadow:9px 9px 0 #17232b55;
+}
+.side:before{content:"TOOL RACK";position:absolute;right:13px;top:10px;color:#8fa2aa;font:700 10px/1 'Courier New',monospace;letter-spacing:.16em}
+.label{font:900 13px/1 'Courier New',monospace;text-transform:uppercase;letter-spacing:.15em;color:var(--acid);padding-bottom:7px;border-bottom:1px solid #65747b}
+.bank{display:flex;flex-wrap:wrap;gap:9px;align-content:flex-start;min-height:160px;padding-top:4px}
+.tile{
+  border:2px solid #10191e;background:#f8f5e9;border-radius:0;padding:10px 13px;font:900 18px/1 Arial,Helvetica,sans-serif;color:var(--ink);
+  cursor:pointer;box-shadow:4px 4px 0 #10191e;transition:.08s;user-select:none;transform:rotate(-.4deg)
+}
+.tile:nth-child(even){transform:rotate(.6deg)}
+.tile:hover{transform:translate(-1px,-1px) rotate(0);background:var(--acid);box-shadow:6px 6px 0 #10191e}
+.tile:disabled{opacity:.32;cursor:default;transform:none;box-shadow:none}
+.tools{display:grid;grid-template-columns:1fr 1fr;gap:9px;border-top:1px solid #62727a;padding-top:14px}
+.btn{
+  border:2px solid var(--ink);background:#f4f0e6;color:var(--ink);border-radius:0;padding:12px 14px;
+  font:900 13px/1.15 'Courier New',monospace;text-transform:uppercase;letter-spacing:.035em;cursor:pointer;transition:.08s;
+  box-shadow:4px 4px 0 var(--ink)
+}
+.btn:hover:not(:disabled){transform:translate(-1px,-1px);box-shadow:6px 6px 0 var(--ink);background:#fff}
+.btn.primary{background:var(--acid);border-color:var(--ink);color:var(--ink)}
+.btn:disabled{opacity:.35;cursor:default;transform:none;box-shadow:2px 2px 0 #17232b88}
+.status{min-height:24px;text-align:left;font:800 13px/1.3 'Courier New',monospace;padding-top:3px}
+.status.ok{color:#a8ffcf}.status.no{color:#ffaaa3}
+.stage2{display:none;margin-top:30px;padding:22px 18px 18px;border:3px solid var(--ink);border-radius:0;background:var(--paper2);position:relative;box-shadow:8px 8px 0 #71807a36}
+.stage2:before{content:"ETAP 2";position:absolute;left:18px;top:-13px;background:var(--cobalt);color:#fff;padding:5px 10px;font:900 11px/1 'Courier New',monospace;letter-spacing:.14em}
+.stage2.show{display:block}
+.question{text-align:center;font-family:Georgia,'Times New Roman',serif;font-size:25px;font-weight:700;margin:5px 0 18px}
+.answers{display:flex;justify-content:center;gap:14px}
+.answer{min-width:190px;background:#fff}
+.answer.good{background:#c7f2d8;border-color:#143c2a;color:#143c2a}
+.answer.bad{background:#ffd6d2;border-color:#6e1f1a;color:#6e1f1a}
+.feedback{display:none;max-width:880px;margin:20px auto 0;background:#f2ead8;border:2px dashed var(--ink);border-radius:0;padding:17px 19px;line-height:1.55;font-size:14px}
+.feedback.show{display:block}
+.feedback .solution{font:900 17px/1.2 'Courier New',monospace;margin-bottom:7px;color:#102d78}
+.feedback .source{margin-top:10px;color:#68766f;font-size:12.5px;border-top:1px solid #a9afa6;padding-top:8px}
+.nextrow{display:none;justify-content:center;margin-top:20px}.nextrow.show{display:flex}.nextrow .btn{min-width:230px}
+.done{text-align:center;padding:50px 14px;font-family:Georgia,'Times New Roman',serif}.done h2{font-size:38px;margin:0 0 10px}
+.debug{display:none;margin-top:16px;background:#111b21;color:#dff6ff;border:2px solid var(--ink);border-radius:0;padding:12px;font:12px ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre-wrap}.debug.show{display:block}
+.node text{pointer-events:none;font-family:'Courier New',monospace}.node circle{fill:#fffdf5;stroke:#17232b;stroke-width:2.5}.node.selected circle{fill:var(--acid);stroke:#17232b;stroke-width:4}.node.carbon circle{fill:#f2f6f7}.node.carbon.selected circle{fill:var(--acid)}
+.bond{stroke:#17232b;stroke-width:4;stroke-linecap:round}.bond.double2{stroke-width:3}.ghost{fill:#71889b;font-size:13px;font-weight:750}
+@media(max-width:900px){
+  .app{padding:18px 14px 30px}.grid{grid-template-columns:1fr}.top{align-items:flex-start}.title{font-size:34px}.pill{box-shadow:4px 4px 0 var(--ink)}
+  .buildArea{min-height:440px}.buildArea svg{height:440px}.side{box-shadow:6px 6px 0 #17232b55}.answers{flex-direction:column}.answer{width:100%}.task{margin-right:5px;padding:22px 20px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top"><div class="title">Budowa i chiralność</div><div class="pill" id="round">1 / 10</div></div>
+  <div class="card main">
+    <div class="progress"><div id="progress"></div></div>
+    <div id="game">
+      <div class="task" id="task"></div>
+      <div class="grid">
+        <div class="buildArea"><svg id="mol" viewBox="0 0 800 500" aria-label="obszar budowania struktury"></svg></div>
+        <div class="side">
+          <div class="label">Budulce</div>
+          <div class="bank" id="bank"></div>
+          <div class="tools">
+            <button class="btn" id="undo">Cofnij</button>
+            <button class="btn" id="clear">Wyczyść</button>
+          </div>
+          <button class="btn primary" id="check">Sprawdź strukturę</button>
+          <div class="status" id="status"></div>
+        </div>
+      </div>
+      <div class="stage2" id="stage2">
+        <div class="question">Czy narysowana cząsteczka jest chiralna?</div>
+        <div class="answers">
+          <button class="btn answer" id="chiral">CHIRALNA</button>
+          <button class="btn answer" id="achiral">ACHIRALNA</button>
+        </div>
+        <div class="feedback" id="feedback"></div>
+      </div>
+      <div class="nextrow" id="nextrow"><button class="btn primary" id="next">Następne zadanie</button></div>
+      <div class="debug" id="debug"></div>
+    </div>
+    <div class="done" id="done" hidden></div>
+  </div>
+</div>
+<script>
+const Q=[
+{
+ task:`Jedną z metod otrzymywania halogenoalkanów jest reakcja alkoholu z halogenkiem fosforu(III):<span class="eq">3R–OH + PBr₃ → 3R–Br + H₃PO₃</span>Zbuduj alkohol, którego należy użyć do otrzymania <b>3-bromo-3-metyloheksanu</b>.`,
+ nodes:['C','C','C','C','C','C','C','OH'],edges:[[0,1,1],[1,2,1],[2,3,1],[3,4,1],[4,5,1],[2,6,1],[2,7,1]],chiral:true,
+ answer:'3-metylheksan-3-ol',why:'Atom węgla z grupą OH jest połączony z czterema różnymi grupami: OH, CH₃, C₂H₅ i C₃H₇.',src:'Matura CKE, maj 2019, poziom rozszerzony (Formuła 2015), zadanie 22.'
+},
+{
+ task:`3-Metylobutan-2-on poddano redukcji wodorem w obecności katalizatora. <b>Zbuduj organiczny produkt tej reakcji.</b>`,
+ nodes:['C','C','C','C','C','OH'],edges:[[0,1,1],[1,2,1],[2,3,1],[2,4,1],[1,5,1]],chiral:true,
+ answer:'3-metylobutan-2-ol',why:'Atom węgla z grupą OH ma cztery różne podstawniki: H, OH, CH₃ oraz CH(CH₃)₂.',src:'Zadania dodatkowe matury dwujęzycznej CKE, maj 2023, poziom rozszerzony (Formuła 2023), zadanie 12.'
+},
+{
+ task:`Borowodorek sodu NaBH₄ redukuje grupę karbonylową ketonu do grupy hydroksylowej. <b>Zbuduj organiczny produkt redukcji butan-2-onu.</b>`,
+ nodes:['C','C','C','C','OH'],edges:[[0,1,1],[1,2,1],[2,3,1],[1,4,1]],chiral:true,
+ answer:'butan-2-ol',why:'Atom C2 jest połączony z H, OH, CH₃ i CH₂CH₃.',src:'Matura CKE, maj 2025, poziom rozszerzony (Formuła 2015), zadanie 24.'
+},
+{
+ task:`But-1-en reaguje z HBr. Addycja przebiega zgodnie z regułą Markownikowa. <b>Zbuduj główny organiczny produkt tej reakcji.</b>`,
+ nodes:['C','C','C','C','Br'],edges:[[0,1,1],[1,2,1],[2,3,1],[1,4,1]],chiral:true,
+ answer:'2-bromobutan',why:'Atom C2 jest połączony z Br, H, CH₃ i CH₂CH₃.',src:'Matura CKE, maj 2015, poziom rozszerzony (Formuła 2007), zadanie 30 — schemat przemian z but-1-enem i 2-bromobutanem.'
+},
+{
+ task:`Dehydratacja 3-metylobutan-2-olu daje jako produkt główny bardziej podstawiony alken A. Ten sam alken A można otrzymać przez dehydratację innego alkoholu. <b>Zbuduj ten drugi alkohol.</b>`,
+ nodes:['C','C','C','C','C','OH'],edges:[[0,1,1],[1,2,1],[2,3,1],[1,4,1],[1,5,1]],chiral:false,
+ answer:'2-metylobutan-2-ol',why:'Atom węgla z grupą OH ma dwie identyczne grupy CH₃.',src:'Matura CKE, maj 2021, poziom rozszerzony (Formuła 2015), zadanie 26.1.'
+},
+{
+ task:`W syntezie α-aminokwasu atom wodoru przy węglu α kwasu karboksylowego zastępuje się najpierw bromem, a następnie grupą NH₂. Dla leucyny grupa boczna ma budowę –CH₂–CH(CH₃)₂. <b>Zbuduj kwas karboksylowy używany jako substrat do otrzymania leucyny.</b>`,
+ nodes:['C','C','C','C','C','C','OH','O'],edges:[[0,1,1],[1,2,1],[2,3,1],[3,4,1],[3,5,1],[0,6,1],[0,7,2]],chiral:false,
+ answer:'kwas 4-metylopentanowy',why:'Atom CH w rozgałęzieniu jest połączony z dwiema identycznymi grupami CH₃; w cząsteczce nie ma centrum stereogenicznego.',src:'Matura CKE, maj 2019, poziom rozszerzony (Formuła 2015), zadanie 38.'
+},
+{
+ task:`W monobromowaniu alkanów względna reaktywność atomów H wynosi: 3° = 1600, 2° = 82, 1° = 1. <b>Zbuduj monobromopochodną 2-metylopentanu, która powstaje z największą wydajnością.</b>`,
+ nodes:['C','C','C','C','C','C','Br'],edges:[[0,1,1],[1,2,1],[2,3,1],[3,4,1],[1,5,1],[1,6,1]],chiral:false,
+ answer:'2-bromo-2-metylopentan',why:'Atom węgla z Br ma dwie identyczne grupy CH₃.',src:'Matura CKE, czerwiec 2023, poziom rozszerzony (Formuła 2023), zadanie 25.1.'
+},
+{
+ task:`Monochlorowaniu na świetle poddano jeden z alkanów C₄H₁₀. Otrzymano dwie monochloropochodne: 64% jednego izomeru i 36% drugiego. Dla chlorowania: H 3° = 5,0; H 2° = 3,8; H 1° = 1,0. <b>Zbuduj alkan użyty w reakcji.</b>`,
+ nodes:['C','C','C','C'],edges:[[0,1,1],[0,2,1],[0,3,1]],chiral:false,
+ answer:'2-metylopropan',why:'Centralny atom węgla jest połączony z trzema identycznymi grupami CH₃.',src:'Matura CKE, czerwiec 2023, poziom rozszerzony (Formuła 2023), zadanie 24.'
+},
+{
+ task:`NaBH₄ redukuje aldehydy do alkoholi pierwszorzędowych. <b>Zbuduj aldehyd, którego redukcja prowadzi do 2,2-dimetylopropan-1-olu.</b>`,
+ nodes:['C','C','C','C','C','O'],edges:[[0,1,1],[1,2,1],[1,3,1],[1,4,1],[0,5,2]],chiral:false,
+ answer:'2,2-dimetylopropanal',why:'Atom węgla połączony z grupą CHO ma trzy identyczne grupy CH₃.',src:'Matura CKE, maj 2025, poziom rozszerzony (Formuła 2015), zadanie 24.1.'
+},
+{
+ task:`Nasycony dwufunkcyjny związek X ma cztery atomy węgla. Obie grupy funkcyjne reagują z sodem, ale tylko jedna reaguje z NaOH. Utlenienie X jonami dichromianowymi(VI) w środowisku kwasowym daje kwas bursztynowy HOOC–CH₂–CH₂–COOH. <b>Zbuduj związek X.</b>`,
+ nodes:['C','C','C','C','OH','OH','O'],edges:[[0,1,1],[1,2,1],[2,3,1],[3,4,1],[0,5,1],[0,6,2]],chiral:false,
+ answer:'kwas 4-hydroksybutanowy',why:'W cząsteczce nie ma atomu węgla połączonego z czterema różnymi podstawnikami.',src:'Matura CKE, maj 2026, poziom rozszerzony (Formuła 2015/2023), zadanie 23.'
+}
+];
+const TOOL_TYPES=['C','OH','O','Br','Cl','I'];
+const DISPLAY={C:'C',OH:'OH',Br:'Br',Cl:'Cl',I:'I',O:'=O'};
+let idx=0,nodes=[],edges=[],selected=null,history=[],structureOK=false,chiralityOK=false;
+const $=id=>document.getElementById(id);
+function valence(id){return edges.filter(e=>e.a===id||e.b===id).reduce((s,e)=>s+e.order,0)}
+function implicitH(n){if(n.type!=='C')return 0;return Math.max(0,4-valence(n.id))}
+function save(){history.push({nodes:structuredClone(nodes),edges:structuredClone(edges),selected});if(history.length>60)history.shift()}
+function startOrAttach(type){if(structureOK)return;
+ if(nodes.length===0){if(type!=='C')return;save();nodes.push({id:'n'+crypto.randomUUID(),type:'C'});selected=nodes[0].id;renderAll();return}
+ if(!selected)return;const parent=nodes.find(n=>n.id===selected);if(!parent||parent.type!=='C')return;const order=type==='O'?2:1;if(valence(parent.id)+order>4)return;save();const newNode={id:'n'+crypto.randomUUID(),type};nodes.push(newNode);edges.push({a:parent.id,b:newNode.id,order});if(type==='C')selected=newNode.id;renderAll()}
+function selectNode(id){if(structureOK)return;const n=nodes.find(n=>n.id===id);if(!n||n.type!=='C')return;selected=id;renderMol()}
+function undo(){if(structureOK||!history.length)return;const s=history.pop();nodes=s.nodes;edges=s.edges;selected=s.selected;renderAll();clearStatus()}
+function clearBuild(){if(structureOK)return;history=[];nodes=[];edges=[];selected=null;renderAll();clearStatus()}
+function clearStatus(){$('status').className='status';$('status').textContent=''}
+function adjacency(nodeList,edgeList){const a={};nodeList.forEach(n=>a[n.id]=[]);edgeList.forEach(e=>{a[e.a].push([e.b,e.order]);a[e.b].push([e.a,e.order])});return a}
+function canonical(nodeList,edgeList){if(!nodeList.length)return '';const adj=adjacency(nodeList,edgeList),byId=Object.fromEntries(nodeList.map(n=>[n.id,n]));function enc(id,parent){const kids=adj[id].filter(([k])=>k!==parent).map(([k,o])=>`${o}:${enc(k,id)}`).sort();return `${byId[id].type}[${kids.join('|')}]`}return nodeList.map(n=>enc(n.id,null)).sort()[0]}
+function targetGraph(q){const ns=q.nodes.map((type,i)=>({id:'t'+i,type}));const es=q.edges.map(([a,b,order])=>({a:'t'+a,b:'t'+b,order}));return {nodes:ns,edges:es}}
+function validValences(){return nodes.every(n=>{const v=valence(n.id);if(n.type==='C')return v<=4;if(n.type==='OH'||n.type==='Br'||n.type==='Cl')return v===1;if(n.type==='O')return v===2;return false})}
+function structureCorrect(q){if(!validValences())return false;const t=targetGraph(q);return canonical(nodes,edges)===canonical(t.nodes,t.edges)}
+function check(){if(structureOK)return;const q=Q[idx];if(structureCorrect(q)){structureOK=true;$('status').className='status ok';$('status').textContent='Struktura poprawna.';$('stage2').classList.add('show');$('check').disabled=true;$('undo').disabled=true;$('clear').disabled=true;renderBank();renderMol()}else{$('status').className='status no';$('status').textContent='Niepoprawna struktura.'}}
+function answerChiral(val){if(!structureOK||chiralityOK)return;const q=Q[idx];if(val===q.chiral){chiralityOK=true;(val?$('chiral'):$('achiral')).classList.add('good');$('chiral').disabled=true;$('achiral').disabled=true;$('feedback').className='feedback show';$('feedback').innerHTML=`<div class="solution">${q.answer}</div><div>${q.why}</div><div class="source">${q.src}</div>`;$('nextrow').classList.add('show')}else{const b=val?$('chiral'):$('achiral');b.classList.add('bad');setTimeout(()=>b.classList.remove('bad'),450)}}
+function next(){if(!structureOK||!chiralityOK)return;if(idx<Q.length-1){idx++;render()}else finish()}
+function finish(){$('game').hidden=true;$('done').hidden=false;$('progress').style.width='100%';$('done').innerHTML=`<h2>Koniec</h2><div>${Q.length} / ${Q.length}</div>`}
+function renderBank(){const c=$('bank');c.innerHTML='';TOOL_TYPES.forEach(type=>{const b=document.createElement('button');b.className='tile';b.textContent=DISPLAY[type];b.disabled=structureOK;b.onclick=()=>{clearStatus();startOrAttach(type)};c.appendChild(b)})}
+function carbonGraph(){const ids=nodes.filter(n=>n.type==='C').map(n=>n.id),adj={};ids.forEach(id=>adj[id]=[]);edges.forEach(e=>{if(adj[e.a]&&adj[e.b]){adj[e.a].push(e.b);adj[e.b].push(e.a)}});return {ids,adj}}
+function farthest(start,adj){const q=[[start,0]],vis=new Set([start]);let last=[start,0];while(q.length){const cur=q.shift();if(cur[1]>last[1])last=cur;for(const k of adj[cur[0]]||[])if(!vis.has(k)){vis.add(k);q.push([k,cur[1]+1])}}return last[0]}
+function shortestPath(start,end,adj){const q=[start],prev={[start]:null};while(q.length){const x=q.shift();if(x===end)break;for(const k of adj[x]||[])if(!(k in prev)){prev[k]=x;q.push(k)}}const p=[];let x=end;while(x!=null){p.push(x);x=prev[x]}return p.reverse()}
+function layout(){if(!nodes.length)return {};const {ids,adj}=carbonGraph(),pos={};if(ids.length){const a=farthest(ids[0],adj),b=farthest(a,adj),path=shortestPath(a,b,adj),on=new Set(path);const left=105,right=675,step=path.length>1?(right-left)/(path.length-1):0;path.forEach((id,i)=>pos[id]={x:left+i*step,y:255});let up=true;function placeBranch(id,parent,anchor,depth){const siblings=(adj[parent]||[]).filter(k=>!on.has(k)&&k!==id);const sign=up?-1:1;up=!up;pos[id]={x:pos[anchor].x+18*depth,y:255+sign*(90+65*(depth-1))};for(const k of adj[id]||[])if(k!==parent&&!on.has(k))placeBranch(k,id,anchor,depth+1)}for(const anchor of path){for(const k of adj[anchor]||[])if(!on.has(k)&&!pos[k])placeBranch(k,anchor,anchor,1)}}
+ const allAdj=adjacency(nodes,edges);for(const n of nodes.filter(n=>n.type!=='C')){const e=edges.find(e=>e.a===n.id||e.b===n.id);if(!e)continue;const p=e.a===n.id?e.b:e.a,pp=pos[p]||{x:390,y:255};const hs=(allAdj[p]||[]).map(([id])=>id).filter(id=>nodes.find(nn=>nn.id===id)?.type!=='C');const si=hs.indexOf(n.id);const angles=[-Math.PI/2,Math.PI/2,-Math.PI/3,Math.PI/3,Math.PI,0];const ang=angles[si%angles.length];pos[n.id]={x:pp.x+88*Math.cos(ang),y:pp.y+88*Math.sin(ang)}}return pos}
+function carbonLabel(n){const h=implicitH(n);return h===0?'C':h===1?'CH':h===2?'CH₂':h===3?'CH₃':'CH₄'}
+function svgEl(tag,attrs={}){const e=document.createElementNS('http://www.w3.org/2000/svg',tag);for(const[k,v]of Object.entries(attrs))e.setAttribute(k,v);return e}
+function renderMol(){const svg=$('mol');svg.innerHTML='';if(!nodes.length)return;const pos=layout();for(const e of edges){const p1=pos[e.a],p2=pos[e.b];if(!p1||!p2)continue;const dx=p2.x-p1.x,dy=p2.y-p1.y,L=Math.hypot(dx,dy)||1,nx=-dy/L,ny=dx/L;if(e.order===1)svg.appendChild(svgEl('line',{x1:p1.x,y1:p1.y,x2:p2.x,y2:p2.y,class:'bond'}));else for(const s of [-5,5])svg.appendChild(svgEl('line',{x1:p1.x+nx*s,y1:p1.y+ny*s,x2:p2.x+nx*s,y2:p2.y+ny*s,class:'bond double2'}))}for(const n of nodes){const p=pos[n.id];if(!p)continue;const g=svgEl('g',{class:`node ${n.type==='C'?'carbon':''} ${selected===n.id?'selected':''}`});const r=n.type==='C'?31:27;g.appendChild(svgEl('circle',{cx:p.x,cy:p.y,r}));const t=svgEl('text',{x:p.x,y:p.y+7,'text-anchor':'middle','font-size':n.type==='C'?20:18,'font-weight':850,fill:'#15324a'});t.textContent=n.type==='C'?carbonLabel(n):(n.type==='O'?'O':n.type);g.appendChild(t);if(n.type==='C'&&!structureOK){g.style.cursor='pointer';g.addEventListener('click',()=>selectNode(n.id))}svg.appendChild(g)}}
+function renderAll(){renderBank();renderMol();$('undo').disabled=!history.length||structureOK;$('clear').disabled=structureOK||nodes.length===0}
+function render(){nodes=[];edges=[];selected=null;history=[];structureOK=false;chiralityOK=false;$('round').textContent=`${idx+1} / ${Q.length}`;$('progress').style.width=`${idx/Q.length*100}%`;$('task').innerHTML=Q[idx].task;$('status').className='status';$('status').textContent='';$('stage2').className='stage2';$('chiral').disabled=false;$('achiral').disabled=false;$('chiral').className='btn answer';$('achiral').className='btn answer';$('feedback').className='feedback';$('feedback').innerHTML='';$('nextrow').className='nextrow';$('check').disabled=false;renderAll()}
+function branchSig(center,neighbor,nodeList,edgeList){const adj=adjacency(nodeList,edgeList),byId=Object.fromEntries(nodeList.map(n=>[n.id,n]));function enc(id,parent){const kids=adj[id].filter(([k])=>k!==parent).map(([k,o])=>`${o}:${enc(k,id)}`).sort();return `${byId[id].type}[${kids.join('|')}]`}return enc(neighbor,center)}
+function detectChiral(q){const t=targetGraph(q),adj=adjacency(t.nodes,t.edges),byId=Object.fromEntries(t.nodes.map(n=>[n.id,n]));for(const n of t.nodes.filter(n=>n.type==='C')){const inc=adj[n.id],bondSum=inc.reduce((s,[,o])=>s+o,0),h=4-bondSum;if(h<0)continue;if(inc.some(([,o])=>o!==1))continue;if(inc.length+h!==4)continue;const sigs=inc.map(([k])=>branchSig(n.id,k,t.nodes,t.edges));for(let i=0;i<h;i++)sigs.push('H');if(new Set(sigs).size===4)return true}return false}
+function runTests(){let pass=0,fail=0,L=[];const chk=(c,m)=>{if(c){pass++;L.push('PASS  '+m)}else{fail++;L.push('FAIL  '+m)}};chk(Q.length===10,'10 zadań');chk(Q.filter(q=>q.chiral).length===4,'4 chiralne / 6 achiralnych');Q.forEach((q,i)=>{const t=targetGraph(q);chk(t.edges.length===t.nodes.length-1,`${i+1}: graf spójny drzewiasty`);const oldN=nodes,oldE=edges;nodes=t.nodes;edges=t.edges;chk(validValences(),`${i+1}: poprawne wartościowości`);nodes=oldN;edges=oldE;chk(detectChiral(q)===q.chiral,`${i+1}: chiralność zgodna z analizą grafu (${q.chiral?'chiralna':'achiralna'})`);chk(TOOL_TYPES.includes('C')&&TOOL_TYPES.includes('O')&&TOOL_TYPES.includes('OH'),`${i+1}: zestaw narzędzi zawiera C, =O i OH`);const relabel=shuffle(t.nodes.map(n=>n.id)),map=Object.fromEntries(t.nodes.map((n,j)=>[n.id,relabel[j]]));const ns=t.nodes.map(n=>({id:map[n.id],type:n.type})),es=t.edges.map(e=>({a:map[e.a],b:map[e.b],order:e.order}));chk(canonical(ns,es)===canonical(t.nodes,t.edges),`${i+1}: sprawdzanie niezależne od kolejności budowy`) });$('debug').textContent=`TEST: ${pass} PASS / ${fail} FAIL\n`+L.join('\n');$('debug').classList.add('show');return {pass,fail}}
+$('undo').onclick=undo;$('clear').onclick=clearBuild;$('check').onclick=check;$('chiral').onclick=()=>answerChiral(true);$('achiral').onclick=()=>answerChiral(false);$('next').onclick=next;window.__MATURA_CHIRAL__={Q,TOOL_TYPES,canonical,targetGraph,detectChiral,runTests};render();
+</script>
+</body>
+</html>
