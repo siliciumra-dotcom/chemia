@@ -3,25 +3,33 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Chemia</title>
 
 <style>
+*{
+    box-sizing:border-box;
+}
+
 body{
     margin:0;
     padding:40px 20px;
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-    background:linear-gradient(135deg,#eef6ff,#f7f9fc);
+    background:
+        radial-gradient(circle at top left,#dcebff 0,transparent 35%),
+        linear-gradient(135deg,#eef6ff,#f7f9fc);
     color:#1f2937;
+    min-height:100vh;
 }
 
 .container{
-    max-width:900px;
+    max-width:1000px;
     margin:auto;
 }
 
 h1{
     text-align:center;
-    margin-bottom:10px;
+    margin:0 0 10px;
     font-size:42px;
 }
 
@@ -29,26 +37,52 @@ h1{
     text-align:center;
     color:#6b7280;
     margin-bottom:40px;
+    font-size:17px;
 }
 
 .grid{
     display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
-    gap:25px;
+    grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+    gap:24px;
 }
 
 .card{
+    position:relative;
     background:white;
+    border:1px solid rgba(148,163,184,.18);
     border-radius:24px;
     padding:30px;
     text-decoration:none;
     color:inherit;
-    box-shadow:0 10px 25px rgba(0,0,0,.08);
-    transition:.2s;
+    box-shadow:0 10px 28px rgba(30,64,175,.08);
+    transition:
+        transform .2s ease,
+        box-shadow .2s ease,
+        border-color .2s ease;
+    overflow:hidden;
 }
 
 .card:hover{
     transform:translateY(-5px);
+    box-shadow:0 18px 38px rgba(30,64,175,.14);
+    border-color:#bfdbfe;
+}
+
+.card::after{
+    content:"";
+    position:absolute;
+    width:120px;
+    height:120px;
+    border-radius:50%;
+    right:-55px;
+    bottom:-55px;
+    background:#eff6ff;
+    z-index:0;
+}
+
+.card > *{
+    position:relative;
+    z-index:1;
 }
 
 .icon{
@@ -56,26 +90,64 @@ h1{
     margin-bottom:15px;
 }
 
-.title{
-    font-size:26px;
-    font-weight:700;
+.card-title{
+    font-size:25px;
+    font-weight:750;
     margin-bottom:10px;
+    line-height:1.15;
 }
 
 .desc{
     color:#6b7280;
-    line-height:1.5;
+    line-height:1.55;
+    font-size:15px;
+}
+
+.badge{
+    position:absolute;
+    top:18px;
+    right:18px;
+    background:#2563eb;
+    color:white;
+    font-size:11px;
+    font-weight:800;
+    letter-spacing:.06em;
+    padding:6px 9px;
+    border-radius:999px;
+    z-index:2;
 }
 
 .back{
-    margin-top:30px;
+    margin-top:36px;
     text-align:center;
 }
 
 .back a{
     color:#2563eb;
     text-decoration:none;
-    font-weight:600;
+    font-weight:650;
+}
+
+.back a:hover{
+    text-decoration:underline;
+}
+
+@media(max-width:600px){
+    body{
+        padding:28px 14px;
+    }
+
+    h1{
+        font-size:36px;
+    }
+
+    .grid{
+        grid-template-columns:1fr;
+    }
+
+    .card{
+        padding:25px;
+    }
 }
 </style>
 </head>
@@ -84,43 +156,55 @@ h1{
 
 <div class="container">
 
-<h1>🧪 Chemia</h1>
+    <h1>🧪 Chemia</h1>
 
-<div class="subtitle">
-Materiały interaktywne do chemii
-</div>
-
-<div class="grid">
-
-<a class="card" href="reakcje.html">
-    <div class="icon">⚗️</div>
-    <div class="title">Reakcje charakterystyczne</div>
-    <div class="desc">
-        Wersja do samodzielnego rozwiązywania.
+    <div class="subtitle">
+        Materiały interaktywne do chemii
     </div>
-</a>
 
-<a class="card" href="reakcje_odp.html">
-    <div class="icon">📖</div>
-    <div class="title">Reakcje charakterystyczne – odpowiedzi</div>
-    <div class="desc">
-        Wersja z rozwiązaniami i wyjaśnieniami.
+    <div class="grid">
+
+        <a class="card" href="reakcje.html">
+            <div class="icon">⚗️</div>
+            <div class="card-title">Reakcje charakterystyczne</div>
+            <div class="desc">
+                Wersja do samodzielnego rozwiązywania.
+            </div>
+        </a>
+
+        <a class="card" href="reakcje_odp.html">
+            <div class="icon">📖</div>
+            <div class="card-title">Reakcje charakterystyczne – odpowiedzi</div>
+            <div class="desc">
+                Wersja z rozwiązaniami i wyjaśnieniami.
+            </div>
+        </a>
+
+        <a class="card" href="chiralnosc.html">
+            <div class="icon">🧬</div>
+            <div class="card-title">Chiralność</div>
+            <div class="desc">
+                Interaktywny trening budowania cząsteczek
+                i rozpoznawania chiralności.
+            </div>
+        </a>
+
+        <a class="card" href="zbuduj_wlasne_ogniwo_matura.html">
+            <div class="badge">NOWE</div>
+            <div class="icon">🔋</div>
+            <div class="card-title">Zbuduj własne ogniwo</div>
+            <div class="desc">
+                Interaktywne laboratorium ogniw galwanicznych:
+                półogniwa, anoda i katoda, przepływ elektronów,
+                schemat ogniwa oraz obliczanie SEM.
+            </div>
+        </a>
+
     </div>
-</a>
 
-<a class="card" href="chiralnosc.html">
-    <div class="icon">🧬</div>
-    <div class="title">Chiralność</div>
-    <div class="desc">
-        Interaktywny trening budowania cząsteczek i rozpoznawania chiralności.
+    <div class="back">
+        <a href="../index.html">⬅ Powrót do strony głównej</a>
     </div>
-</a>
-
-</div>
-
-<div class="back">
-    <a href="../index.html">⬅ Powrót do strony głównej</a>
-</div>
 
 </div>
 
