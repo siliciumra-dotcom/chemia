@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Zbuduj własne ogniwo — laboratorium i trening maturalny</title>
+<style>
+:root{
+  --ink:#16324b;--muted:#667c90;--bg:#edf5fb;--card:#ffffff;--line:#d7e6f2;
+  --blue:#2f80ed;--blue2:#7ac8ff;--green:#238a58;--greenbg:#edf9f2;--red:#bd463d;--redbg:#fff1f0;
+  --amber:#b7791f;--amberbg:#fff8e7;--soft:#f6f9fc;--shadow:#16324b14;
+  --teal:#2fb9b0;--purple:#7a6df0;--metal1:#f3f6f9;--metal2:#c8d1d8;--metal3:#95a3af;
+  --glass:#f7fbff;--wire:#405668;--wireGlow:#95d6ff;--bridge:#b3c6d4;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:linear-gradient(135deg,#f9fcff,#eaf2f8);color:var(--ink)}
+button,input,select{font:inherit}.app{max-width:1400px;margin:auto;padding:22px}.top{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:16px}.title h1{margin:0;font-size:clamp(28px,3vw,42px);letter-spacing:-.025em}.title p{margin:8px 0 0;color:var(--muted);max-width:900px;line-height:1.45}.tabs{display:flex;gap:8px;flex-wrap:wrap}.tab{border:1px solid var(--line);background:#fff;border-radius:14px;padding:10px 14px;font-weight:850;cursor:pointer}.tab.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+.panel{display:none}.panel.active{display:block}.grid{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(350px,.72fr);gap:20px}.card{background:#fff;border:1px solid #e2ebf2;border-radius:24px;box-shadow:0 14px 35px var(--shadow)}.main{padding:20px}.side{padding:20px;display:flex;flex-direction:column;gap:13px}.section-title{font-size:17px;font-weight:900;margin:0 0 6px}.sub{font-size:13px;color:var(--muted);line-height:1.45;margin:0}.note{padding:11px 13px;background:var(--soft);border:1px solid var(--line);border-radius:14px;font-size:13px;line-height:1.45}.note strong{color:var(--ink)}
+.stage{position:relative;border:1px solid var(--line);border-radius:26px;background:radial-gradient(circle at top left,#ffffff 0%,#f7fbff 33%,#eef6fd 100%);min-height:530px;padding:22px;overflow:hidden;box-shadow:inset 0 1px 0 #ffffff}.stage:before{content:"";position:absolute;inset:0;background:linear-gradient(140deg,#ffffff00 58%,#7ac8ff12 100%);pointer-events:none}.labrow{display:grid;grid-template-columns:1fr 220px 1fr;gap:14px;align-items:end;min-height:400px;position:relative;z-index:1}.station{display:flex;flex-direction:column;align-items:center;gap:10px;position:relative}.station h3{margin:0;font-size:14px;letter-spacing:.01em}.beaker{width:min(280px,100%);height:295px;border:5px solid #7a92a8;border-top:0;border-radius:0 0 38px 38px;position:relative;cursor:pointer;transition:.18s;background:linear-gradient(180deg,#ffffff88,#f8fcff 18%,#ffffff08 40%)}.beaker.active{box-shadow:0 0 0 4px #2f80ed24,0 16px 30px #7ac8ff18;border-color:#4d7fa8}.beaker:before,.beaker:after{content:"";position:absolute;top:-7px;height:5px;width:36px;background:#7f94a6;border-radius:4px}.beaker:before{left:-5px}.beaker:after{right:-5px}.liquid{position:absolute;left:8px;right:8px;bottom:8px;height:0;border-radius:0 0 29px 29px;transition:.25s;background:linear-gradient(180deg,#e7f8ff,#b8e5f6 65%,#96d1e9);overflow:hidden;box-shadow:inset 0 10px 18px #ffffff55}.liquid.filled{height:156px}.liquid:before{content:"";position:absolute;left:0;right:0;top:10px;height:14px;background:linear-gradient(90deg,#ffffff00,#ffffff80,#ffffff00)}.liquid-label{position:absolute;left:10px;right:10px;bottom:60px;text-align:center;font-weight:850;font-size:13px;color:#224d67;z-index:2;text-shadow:0 1px 0 #ffffff}.plate{position:absolute;top:44px;left:50%;transform:translateX(-50%);width:74px;height:182px;border:2px dashed #aab9c5;border-radius:14px;background:#ffffffc9;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:21px;transition:.2s;z-index:3;box-shadow:0 10px 22px #16324b12}.plate.filled{border-style:solid;background:linear-gradient(90deg,var(--metal1),var(--metal2),var(--metal3),var(--metal1));border-color:#788a99}.lead{position:absolute;left:50%;top:-32px;transform:translateX(-50%);width:8px;height:86px;border-radius:8px;background:linear-gradient(180deg,#8ca0b1,#dce5ec 35%,#8ca0b1 100%);z-index:4;box-shadow:0 0 0 2px #ffffff80}.lead:after{content:"";position:absolute;top:-9px;left:50%;transform:translateX(-50%);width:20px;height:12px;border-radius:10px 10px 4px 4px;background:linear-gradient(180deg,#73889a,#bac7d0)}.emptyhint{position:absolute;left:12px;right:12px;top:118px;text-align:center;color:#8a9aaa;font-size:12px;font-weight:700}.rolebadge{min-height:28px;padding:6px 11px;border-radius:999px;font-size:12px;font-weight:900;border:1px solid var(--line);background:#fff;opacity:0;box-shadow:0 10px 22px #16324b0d}.rolebadge.show{opacity:1}.rolebadge.anode{background:#fff1ef;border-color:#efb5ae;color:#99392f}.rolebadge.cathode{background:#edf9f2;border-color:#9bd3b2;color:#236d46}
+.middle{height:330px;position:relative}.wire{position:absolute;top:22px;left:-130px;right:-130px;height:120px;opacity:.18;transition:.22s}.wire.on{opacity:1}.wire:before{content:"";position:absolute;left:0;right:0;top:0;height:92px;border:7px solid var(--wire);border-bottom:0;border-radius:80px 80px 0 0;box-shadow:0 0 0 3px #ffffff40,0 0 18px #7ac8ff22}.wire:after{content:"";position:absolute;left:50%;transform:translateX(-50%);top:42px;width:68px;height:7px;background:var(--wire);border-radius:10px}.voltmeter{position:absolute;left:50%;top:42px;transform:translateX(-50%);width:118px;height:84px;border-radius:20px;background:linear-gradient(180deg,#183750,#244b6a);border:4px solid #d8eaf7;box-shadow:0 18px 35px #16324b26, inset 0 3px 0 #ffffff22;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;opacity:.98}.voltmeter:before,.voltmeter:after{content:"";position:absolute;top:18px;width:18px;height:8px;background:var(--wire);border-radius:10px}.voltmeter:before{left:-16px}.voltmeter:after{right:-16px}.vm-title{font-size:10px;font-weight:900;letter-spacing:.08em;opacity:.78}.vm-screen{min-width:74px;padding:7px 10px;border-radius:12px;background:linear-gradient(180deg,#dff9e6,#b9f0c6);color:#16324b;font:900 20px/1 ui-monospace,SFMono-Regular,Consolas,monospace;box-shadow:inset 0 2px 0 #ffffff85}.vm-screen.off{background:linear-gradient(180deg,#dce7f0,#c9d7e2);color:#6a7f92}.vm-unit{font-size:10px;font-weight:800;color:#dbe9f5}.bridge{position:absolute;bottom:58px;left:-66px;right:-66px;height:116px;border:18px solid var(--bridge);border-bottom:0;border-radius:72px 72px 0 0;opacity:.16;transition:.2s;box-shadow:inset 0 6px 0 #ffffff44}.bridge.on{opacity:1}.bridge:before,.bridge:after{content:"";position:absolute;bottom:-18px;width:16px;height:48px;background:linear-gradient(180deg,#cfdbe4,#a8bbc9);border-radius:8px}.bridge:before{left:16px}.bridge:after{right:16px}.middlelabel{position:absolute;left:0;right:0;text-align:center;color:var(--muted);font-size:11px;font-weight:700}.wirelabel{top:148px}.bridgelabel{bottom:10px}.earrow{position:absolute;top:172px;left:-88px;right:-88px;text-align:center;font-size:24px;font-weight:950;color:var(--blue);opacity:0;text-shadow:0 1px 0 #fff}.earrow.show{opacity:1}.electronTrail{position:absolute;top:150px;left:16px;right:16px;height:18px;opacity:0;display:flex;align-items:center;justify-content:center;gap:22px;color:#2f80ed;font-weight:900}.electronTrail.show{opacity:1}.electronTrail span{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:#ffffff;border:2px solid #89c8ff;box-shadow:0 6px 12px #2f80ed20;animation:floatE 1.8s ease-in-out infinite}.electronTrail span:nth-child(2){animation-delay:.22s}.electronTrail span:nth-child(3){animation-delay:.44s}@keyframes floatE{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.symbolbox{margin-top:14px;border:1px solid var(--line);border-radius:18px;background:#fff;padding:14px}.symbol-title{display:flex;justify-content:space-between;gap:10px;align-items:center}.symbol-title b{font-size:13px}.symbol-title span{font-size:11px;color:var(--muted)}.symbol{margin-top:9px;padding:13px;border-radius:14px;background:#10283d;color:#f4f8fb;text-align:center;font:800 clamp(15px,2vw,21px) ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.01em;min-height:50px;display:flex;align-items:center;justify-content:center;flex-wrap:wrap}.mapping{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.mapitem{padding:9px 10px;border-radius:12px;border:1px solid var(--line);background:var(--soft);font-size:12px;line-height:1.35}
+.bank{border:1px solid var(--line);border-radius:17px;background:#fbfdff;padding:13px}.bankhead{display:flex;justify-content:space-between;gap:10px;align-items:center}.bankhead b{font-size:13px}.bankhead span{font-size:11px;color:var(--muted)}.components{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}.component{border:1px solid var(--line);background:#fff;border-radius:12px;padding:9px 11px;font-weight:850;cursor:pointer;transition:.15s}.component:hover{transform:translateY(-1px);box-shadow:0 5px 14px var(--shadow)}.component small{display:block;color:var(--muted);font-size:10px;font-weight:650;margin-top:2px}.component.sol{background:#f4fbff}.component.metal{background:#fafafa}.component:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.feedback{display:none;border-radius:14px;padding:11px 13px;font-size:13px;line-height:1.48}.feedback.show{display:block}.feedback.ok{background:var(--greenbg);border:1px solid #9fd4b6}.feedback.no{background:var(--redbg);border:1px solid #efb6b0}.feedback.info{background:#eef6ff;border:1px solid #b8d6f6}.feedback.warn{background:var(--amberbg);border:1px solid #ead294}.btnrow{display:flex;gap:8px;flex-wrap:wrap}.btn{border:1px solid var(--line);background:#f7fafc;border-radius:13px;padding:10px 13px;font-weight:850;cursor:pointer}.btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}.btn.good{background:var(--greenbg);border-color:#9bd3b2;color:#236d46}.btn:disabled{opacity:.42;cursor:not-allowed}.locked{opacity:.48;pointer-events:none}.stepbox{border:1px solid var(--line);border-radius:16px;background:var(--soft);padding:12px}.stepbox h4{font-size:13px;margin:0 0 8px}.rolegrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.rolechoice{border:1px solid var(--line);background:#fff;border-radius:11px;padding:9px;font-weight:800;cursor:pointer}.rolechoice.selected{border-color:var(--blue);background:#eef6ff}.reaction{border-left:4px solid var(--line);padding:9px 11px;background:#fff;border-radius:10px;font-size:13px;line-height:1.45}.reaction strong{display:block;margin-bottom:4px}.reaction.an{border-left-color:#d76a5f}.reaction.cat{border-left-color:#55a777}.equation{font:800 13px ui-monospace,SFMono-Regular,Consolas,monospace}.semcalc{padding:12px;border:1px solid var(--line);border-radius:14px;background:#fff}.semformula{font:850 14px ui-monospace,SFMono-Regular,Consolas,monospace;line-height:1.8}.seminput{width:90px;border:1px solid #b8c8d5;border-radius:10px;padding:8px 9px;font-weight:850}.tiny{font-size:11px;color:var(--muted);line-height:1.35}
+/* tasks */
+.taskhead{display:flex;justify-content:space-between;gap:12px;align-items:center}.progress{height:8px;background:#e7eef4;border-radius:999px;overflow:hidden;flex:1}.progress>div{height:100%;background:var(--blue);transition:.2s}.taskbox{margin-top:12px;padding:14px 15px;border:1px solid var(--line);background:#f7faff;border-radius:15px}.taskbox .q{font-weight:800;line-height:1.45}.taskdata{font-size:12px;color:var(--muted);margin-top:7px}.answergrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.field{border:1px solid var(--line);border-radius:14px;padding:11px;background:#fff}.field label{display:block;font-size:11px;color:#4d687d;font-weight:850;margin-bottom:6px}.field select,.field input{width:100%;border:1px solid #becdd8;border-radius:10px;padding:9px;background:#fff;color:var(--ink);font-weight:750}.wide{grid-column:1/-1}.taskfeedback{margin-top:10px}.nav{display:flex;justify-content:space-between;gap:9px;margin-top:12px}.skipnote{text-align:center;font-size:11px;color:var(--muted);margin-top:6px}.resulttag{display:inline-block;padding:4px 8px;border-radius:999px;font-size:10px;font-weight:900;margin-left:5px}.resulttag.ok{background:var(--greenbg);color:#236d46}.resulttag.bad{background:var(--redbg);color:#99392f}
+@media(max-width:980px){.grid{grid-template-columns:1fr}.labrow{grid-template-columns:1fr 170px 1fr}.wire{left:-88px;right:-88px}.bridge{left:-44px;right:-44px}.voltmeter{width:102px;height:78px}.vm-screen{font-size:18px}}
+@media(max-width:660px){.app{padding:12px}.main,.side{padding:14px}.labrow{grid-template-columns:1fr 92px 1fr;gap:5px}.stage{padding:12px}.beaker{height:240px;border-width:4px}.liquid.filled{height:125px}.plate{width:55px;height:150px;font-size:17px;top:40px}.lead{height:74px;top:-28px}.middle{height:265px}.wire{left:-56px;right:-56px}.bridge{left:-26px;right:-26px;border-width:12px}.voltmeter{width:78px;height:62px;top:54px;border-width:3px;border-radius:14px}.vm-title,.vm-unit{display:none}.vm-screen{min-width:46px;padding:5px 6px;font-size:14px}.wirelabel{top:133px}.earrow{top:150px;font-size:19px}.mapping,.answergrid,.rolegrid{grid-template-columns:1fr}.wide{grid-column:auto}.symbol{font-size:13px}.tabs{width:100%}.tab{flex:1}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div class="title">
+      <h1>Zbuduj własne ogniwo</h1>
+      <p>Najpierw zbuduj ogniwo krok po kroku i zobacz, co oznacza zapis schematu ogniwa. Potem przejdź do zadań maturalnych.</p>
+    </div>
+    <div class="tabs">
+      <button class="tab active" id="labTab">1. Laboratorium</button>
+      <button class="tab" id="taskTab">2. Zadania</button>
+    </div>
+  </div>
+
+  <section class="panel active" id="labPanel">
+    <div class="grid">
+      <main class="card main">
+        <div class="stage">
+          <div class="labrow">
+            <div class="station">
+              <h3>Zlewka A</h3>
+              <div class="rolebadge" id="roleA"></div>
+              <div class="beaker active" id="beakerA" data-side="A">
+                <div class="liquid" id="liquidA"></div>
+                <div class="liquid-label" id="liquidLabelA"></div>
+                <div class="lead" id="leadA"></div><div class="plate" id="plateA">—</div>
+                <div class="emptyhint" id="hintA">Kliknij zlewkę i dodaj roztwór.</div>
+              </div>
+            </div>
+            <div class="middle">
+              <div class="wire" id="wire"></div>
+              <div class="voltmeter" id="voltmeter"><div class="vm-title">VOLTMETER</div><div class="vm-screen off" id="vmScreen">--</div><div class="vm-unit">V</div></div>
+              <div class="electronTrail" id="electronTrail"><span>e⁻</span><span>e⁻</span><span>e⁻</span></div>
+              <div class="earrow" id="earrow">e⁻ →</div>
+              <div class="middlelabel wirelabel">przewód zewnętrzny</div>
+              <div class="bridge" id="bridge"></div>
+              <div class="middlelabel bridgelabel">klucz elektrolityczny</div>
+            </div>
+            <div class="station">
+              <h3>Zlewka B</h3>
+              <div class="rolebadge" id="roleB"></div>
+              <div class="beaker" id="beakerB" data-side="B">
+                <div class="liquid" id="liquidB"></div>
+                <div class="liquid-label" id="liquidLabelB"></div>
+                <div class="lead" id="leadB"></div><div class="plate" id="plateB">—</div>
+                <div class="emptyhint" id="hintB">Kliknij zlewkę i dodaj roztwór.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="symbolbox">
+            <div class="symbol-title"><b>Zapis powstaje razem z układem</b><span>schemat ogniwa pojawi się dopiero po ustaleniu anody i katody</span></div>
+            <div class="symbol" id="liveSymbol">—</div>
+            <div class="mapping" id="mapping">
+              <div class="mapitem">Pojedyncza kreska <b>|</b> oddziela fazy w jednym półogniwie, np. metal od roztworu jego jonów.</div>
+              <div class="mapitem">Podwójna kreska <b>||</b> oznacza granicę między półogniwami połączonymi kluczem elektrolitycznym.</div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <aside class="card side">
+        <div>
+          <h2 class="section-title">Krok 1. Zbuduj dwa półogniwa</h2>
+          <p class="sub">Kliknij zlewkę, potem wybierz roztwór i metalową płytkę. Do dyspozycji są cztery typowe układy.</p>
+        </div>
+
+        <div class="bank">
+          <div class="bankhead"><b>Roztwory</b><span>najpierw wybierz aktywną zlewkę</span></div>
+          <div class="components" id="solutions"></div>
+        </div>
+        <div class="bank">
+          <div class="bankhead"><b>Metalowe płytki</b><span>Mg, Zn, Cu, Ag</span></div>
+          <div class="components" id="metals"></div>
+        </div>
+
+        <div class="feedback info show" id="labFeedback">Aktywna jest <b>zlewka A</b>. Dodaj do niej roztwór.</div>
+
+        <div class="stepbox" id="connectBox">
+          <h4>Krok 2. Połącz półogniwa</h4>
+          <div class="btnrow">
+            <button class="btn" id="bridgeBtn" disabled>Dodaj klucz elektrolityczny</button>
+            <button class="btn" id="wireBtn" disabled>Połącz przewodem</button>
+          </div>
+          <div class="tiny" style="margin-top:7px">Klucz umożliwia przemieszczanie jonów i zachowanie elektrycznej obojętności roztworów. Elektrony płyną przewodem zewnętrznym.</div>
+        </div>
+
+        <div class="stepbox locked" id="rolesBox">
+          <h4>Krok 3. Które półogniwo jest anodą, a które katodą?</h4>
+          <div class="rolegrid">
+            <div><div class="tiny" style="margin-bottom:5px">Zlewka A</div><select id="roleSelectA"><option value="">— wybierz —</option><option value="anode">anoda</option><option value="cathode">katoda</option></select></div>
+            <div><div class="tiny" style="margin-bottom:5px">Zlewka B</div><select id="roleSelectB"><option value="">— wybierz —</option><option value="anode">anoda</option><option value="cathode">katoda</option></select></div>
+          </div>
+          <button class="btn" id="checkRolesBtn" style="margin-top:9px">Sprawdź</button>
+        </div>
+
+        <div class="stepbox locked" id="reactionBox">
+          <h4>Krok 4. Co dzieje się na elektrodach?</h4>
+          <div id="reactionContent"></div>
+        </div>
+
+        <div class="stepbox locked" id="semBox">
+          <h4>Krok 5. Oblicz SEM</h4>
+          <div class="semcalc" id="semContent"></div>
+        </div>
+
+        <div class="btnrow">
+          <button class="btn" id="resetLabBtn">Zbuduj od nowa</button>
+          <button class="btn primary" id="goTasksBtn">Przejdź do zadań</button>
+        </div>
+        <div class="note"><strong>Ważne:</strong> samo półogniwo nie jest jeszcze „dodatnie” ani „ujemne”. Funkcja anody lub katody zależy od tego, z jakim drugim półogniwem je połączymy.</div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="panel" id="taskPanel">
+    <div class="grid">
+      <main class="card main">
+        <div class="taskhead">
+          <div style="font-weight:900" id="taskCounter">Zadanie 1 / 8</div>
+          <div class="progress"><div id="taskProgress"></div></div>
+        </div>
+        <div class="taskbox">
+          <div class="q" id="taskPrompt"></div>
+          <div class="taskdata" id="taskData"></div>
+        </div>
+        <div class="answergrid">
+          <div class="field"><label>Anoda</label><select id="taskAnode"></select></div>
+          <div class="field"><label>Katoda</label><select id="taskCathode"></select></div>
+          <div class="field"><label>SEM [V]</label><input id="taskSem" inputmode="decimal" placeholder="np. 1,10"></div>
+          <div class="field"><label>Kierunek przepływu elektronów</label><select id="taskDir"></select></div>
+          <div class="field wide"><label>Schemat ogniwa</label><select id="taskScheme"></select></div>
+        </div>
+        <div class="taskfeedback feedback" id="taskFeedback"></div>
+        <div class="nav">
+          <button class="btn" id="prevTaskBtn">← Poprzednie</button>
+          <button class="btn good" id="checkTaskBtn">Sprawdź zadanie</button>
+          <button class="btn primary" id="nextTaskBtn">Następne →</button>
+        </div>
+        <div class="skipnote">Nie musisz rozwiązać zadania, żeby przejść dalej. Możesz wrócić do niego później.</div>
+      </main>
+      <aside class="card side">
+        <h2 class="section-title">Ściąga maturalna</h2>
+        <div class="note"><strong>Większy E°</strong> → łatwiej zachodzi redukcja → <strong>katoda</strong>.</div>
+        <div class="note"><strong>Mniejszy E°</strong> → drugie półogniwo jest anodą → zachodzi tam <strong>utlenianie</strong>.</div>
+        <div class="note"><strong>Elektrony:</strong> anoda → katoda.</div>
+        <div class="note"><strong>SEM = E°katody − E°anody.</strong><br>Potencjału standardowego nie mnożymy przez współczynnik stechiometryczny.</div>
+        <div class="note"><strong>Schemat:</strong> anoda po lewej, katoda po prawej, np. <span class="equation">(−) Zn | Zn²⁺ || Cu²⁺ | Cu (+)</span>.</div>
+        <div class="btnrow"><button class="btn" id="backLabBtn">← Wróć do laboratorium</button></div>
+        <div class="tiny" id="taskStatus"></div>
+      </aside>
+    </div>
+  </section>
+</div>
+<script>
+const H={
+ Mg:{metal:'Mg',ion:'Mg²⁺',salt:'MgSO₄',E:-2.37,n:2},
+ Zn:{metal:'Zn',ion:'Zn²⁺',salt:'ZnSO₄',E:-0.76,n:2},
+ Cu:{metal:'Cu',ion:'Cu²⁺',salt:'CuSO₄',E:0.34,n:2},
+ Ag:{metal:'Ag',ion:'Ag⁺',salt:'AgNO₃',E:0.80,n:1}
+};
+const order=['Mg','Zn','Cu','Ag'];
+const $=id=>document.getElementById(id);
+const fmt=x=>(x>=0?'+':'')+x.toFixed(2).replace('.',',')+' V';
+const num=x=>x.toFixed(2).replace('.',',');
+const epart=n=>n===1?'e⁻':`${n}e⁻`;
+const ox=k=>`${H[k].metal}(s) → ${H[k].ion}(aq) + ${epart(H[k].n)}`;
+const red=k=>`${H[k].ion}(aq) + ${epart(H[k].n)} → ${H[k].metal}(s)`;
+const canonical=(an,cat)=>`(−) ${H[an].metal} | ${H[an].ion} || ${H[cat].ion} | ${H[cat].metal} (+)`;
+const metalLook=k=>({Mg:'linear-gradient(90deg,#edf2f7,#cfd8df,#f7fbff)',Zn:'linear-gradient(90deg,#eef4f8,#b7c5cf,#eef4f8)',Cu:'linear-gradient(90deg,#f6d0ad,#d48755,#f7e1cd)',Ag:'linear-gradient(90deg,#f7fbff,#c9d5df,#ffffff)'})[k]||'';
+const metalBorder=k=>({Mg:'#93a8b8',Zn:'#879baa',Cu:'#b46d45',Ag:'#90a3b1'})[k]||'#788a99';
+function gcd(a,b){while(b){[a,b]=[b,a%b]}return a}
+function lcm(a,b){return a*b/gcd(a,b)}
+function displacementEq(m,sol){const L=lcm(H[m].n,H[sol].n),cm=L/H[m].n,cs=L/H[sol].n,coef=x=>x===1?'':x;return `${coef(cm)}${H[m].metal}(s) + ${coef(cs)}${H[sol].ion}(aq) → ${coef(cm)}${H[m].ion}(aq) + ${coef(cs)}${H[sol].metal}(s)`}
+function pairRoles(a,b){return H[a].E<H[b].E?{an:a,cat:b}:{an:b,cat:a}}
+function setFeedback(text,type='info'){const f=$('labFeedback');f.className=`feedback ${type} show`;f.innerHTML=text}
+function switchPanel(which){
+ const lab=which==='lab';$('labPanel').classList.toggle('active',lab);$('taskPanel').classList.toggle('active',!lab);$('labTab').classList.toggle('active',lab);$('taskTab').classList.toggle('active',!lab);
+}
+$('labTab').onclick=()=>switchPanel('lab');$('taskTab').onclick=()=>{switchPanel('task');renderTask()};$('goTasksBtn').onclick=()=>{switchPanel('task');renderTask()};$('backLabBtn').onclick=()=>switchPanel('lab');
+
+let lab={active:'A',A:{solution:null,metal:null,valid:false},B:{solution:null,metal:null,valid:false},bridge:false,wire:false,rolesChecked:false,an:null,cat:null};
+function renderBanks(){
+ $('solutions').innerHTML='';$('metals').innerHTML='';
+ order.forEach(k=>{
+  const b=document.createElement('button');b.className='component sol';b.innerHTML=`${H[k].salt}<small>roztwór: ${H[k].ion}(aq)</small>`;b.onclick=()=>addSolution(k);$('solutions').appendChild(b);
+  const m=document.createElement('button');m.className='component metal';m.innerHTML=`${H[k].metal}(s)<small>płytka metalowa</small>`;m.onclick=()=>addMetal(k);$('metals').appendChild(m);
+ });
+}
+function activate(side){lab.active=side;['A','B'].forEach(s=>$(`beaker${s}`).classList.toggle('active',s===side));const st=lab[side];setFeedback(`Aktywna jest <b>zlewka ${side}</b>. ${st.solution?'Możesz dobrać lub zmienić metalową płytkę.':'Dodaj do niej roztwór.'}`,'info')}
+$('beakerA').onclick=()=>activate('A');$('beakerB').onclick=()=>activate('B');
+function addSolution(k){const s=lab.active;lab[s]={solution:k,metal:null,valid:false};clearAfterBuild();renderLab();setFeedback(`Do zlewki ${s} dodano roztwór zawierający <b>${H[k].ion}</b>. Na dole pojawił się fragment zapisu. Teraz wybierz metalową płytkę.`,'info')}
+function addMetal(k){const s=lab.active;if(!lab[s].solution){setFeedback(`Najpierw dodaj roztwór do zlewki ${s}.`,'warn');return}lab[s].metal=k;evaluateHalfcell(s);clearAfterBuild(false);renderLab()}
+function clearAfterBuild(clearConnection=true){lab.rolesChecked=false;lab.an=null;lab.cat=null;if(clearConnection){lab.bridge=false;lab.wire=false}$('rolesBox').classList.add('locked');$('reactionBox').classList.add('locked');$('semBox').classList.add('locked');$('reactionContent').innerHTML='';$('semContent').innerHTML='';$('roleSelectA').value='';$('roleSelectB').value='';['A','B'].forEach(s=>{const r=$(`role${s}`);r.className='rolebadge';r.textContent=''});$('earrow').classList.remove('show');$('electronTrail').classList.remove('show');$('vmScreen').textContent='--';$('vmScreen').classList.add('off')}
+function evaluateHalfcell(side){
+ const st=lab[side],sol=st.solution,m=st.metal;if(!sol||!m)return;
+ if(sol===m){st.valid=true;setFeedback(`<b>Tak.</b> ${H[m].metal}(s) zanurzony w roztworze zawierającym ${H[m].ion}(aq) tworzy półogniwo <b>${H[m].ion}/${H[m].metal}</b>. E° = <b>${fmt(H[m].E)}</b>.<br><span class="tiny">Na razie nie przypisujemy mu znaku (+) ani (−) — to zależy od drugiego półogniwa.</span>`,'ok');return}
+ st.valid=false;
+ const Ecell=H[sol].E-H[m].E;
+ if(Ecell>0){
+  setFeedback(`<b>Ten układ nie pozostanie taki, jak go zbudowano.</b> Metal ${H[m].metal} może samorzutnie redukować jony ${H[sol].ion}. Zachodzi reakcja wypierania, więc nie jest to stabilne półogniwo ${H[sol].ion}/${H[m].metal}.<br><span class="equation">${H[m].metal}(s) + ${H[sol].ion}(aq) → produkty redoks</span>`,'warn');
+ } else {
+  setFeedback(`<b>Nic samorzutnie nie zachodzi</b> dla zestawienia ${H[m].metal} | ${H[sol].ion} w warunkach standardowych. Ale to nadal <b>nie jest</b> proste półogniwo metal/jony tego metalu. Jeśli chcesz zbudować półogniwo ${H[sol].ion}/${H[sol].metal}, dobierz płytkę ${H[sol].metal}.`,'no');
+ }
+}
+function bothValid(){return lab.A.valid&&lab.B.valid&&lab.A.metal!==lab.B.metal}
+function renderLab(){
+ ['A','B'].forEach(s=>{const st=lab[s],liq=$(`liquid${s}`),lbl=$(`liquidLabel${s}`),plate=$(`plate${s}`),hint=$(`hint${s}`);liq.classList.toggle('filled',!!st.solution);lbl.textContent=st.solution?`${H[st.solution].ion}(aq)`:'';plate.textContent=st.metal?H[st.metal].metal:'—';plate.classList.toggle('filled',!!st.metal);plate.style.background=st.metal?metalLook(st.metal):'';plate.style.borderColor=st.metal?metalBorder(st.metal):'';hint.textContent=!st.solution?'Kliknij zlewkę i dodaj roztwór.':(!st.metal?'Teraz dobierz płytkę.':(st.valid?'Poprawne półogniwo.':'Dobór wymaga poprawy.'));});
+ $('bridge').classList.toggle('on',lab.bridge);$('wire').classList.toggle('on',lab.wire);$('bridgeBtn').textContent=lab.bridge?'Usuń klucz elektrolityczny':'Dodaj klucz elektrolityczny';$('wireBtn').textContent=lab.wire?'Odłącz przewód':'Połącz przewodem';
+ const ready=bothValid();$('bridgeBtn').disabled=!ready;$('wireBtn').disabled=!ready;
+ $('rolesBox').classList.toggle('locked',!(ready&&lab.bridge&&lab.wire));
+ renderSymbol();
+}
+function halfFragment(side){const st=lab[side];if(!st.solution&&!st.metal)return '—';if(st.solution&&!st.metal)return `— | ${H[st.solution].ion}`;if(!st.solution&&st.metal)return `${H[st.metal].metal} | —`;return `${H[st.metal].metal} | ${H[st.solution].ion}`}
+function renderSymbol(){
+ if(lab.rolesChecked&&lab.an&&lab.cat){$('liveSymbol').textContent=canonical(lab.an,lab.cat);renderMapping(true);return}
+ const a=halfFragment('A'),b=halfFragment('B');$('liveSymbol').textContent=(lab.A.solution||lab.A.metal||lab.B.solution||lab.B.metal)?`${a}      ${lab.bridge?'||':'⋯'}      ${b}`:'—';renderMapping(false);
+}
+function renderMapping(finalMode){
+ const box=$('mapping');
+ if(!finalMode){box.innerHTML=`<div class="mapitem">Pojedyncza kreska <b>|</b> oddziela fazy w jednym półogniwie, np. metal od roztworu jego jonów.</div><div class="mapitem">Podwójna kreska <b>||</b> pojawi się po dodaniu klucza elektrolitycznego i oddziela zapis obu półogniw.</div>`;return}
+ const anSide=lab.A.metal===lab.an?'A':'B',catSide=anSide==='A'?'B':'A';
+ box.innerHTML=`<div class="mapitem"><b>(−) ${H[lab.an].metal} | ${H[lab.an].ion}</b><br>To zlewka ${anSide}: anoda. Metal jest po stronie elektrody, jego jony po stronie roztworu.</div><div class="mapitem"><b>||</b><br>To połączenie jonowe między półogniwami — klucz elektrolityczny.</div><div class="mapitem"><b>${H[lab.cat].ion} | ${H[lab.cat].metal} (+)</b><br>To zlewka ${catSide}: katoda. W schemacie katoda jest zapisana po prawej.</div><div class="mapitem"><b>e⁻: ${H[lab.an].metal} → ${H[lab.cat].metal}</b><br>Elektrony płyną przewodem zewnętrznym od anody do katody.</div>`;
+}
+$('bridgeBtn').onclick=()=>{lab.bridge=!lab.bridge;$('bridgeBtn').textContent=lab.bridge?'Usuń klucz elektrolityczny':'Dodaj klucz elektrolityczny';renderLab();setFeedback(lab.bridge?'Dodano <b>klucz elektrolityczny</b>. W zapisie schematu ogniwa jego obecność odpowiada granicy między półogniwami oznaczanej jako <b>||</b>.':'Usunięto klucz elektrolityczny — półogniwa przestają być połączone jonowo.','info')};
+$('wireBtn').onclick=()=>{lab.wire=!lab.wire;$('wireBtn').textContent=lab.wire?'Odłącz przewód':'Połącz przewodem';renderLab();setFeedback(lab.wire?'Połączono elektrody <b>przewodem zewnętrznym</b>. Elektrony popłyną nim od anody do katody, gdy poprawnie ustalisz funkcję półogniw.':'Odłączono przewód zewnętrzny — elektrony nie mają drogi przepływu.','info')};
+$('checkRolesBtn').onclick=()=>{
+ if(!bothValid()||!lab.bridge||!lab.wire)return;
+ const ra=$('roleSelectA').value,rb=$('roleSelectB').value;if(!ra||!rb||ra===rb){setFeedback('Jedno półogniwo musi być anodą, a drugie katodą.','no');return}
+ const p=pairRoles(lab.A.metal,lab.B.metal);const anSide=lab.A.metal===p.an?'A':'B',catSide=anSide==='A'?'B':'A';
+ if((ra==='anode'? 'A':'B')!==anSide){setFeedback(`Jeszcze nie. Porównaj potencjały standardowe: ${H[lab.A.metal].ion}/${H[lab.A.metal].metal} = ${fmt(H[lab.A.metal].E)}, a ${H[lab.B.metal].ion}/${H[lab.B.metal].metal} = ${fmt(H[lab.B.metal].E)}. Większy E° wskazuje półogniwo, w którym zachodzi redukcja.`,'no');return}
+ lab.rolesChecked=true;lab.an=p.an;lab.cat=p.cat;
+ const ar=$(`role${anSide}`),cr=$(`role${catSide}`);ar.textContent='ANODA (−)';ar.className='rolebadge show anode';cr.textContent='KATODA (+)';cr.className='rolebadge show cathode';
+ $('earrow').textContent=anSide==='A'?'e⁻  →':'←  e⁻';$('earrow').classList.add('show');$('electronTrail').classList.add('show');$('reactionBox').classList.remove('locked');$('semBox').classList.remove('locked');renderReactions();renderSem();renderSymbol();setFeedback(`<b>Tak.</b> Półogniwo o mniejszym E° jest anodą, a o większym E° — katodą. Schemat na dole został zapisany w konwencji maturalnej: <b>anoda po lewej, katoda po prawej</b>.`,'ok')
+};
+function renderReactions(){
+ $('reactionContent').innerHTML=`<div class="reaction an"><strong>ANODA (−) — UTLENIANIE</strong><div class="equation">${ox(lab.an)}</div><div class="tiny">Metal oddaje elektrony. Elektroda metalowa jest zużywana, a w roztworze przybywa jonów ${H[lab.an].ion}.</div></div><div style="height:7px"></div><div class="reaction cat"><strong>KATODA (+) — REDUKCJA</strong><div class="equation">${red(lab.cat)}</div><div class="tiny">Jony ${H[lab.cat].ion} przyjmują elektrony. Metal osadza się na elektrodzie.</div></div>`;
+}
+function renderSem(){const v=H[lab.cat].E-H[lab.an].E;$('semContent').innerHTML=`<div class="semformula">SEM = E°<sub>katody</sub> − E°<sub>anody</sub><br>SEM = ${num(H[lab.cat].E)} − (${num(H[lab.an].E)}) = <b>${num(v)} V</b></div><div class="tiny" style="margin-top:6px">Potencjałów standardowych nie mnożymy przez współczynniki reakcji. Dla samorzutnie działającego ogniwa otrzymujemy dodatnią wartość SEM.</div>`;$('vmScreen').textContent=num(v);$('vmScreen').classList.remove('off')}
+$('resetLabBtn').onclick=()=>resetLab();
+function resetLab(){lab={active:'A',A:{solution:null,metal:null,valid:false},B:{solution:null,metal:null,valid:false},bridge:false,wire:false,rolesChecked:false,an:null,cat:null};clearAfterBuild();renderLab();activate('A')}
+
+const TASKS=[
+ {pair:['Zn','Cu'],prompt:'Zbudowano ogniwo z półogniwa cynkowego i miedziowego. Ustal funkcje elektrod i oblicz SEM.'},
+ {pair:['Cu','Ag'],prompt:'Ogniwo tworzą półogniwa Cu²⁺/Cu oraz Ag⁺/Ag. Uzupełnij wszystkie informacje.'},
+ {pair:['Mg','Zn'],prompt:'Ogniwo zbudowano z półogniwa magnezowego i cynkowego. Które jest anodą?'},
+ {pair:['Mg','Cu'],prompt:'Dla pary Mg²⁺/Mg i Cu²⁺/Cu ustal kierunek przepływu elektronów oraz SEM.'},
+ {pair:['Zn','Ag'],prompt:'Dla reakcji Zn(s) + 2Ag⁺(aq) → Zn²⁺(aq) + 2Ag(s) zapisz poprawny schemat ogniwa i SEM.'},
+ {pair:['Cu','Ag'],prompt:'Spośród półogniw Cu²⁺/Cu i Ag⁺/Ag wskaż anodę i katodę oraz uzasadnij wybór poprzez SEM.'},
+ {pair:['Mg','Ag'],prompt:'Z czterech poznanych półogniw wybrano parę dającą największą SEM. Sprawdź układ Mg²⁺/Mg oraz Ag⁺/Ag.'},
+ {pair:['Zn','Cu'],prompt:'Ostatnie zadanie: odtwórz pełny zapis klasycznego ogniwa Daniella i jego SEM.'}
+];
+let taskIdx=0;const taskStates=TASKS.map(()=>({an:'',cat:'',sem:'',dir:'',scheme:'',checked:false,ok:false}));
+function taskCorrect(q){return pairRoles(...q.pair)}
+function taskDirections(a,b){return [`${a} → ${b}`,`${b} → ${a}`]}
+function taskSchemes(a,b){const p=pairRoles(a,b);return [canonical(p.an,p.cat),canonical(p.cat,p.an).replace('(−)','(−)').replace('(+)','(+)'),`(−) ${H[p.an].ion} | ${H[p.an].metal} || ${H[p.cat].metal} | ${H[p.cat].ion} (+)`]}
+function fillSelect(el,items,placeholder='— wybierz —'){el.innerHTML=`<option value="">${placeholder}</option>`;items.forEach(it=>{const o=document.createElement('option');o.value=it;o.textContent=it;el.appendChild(o)})}
+function saveTask(){const s=taskStates[taskIdx];s.an=$('taskAnode').value;s.cat=$('taskCathode').value;s.sem=$('taskSem').value;s.dir=$('taskDir').value;s.scheme=$('taskScheme').value}
+function renderTask(){const q=TASKS[taskIdx],s=taskStates[taskIdx],p=taskCorrect(q),[a,b]=q.pair;$('taskCounter').textContent=`Zadanie ${taskIdx+1} / ${TASKS.length}`;$('taskProgress').style.width=`${((taskIdx+1)/TASKS.length)*100}%`;$('taskPrompt').textContent=q.prompt;$('taskData').textContent=`E°(${H[a].ion}/${H[a].metal}) = ${fmt(H[a].E)}   ·   E°(${H[b].ion}/${H[b].metal}) = ${fmt(H[b].E)}`;fillSelect($('taskAnode'),q.pair.map(k=>`${H[k].ion}/${H[k].metal}`));fillSelect($('taskCathode'),q.pair.map(k=>`${H[k].ion}/${H[k].metal}`));fillSelect($('taskDir'),taskDirections(H[a].metal,H[b].metal));fillSelect($('taskScheme'),taskSchemes(a,b));$('taskAnode').value=s.an;$('taskCathode').value=s.cat;$('taskSem').value=s.sem;$('taskDir').value=s.dir;$('taskScheme').value=s.scheme;$('prevTaskBtn').disabled=taskIdx===0;$('nextTaskBtn').disabled=taskIdx===TASKS.length-1;const f=$('taskFeedback');if(s.checked){f.className=`taskfeedback feedback show ${s.ok?'ok':'no'}`;f.innerHTML=s.ok?'✓ Odpowiedź poprawna.':'To zadanie było już sprawdzane i zawierało błąd. Możesz poprawić odpowiedzi i sprawdzić ponownie.'}else{f.className='taskfeedback feedback'};renderTaskStatus()}
+function normSem(v){return parseFloat(String(v).replace(',','.').trim())}
+$('checkTaskBtn').onclick=()=>{saveTask();const q=TASKS[taskIdx],s=taskStates[taskIdx],p=taskCorrect(q),correctSem=H[p.cat].E-H[p.an].E,correctAn=`${H[p.an].ion}/${H[p.an].metal}`,correctCat=`${H[p.cat].ion}/${H[p.cat].metal}`,correctDir=`${H[p.an].metal} → ${H[p.cat].metal}`,correctScheme=canonical(p.an,p.cat);const errs=[];if(s.an!==correctAn)errs.push('anoda');if(s.cat!==correctCat)errs.push('katoda');if(!Number.isFinite(normSem(s.sem))||Math.abs(normSem(s.sem)-correctSem)>.011)errs.push('SEM');if(s.dir!==correctDir)errs.push('kierunek elektronów');if(s.scheme!==correctScheme)errs.push('schemat ogniwa');s.checked=true;s.ok=errs.length===0;const f=$('taskFeedback');f.className=`taskfeedback feedback show ${s.ok?'ok':'no'}`;f.innerHTML=s.ok?`✓ <b>Dobrze.</b> ${canonical(p.an,p.cat)}, SEM = ${num(correctSem)} V.`:`Jeszcze nie. Do poprawy: <b>${errs.join(', ')}</b>. Możesz poprawić teraz albo przejść dalej i wrócić później.`;renderTaskStatus()};
+$('prevTaskBtn').onclick=()=>{saveTask();if(taskIdx>0){taskIdx--;renderTask()}};$('nextTaskBtn').onclick=()=>{saveTask();if(taskIdx<TASKS.length-1){taskIdx++;renderTask()}};
+function renderTaskStatus(){const done=taskStates.filter(s=>s.checked).length,ok=taskStates.filter(s=>s.ok).length;$('taskStatus').innerHTML=`Sprawdzone: <b>${done}/${TASKS.length}</b> · poprawne: <b>${ok}</b>. Możesz swobodnie cofać się i wracać do pominiętych zadań.`}
+renderBanks();renderLab();renderTask();
+</script>
+</body>
+</html>
