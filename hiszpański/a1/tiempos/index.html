@@ -1,1 +1,692 @@
 
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Rompe el código · Presente Race</title>
+<style>
+:root{
+  --bg:#f5f1eb;--card:#fffdf9;--ink:#20242d;--muted:#77716b;--line:#ddd5cc;
+  --a:#236b5a;--a2:#e5f0ec;--b:#755091;--b2:#f0e8f5;--danger:#a34242;
+  --gold:#b78127;--shadow:0 16px 45px rgba(46,36,26,.12)
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:var(--ink)}
+body{background:radial-gradient(circle at 8% 4%,#fff 0,transparent 27%),linear-gradient(135deg,#f8f5f0,#ece4dc);min-height:100vh}
+button,input{font:inherit}
+button{touch-action:manipulation}
+.wrap{max-width:1100px;margin:auto;padding:22px 16px 48px}
+.top{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:18px}
+.kicker{font-size:.75rem;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);font-weight:900}
+h1{margin:.25rem 0 .45rem;font-size:clamp(2rem,5vw,4rem);line-height:.95;letter-spacing:-.04em}
+h2{margin:.35rem 0 1rem}
+.sub{color:var(--muted);max-width:760px}
+.card{background:var(--card);border:1px solid #e9e1d8;border-radius:25px;box-shadow:var(--shadow);padding:24px}
+.hidden{display:none!important}
+.btn{border:0;border-radius:15px;padding:13px 17px;font-weight:900;cursor:pointer;background:var(--ink);color:white}
+.btn.secondary{background:white;color:var(--ink);border:1px solid var(--line)}
+.btn.a{background:var(--a)} .btn.b{background:var(--b)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.grow{flex:1}
+.landing{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.role{padding:28px;border:1px solid var(--line);border-radius:22px;background:white;cursor:pointer;text-align:left}
+.role b{font-size:1.35rem;display:block;margin-bottom:6px}
+.role span{color:var(--muted)}
+.field{margin:13px 0}
+.field label{display:block;font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;font-weight:900;color:var(--muted);margin-bottom:6px}
+.field input{width:100%;border:1px solid var(--line);border-radius:14px;padding:14px;background:white;font-size:1.05rem;font-weight:850;text-transform:uppercase}
+.err{color:var(--danger);font-weight:800;margin-top:10px;min-height:22px}
+.roomcode{font-size:clamp(2rem,7vw,4.6rem);letter-spacing:.16em;font-weight:950}
+.qr{background:white;border:1px solid var(--line);border-radius:18px;padding:10px;width:max-content}
+.qr canvas,.qr img{display:block;max-width:180px!important;height:auto!important}
+.lobbygrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px}
+.team{border-radius:20px;padding:18px;min-height:150px}
+.team.a{background:var(--a2);border:1px solid #c8ded6}
+.team.b{background:var(--b2);border:1px solid #ddcfe7}
+.teamtitle{font-weight:950;font-size:1.25rem;margin-bottom:10px}
+.nick{display:inline-block;background:rgba(255,255,255,.75);border:1px solid rgba(0,0,0,.06);border-radius:999px;padding:7px 10px;margin:4px 4px 0 0;font-weight:800}
+.games{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:16px 0}
+.gamechoice{border:1px solid var(--line);border-radius:17px;background:white;padding:15px;text-align:left;cursor:pointer}
+.gamechoice.active{outline:3px solid rgba(35,107,90,.17);border-color:#8fb6aa}
+.gamechoice b{display:block;margin-bottom:4px}
+.gamechoice small{color:var(--muted)}
+.switchline{display:flex;gap:9px;align-items:center;margin:10px 0 18px;font-weight:800}
+.scoreboard{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.scoreteam{padding:20px;border-radius:22px;overflow:hidden}
+.scoreteam.a{background:var(--a2);border:1px solid #c8ded6}
+.scoreteam.b{background:var(--b2);border:1px solid #ddcfe7}
+.scorehead{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.scorehead b{font-size:1.2rem}
+.code{display:flex;gap:5px;flex-wrap:wrap;margin-top:13px}
+.letter{width:33px;height:39px;border:2px dashed rgba(0,0,0,.14);border-radius:9px;display:grid;place-items:center;font-weight:950;color:transparent;background:rgba(255,255,255,.5)}
+.scoreteam.a .letter.open{color:var(--a);background:white;border-style:solid}
+.scoreteam.b .letter.open{color:var(--b);background:white;border-style:solid}
+.playcard{text-align:center}
+.bigstatus{font-size:clamp(1.5rem,5vw,2.7rem);font-weight:950;margin:8px 0}
+.activebox{margin:18px auto 0;max-width:760px;border-radius:22px;padding:20px;text-align:left}
+.activebox.a{background:var(--a2);border:1px solid #bdd8ce}
+.activebox.b{background:var(--b2);border:1px solid #d8c7e3}
+.shout{font-weight:950;font-size:1.2rem;margin-bottom:5px}
+.prompt{font-size:clamp(1.55rem,5vw,2.6rem);font-weight:950;line-height:1.15;margin:18px 0 6px}
+.inf{color:var(--muted);font-weight:800}
+.answers{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:18px}
+.ans{border:1px solid var(--line);border-radius:16px;padding:16px 9px;background:white;font-weight:950;font-size:1.2rem;cursor:pointer}
+.ans:active{transform:translateY(2px)}
+.waitbox{padding:24px;border:1px dashed var(--line);border-radius:20px;margin-top:18px}
+.waitname{font-size:1.5rem;font-weight:950}
+.pill{display:inline-block;border-radius:999px;padding:7px 10px;font-weight:850;background:#eee9e2}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#20242d;color:white;border-radius:999px;padding:11px 16px;font-weight:900;z-index:20;opacity:0;pointer-events:none;transition:.2s}
+.toast.show{opacity:1}
+.finish{text-align:center;padding:24px}
+.winner{font-size:clamp(2rem,7vw,5rem);font-weight:950;line-height:1;margin:14px 0}
+.secret{font-size:clamp(1.5rem,6vw,3.5rem);font-weight:950;letter-spacing:.12em}
+.hostnote{color:var(--muted);font-size:.9rem;margin-top:8px}
+.onlineDot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#49a46e;margin-right:6px}
+.offline{opacity:.45}
+@media(max-width:760px){
+  .landing,.lobbygrid,.games,.scoreboard{grid-template-columns:1fr}
+  .top{display:block}.top .row{margin-top:10px}
+  .answers{grid-template-columns:1fr 1fr}
+  .roomcode{font-size:2.6rem}
+  .card{padding:18px}
+}
+
+.student-first{
+  text-align:center;
+  padding:18px 6px 6px;
+}
+.start-big{
+  font-size:clamp(1.35rem,4vw,2rem);
+  padding:18px 30px;
+  border-radius:20px;
+  min-width:min(420px,100%);
+  box-shadow:0 10px 0 rgba(0,0,0,.10);
+}
+.start-big:active{
+  transform:translateY(4px);
+  box-shadow:0 6px 0 rgba(0,0,0,.10);
+}
+.student-help{
+  color:var(--muted);
+  margin:12px auto 0;
+  max-width:560px;
+}
+.host-entry{
+  display:flex;
+  justify-content:flex-end;
+  margin-top:22px;
+}
+.host-link{
+  border:0;
+  background:transparent;
+  color:#9b948d;
+  font-size:.82rem;
+  cursor:pointer;
+  padding:6px 2px;
+  text-decoration:underline;
+  text-underline-offset:3px;
+}
+.host-link:hover{color:var(--ink)}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <div class="kicker">Presente · multiplayer</div>
+      <h1>ROMPE EL CÓDIGO</h1>
+      <div class="sub">Dwie drużyny, jedno hasło. Tylko jedna wylosowana osoba dostaje zagadkę — czyta ją swojej drużynie i wspólnie wybieracie odpowiedź.</div>
+    </div>
+    <div class="row">
+      <button class="btn secondary hidden" id="homeBtn">Wyjdź</button>
+      <button class="btn secondary" id="fullBtn">Pełny ekran</button>
+    </div>
+  </div>
+
+  <section class="card" id="landing">
+    <div class="student-first">
+      <div class="kicker">Presente · gra zespołowa</div>
+      <h2>Gotowi złamać kod?</h2>
+      <button class="btn start-big" id="studentRole">ROZPOCZNIJ GRĘ!</button>
+      <div class="student-help">Dołączysz do pokoju kodem od prowadzącej. Nick i drużynę przydzieli program.</div>
+
+      <div id="quickJoin" class="hidden" style="margin-top:22px;text-align:left;max-width:520px;margin-left:auto;margin-right:auto">
+        <div class="field"><label>Kod pokoju</label><input id="roomInput" inputmode="numeric" maxlength="6" placeholder="123456"></div>
+        <button class="btn" id="joinBtn" style="width:100%">Dołącz do gry</button>
+        <div class="err" id="joinErr"></div>
+      </div>
+    </div>
+
+    <div class="host-entry">
+      <button class="host-link" id="teacherRole">Panel prowadzącej</button>
+    </div>
+
+    <div class="err" id="globalErr"></div>
+  </section>
+
+  <section class="card hidden" id="hostLobby">
+    <div class="row" style="align-items:flex-start">
+      <div class="grow">
+        <div class="kicker">Pokój</div>
+        <div class="roomcode" id="hostRoomCode"></div>
+        <div class="hostnote">Uczniowie skanują QR albo wpisują kod. Zespoły są automatycznie równoważone przed startem.</div>
+        <div class="row" style="margin-top:10px">
+          <button class="btn secondary" id="copyLinkBtn">Kopiuj link dla uczniów</button>
+          <span class="pill" id="countPill">0 graczy</span>
+        </div>
+      </div>
+      <div class="qr" id="qr"></div>
+    </div>
+
+    <div class="lobbygrid">
+      <div class="team a"><div class="teamtitle">Equipo Sol · <span id="countA">0</span></div><div id="listA"></div></div>
+      <div class="team b"><div class="teamtitle">Equipo Luna · <span id="countB">0</span></div><div id="listB"></div></div>
+    </div>
+
+    <div style="margin-top:22px">
+      <div class="kicker">Wybierz jedną z 4 gier</div>
+      <div class="games" id="gameChoices"></div>
+      <label class="switchline"><input type="checkbox" id="vosotrosToggle" checked> Uwzględniaj formy <i>vosotros</i></label>
+      <div class="row">
+        <button class="btn" id="startGameBtn">START — wszyscy ruszają jednocześnie</button>
+        <span class="hostnote" id="startHint"></span>
+      </div>
+    </div>
+  </section>
+
+  <section class="card hidden" id="studentLobby">
+    <div class="kicker">Twój losowy nick</div>
+    <div class="bigstatus" id="myNick"></div>
+    <div class="pill" id="myTeam"></div>
+    <div class="waitbox">
+      <b>Czekamy na start.</b>
+      <div class="hostnote">Nie musisz nic odświeżać. Gdy prowadząca uruchomi grę, wszyscy wystartują automatycznie.</div>
+    </div>
+    <div class="lobbygrid">
+      <div class="team a"><div class="teamtitle">Equipo Sol</div><div id="studentListA"></div></div>
+      <div class="team b"><div class="teamtitle">Equipo Luna</div><div id="studentListB"></div></div>
+    </div>
+  </section>
+
+  <section class="hidden" id="raceScreen">
+    <div class="scoreboard">
+      <div class="scoreteam a"><div class="scorehead"><b>Equipo Sol</b><span id="scoreA">0</span></div><div class="code" id="codeA"></div></div>
+      <div class="scoreteam b"><div class="scorehead"><b>Equipo Luna</b><span id="scoreB">0</span></div><div class="code" id="codeB"></div></div>
+    </div>
+    <section class="card playcard" id="playArea"></section>
+  </section>
+
+  <section class="card hidden finish" id="finishScreen">
+    <div class="kicker">Koniec wyścigu</div>
+    <div class="winner" id="winnerText"></div>
+    <div class="secret" id="secretText"></div>
+    <div id="hostFinishControls" class="row hidden" style="justify-content:center;margin-top:22px">
+      <button class="btn" id="nextGameBtn">Wróć do lobby — zagraj w kolejną</button>
+    </div>
+  </section>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, signInAnonymously, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {
+  getDatabase, ref, set, get, update, onValue, onDisconnect, serverTimestamp,
+  runTransaction, remove
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAdBK1SDrZD3Qft6iTQwE9vDK6VTPZOViM",
+  authDomain: "me-gusta-siliciumra.firebaseapp.com",
+  databaseURL: "https://me-gusta-siliciumra-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "me-gusta-siliciumra",
+  appId: "1:75421431819:web:b9bc7388366f6c9546ef0e"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+await setPersistence(auth, browserLocalPersistence).catch(()=>{});
+
+const $ = id => document.getElementById(id);
+let user=null, role=null, roomCode=null, roomUnsub=null, balancing=false, selectedGame="g1";
+let currentRoom=null;
+
+const games = {
+  g1:{
+    title:"1. Złam regularny kod",
+    desc:"Najczystsze odkrywanie końcówek -AR / -ER / -IR.",
+    secret:"PRESENTE",
+    puzzles:[
+      ["Yo habl__ español.","hablar","o",["o","as","a"],"yo"],
+      ["Tú trabaj__ en una oficina.","trabajar","as",["o","as","an"],"tú"],
+      ["Lucía estudi__ francés.","estudiar","a",["as","a","amos"],"él"],
+      ["Nosotros cocin__ los domingos.","cocinar","amos",["amos","a","an"],"nosotros"],
+      ["Vosotros viaj__ mucho.","viajar","áis",["amos","áis","an"],"vosotros"],
+      ["Mis amigos escuch__ música.","escuchar","an",["a","amos","an"],"ellos"],
+      ["Yo com__ en casa.","comer","o",["o","es","e"],"yo"],
+      ["Tú beb__ café.","beber","es",["o","es","en"],"tú"],
+      ["Marta aprend__ español.","aprender","e",["es","e","emos"],"él"],
+      ["Nosotros com__ a las dos.","comer","emos",["emos","e","en"],"nosotros"],
+      ["Vosotros beb__ té.","beber","éis",["emos","éis","en"],"vosotros"],
+      ["Ellos aprend__ muy rápido.","aprender","en",["e","emos","en"],"ellos"],
+      ["Yo viv__ en Gdańsk.","vivir","o",["o","es","e"],"yo"],
+      ["Tú escrib__ muchos mensajes.","escribir","es",["o","es","en"],"tú"],
+      ["Ana viv__ en Valencia.","vivir","e",["es","e","imos"],"él"],
+      ["Nosotros viv__ cerca del centro.","vivir","imos",["imos","e","en"],"nosotros"],
+      ["Vosotros escrib__ mucho.","escribir","ís",["imos","ís","en"],"vosotros"],
+      ["Ana y Pablo viv__ en Valencia.","vivir","en",["e","imos","en"],"ellos"]
+    ]
+  },
+  g2:{
+    title:"2. Kto to robi?",
+    desc:"Nazwy osób i grup zamiast samych zaimków — trzeba rozpoznać osobę.",
+    secret:"HABLAMOS",
+    puzzles:[
+      ["Mi profesora trabaj__ en Madrid.","trabajar","a",["o","a","an"],"él"],
+      ["Carlos y Ana estudi__ español.","estudiar","an",["a","amos","an"],"ellos"],
+      ["Mi hermano y yo cocin__ juntos.","cocinar","amos",["amos","a","an"],"nosotros"],
+      ["Tus amigos viaj__ mucho.","viajar","an",["as","a","an"],"ellos"],
+      ["La madre de Pablo habl__ francés.","hablar","a",["o","a","an"],"él"],
+      ["Marta y tú trabaj__ aquí.","trabajar","áis",["amos","áis","an"],"vosotros"],
+      ["Mis padres com__ muy temprano.","comer","en",["e","emos","en"],"ellos"],
+      ["Mi amiga beb__ té.","beber","e",["es","e","en"],"él"],
+      ["Juan y yo aprend__ italiano.","aprender","emos",["e","emos","en"],"nosotros"],
+      ["Tus compañeros escrib__ mucho.","escribir","en",["e","imos","en"],"ellos"],
+      ["La gente viv__ en el centro.","vivir","e",["es","e","en"],"él"],
+      ["Mi pareja y yo viv__ juntos.","vivir","imos",["e","imos","en"],"nosotros"],
+      ["Tú y yo habl__ español.","hablar","amos",["as","amos","an"],"nosotros"],
+      ["El director com__ en la escuela.","comer","e",["es","e","en"],"él"],
+      ["Laura estudi__ por la noche.","estudiar","a",["as","a","an"],"él"],
+      ["Vosotros aprend__ muy rápido.","aprender","éis",["emos","éis","en"],"vosotros"],
+      ["Los estudiantes viv__ cerca.","vivir","en",["e","imos","en"],"ellos"],
+      ["Mi compañero escrib__ correos.","escribir","e",["es","e","en"],"él"]
+    ]
+  },
+  g3:{
+    title:"3. Rutyna bez tabelki",
+    desc:"Codzienne czynności w pełnych, prostych zdaniach A0.",
+    secret:"VIVIMOS",
+    puzzles:[
+      ["Por la mañana yo desayun__ en casa.","desayunar","o",["o","as","a"],"yo"],
+      ["Después tú trabaj__ ocho horas.","trabajar","as",["o","as","a"],"tú"],
+      ["Marta prepar__ la cena.","preparar","a",["as","a","an"],"él"],
+      ["Los lunes nosotros estudi__ español.","estudiar","amos",["amos","a","an"],"nosotros"],
+      ["Por la tarde ellos camin__ por el parque.","caminar","an",["a","amos","an"],"ellos"],
+      ["Yo com__ a las dos.","comer","o",["o","es","e"],"yo"],
+      ["Tú beb__ mucha agua.","beber","es",["o","es","en"],"tú"],
+      ["Pablo aprend__ palabras nuevas.","aprender","e",["es","e","en"],"él"],
+      ["Nosotros com__ juntos.","comer","emos",["e","emos","en"],"nosotros"],
+      ["Mis amigos beb__ café.","beber","en",["e","emos","en"],"ellos"],
+      ["Por la noche yo escrib__ mensajes.","escribir","o",["o","es","e"],"yo"],
+      ["Tú viv__ cerca del trabajo.","vivir","es",["o","es","en"],"tú"],
+      ["Ana escrib__ en su diario.","escribir","e",["es","e","en"],"él"],
+      ["Nosotros viv__ en el centro.","vivir","imos",["e","imos","en"],"nosotros"],
+      ["Ellas escrib__ correos por la mañana.","escribir","en",["e","imos","en"],"ellos"],
+      ["Vosotros cen__ tarde.","cenar","áis",["amos","áis","an"],"vosotros"],
+      ["Vosotros com__ en casa.","comer","éis",["emos","éis","en"],"vosotros"],
+      ["Vosotros viv__ lejos.","vivir","ís",["imos","ís","en"],"vosotros"]
+    ]
+  },
+  g4:{
+    title:"4. Finał mieszany",
+    desc:"Pytania, przeczenia i różne podmioty — ten sam regularny kod.",
+    secret:"ESPAÑOL",
+    puzzles:[
+      ["¿Tú habl__ inglés?","hablar","as",["o","as","a"],"tú"],
+      ["Yo no trabaj__ los domingos.","trabajar","o",["o","as","a"],"yo"],
+      ["¿Ana estudi__ italiano?","estudiar","a",["as","a","an"],"él"],
+      ["¿Nosotros necesit__ un mapa?","necesitar","amos",["a","amos","an"],"nosotros"],
+      ["Ellos no cocin__ mucho.","cocinar","an",["a","amos","an"],"ellos"],
+      ["¿Vosotros viaj__ en verano?","viajar","áis",["amos","áis","an"],"vosotros"],
+      ["Yo no beb__ café.","beber","o",["o","es","e"],"yo"],
+      ["¿Tú aprend__ español aquí?","aprender","es",["o","es","en"],"tú"],
+      ["Marta no com__ carne.","comer","e",["es","e","en"],"él"],
+      ["¿Nosotros beb__ agua?","beber","emos",["e","emos","en"],"nosotros"],
+      ["Mis vecinos no com__ tarde.","comer","en",["e","emos","en"],"ellos"],
+      ["¿Vosotros aprend__ francés?","aprender","éis",["emos","éis","en"],"vosotros"],
+      ["Yo no viv__ aquí.","vivir","o",["o","es","e"],"yo"],
+      ["¿Tú escrib__ muchos correos?","escribir","es",["o","es","en"],"tú"],
+      ["Laura no viv__ sola.","vivir","e",["es","e","en"],"él"],
+      ["¿Nosotros escrib__ ahora?","escribir","imos",["e","imos","en"],"nosotros"],
+      ["Ellas no viv__ en Madrid.","vivir","en",["e","imos","en"],"ellos"],
+      ["¿Vosotros escrib__ en español?","escribir","ís",["imos","ís","en"],"vosotros"]
+    ]
+  }
+};
+
+const animals=["Gato","Zorro","Pulpo","Panda","Lobo","Koala","Tigre","Puma","Búho","Delfín","Conejo","Erizo","Oso","Lince","Pingüino","Camello","Topo","Mapache","Jaguar","Flamenco"];
+const adjectives=["Solar","Volador","Feliz","Rápido","Curioso","Valiente","Azul","Dorado","Loco","Tranquilo","Brillante","Ninja","Cósmico","Secreto","Elegante","Mágico","Turbo","Saltarín","Nocturno","Viajero"];
+
+function toast(msg){
+  const t=$("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1500);
+}
+function showOnly(id){
+  ["landing","hostLobby","studentLobby","raceScreen","finishScreen"].forEach(x=>$(x).classList.toggle("hidden",x!==id));
+  $("homeBtn").classList.toggle("hidden",id==="landing");
+}
+function ensureUser(){
+  return new Promise(async(resolve,reject)=>{
+    if(auth.currentUser){user=auth.currentUser;return resolve(user)}
+    const off=onAuthStateChanged(auth,u=>{if(u){off();user=u;resolve(u)}});
+    try{await signInAnonymously(auth)}catch(e){reject(e)}
+  });
+}
+function randomCode(){return String(Math.floor(100000+Math.random()*900000))}
+function roomRef(path=""){return ref(db,`presentRace/${roomCode}${path?"/"+path:""}`)}
+function studentUrl(code){
+  const u=new URL(location.href);
+  u.search="";
+  u.hash="";
+  u.searchParams.set("room",code);
+  return u.toString();
+}
+function gamePool(gameId,vosotros=true){
+  return games[gameId].puzzles.map((p,i)=>({p,i})).filter(x=>vosotros||x.p[4]!=="vosotros");
+}
+function pickPuzzle(gameId,vosotros,exclude=-1){
+  const pool=gamePool(gameId,vosotros).filter(x=>x.i!==exclude);
+  const arr=pool.length?pool:gamePool(gameId,vosotros);
+  return arr[Math.floor(Math.random()*arr.length)].i;
+}
+function onlinePlayers(room,team=null){
+  return Object.entries(room?.participants||{})
+    .filter(([uid,p])=>p.online===true && (!team||p.team===team))
+    .map(([uid,p])=>({uid,...p}));
+}
+function pickActive(room,team,exclude=null){
+  let arr=onlinePlayers(room,team);
+  if(arr.length>1 && exclude) arr=arr.filter(x=>x.uid!==exclude);
+  if(!arr.length) arr=onlinePlayers(room,team);
+  if(!arr.length) return null;
+  return arr[Math.floor(Math.random()*arr.length)].uid;
+}
+function nickFor(uid,room){
+  const used=new Set(Object.values(room?.participants||{}).map(p=>p.nick));
+  let seed=0;for(const c of uid) seed=(seed*31+c.charCodeAt(0))>>>0;
+  for(let k=0;k<animals.length*adjectives.length;k++){
+    const a=animals[(seed+k*7)%animals.length], b=adjectives[(Math.floor(seed/7)+k*11)%adjectives.length];
+    const n=`${a} ${b}`;if(!used.has(n))return n;
+  }
+  return `Jugador ${Math.floor(Math.random()*900+100)}`;
+}
+function renderGameChoices(){
+  $("gameChoices").innerHTML="";
+  Object.entries(games).forEach(([id,g])=>{
+    const b=document.createElement("button");b.className="gamechoice"+(id===selectedGame?" active":"");
+    b.innerHTML=`<b>${g.title}</b><small>${g.desc}</small>`;
+    b.onclick=()=>{selectedGame=id;renderGameChoices();};
+    $("gameChoices").appendChild(b);
+  });
+}
+renderGameChoices();
+
+async function createRoom(){
+  try{
+    await ensureUser();
+    let code;
+    for(let i=0;i<8;i++){
+      code=randomCode();
+      const s=await get(ref(db,`presentRace/${code}/meta`));
+      if(!s.exists())break;
+    }
+    roomCode=code;role="host";
+    await set(ref(db,`presentRace/${roomCode}`),{
+      meta:{hostUid:user.uid,status:"lobby",gameId:selectedGame,vosotros:true,winner:null,createdAt:serverTimestamp()},
+      participants:{}
+    });
+    localStorage.setItem("presenteRaceHostRoom",roomCode);
+    openHost();
+  }catch(e){$("globalErr").textContent="Nie udało się utworzyć pokoju: "+e.message}
+}
+async function joinRoom(code){
+  try{
+    await ensureUser();
+    roomCode=String(code||"").replace(/\D/g,"").slice(0,6);
+    if(roomCode.length!==6)throw new Error("Kod ma 6 cyfr.");
+    const snap=await get(roomRef());
+    if(!snap.exists())throw new Error("Nie ma takiego pokoju.");
+    const room=snap.val();
+    if(room.meta?.status!=="lobby"){
+      const existing=room.participants?.[user.uid];
+      if(!existing)throw new Error("Gra już trwa.");
+    }
+    role="student";
+    const existing=room.participants?.[user.uid];
+    if(existing){
+      await update(roomRef(`participants/${user.uid}`),{online:true,lastSeen:serverTimestamp()});
+    }else{
+      const a=onlinePlayers(room,"A").length,b=onlinePlayers(room,"B").length;
+      const team=a<b?"A":b<a?"B":(Math.random()<.5?"A":"B");
+      await set(roomRef(`participants/${user.uid}`),{
+        nick:nickFor(user.uid,room),team,online:true,joinedAt:serverTimestamp(),lastSeen:serverTimestamp()
+      });
+    }
+    const pRef=roomRef(`participants/${user.uid}`);
+    await onDisconnect(pRef).update({online:false,lastSeen:serverTimestamp()});
+    localStorage.setItem("presenteRaceStudentRoom",roomCode);
+    openStudent();
+  }catch(e){$("joinErr").textContent=e.message}
+}
+function subscribeRoom(cb){
+  if(roomUnsub)roomUnsub();
+  roomUnsub=onValue(roomRef(),snap=>{
+    if(!snap.exists()){showOnly("landing");return}
+    currentRoom=snap.val();cb(currentRoom);
+  },err=>{$("globalErr").textContent="Firebase: "+err.message});
+}
+function renderLobbyLists(room,prefix=""){
+  const entries=Object.entries(room.participants||{}).sort((a,b)=>(a[1].joinedAt||0)-(b[1].joinedAt||0));
+  ["A","B"].forEach(team=>{
+    const id=prefix+(team==="A"?"ListA":"ListB");
+    const el=$(id);if(!el)return;el.innerHTML="";
+    entries.filter(([u,p])=>p.team===team).forEach(([u,p])=>{
+      const s=document.createElement("span");s.className="nick"+(p.online?"":" offline");
+      s.innerHTML=`${p.online?'<span class="onlineDot"></span>':""}${p.nick}`;
+      el.appendChild(s);
+    });
+  });
+}
+async function rebalance(room){
+  if(role!=="host"||balancing||room.meta?.status!=="lobby")return;
+  let A=onlinePlayers(room,"A"),B=onlinePlayers(room,"B");
+  if(Math.abs(A.length-B.length)<=1)return;
+  balancing=true;
+  try{
+    const bigger=A.length>B.length?A:B;
+    const from=A.length>B.length?"A":"B",to=from==="A"?"B":"A";
+    const moveCount=Math.floor(Math.abs(A.length-B.length)/2);
+    const shuffled=[...bigger].sort(()=>Math.random()-.5).slice(0,moveCount);
+    const patch={};
+    shuffled.forEach(p=>patch[`participants/${p.uid}/team`]=to);
+    if(shuffled.length)await update(roomRef(),patch);
+  }finally{balancing=false}
+}
+function openHost(){
+  showOnly("hostLobby");
+  $("hostRoomCode").textContent=roomCode;
+  const url=studentUrl(roomCode);
+  $("qr").innerHTML="";
+  if(window.QRCode)new QRCode($("qr"),{text:url,width:180,height:180});
+  subscribeRoom(room=>{
+    const m=room.meta||{};
+    if(m.hostUid!==user.uid){$("globalErr").textContent="Ten pokój ma inną prowadzącą.";return}
+    if(m.status==="lobby"){
+      showOnly("hostLobby");
+      renderLobbyLists(room,"");
+      const A=onlinePlayers(room,"A").length,B=onlinePlayers(room,"B").length;
+      $("countA").textContent=A;$("countB").textContent=B;
+      $("countPill").textContent=`${A+B} graczy`;
+      $("startGameBtn").disabled=A<1||B<1;
+      $("startHint").textContent=A+B<2?"Potrzebna jest co najmniej 1 osoba w każdej drużynie.":`Balans: ${A} + ${B}`;
+      rebalance(room);
+    }else if(m.status==="running"){
+      showOnly("raceScreen");renderRace(room,true);
+    }else if(m.status==="finished"){
+      showFinish(room,true);
+    }
+  });
+}
+function openStudent(){
+  subscribeRoom(room=>{
+    const p=room.participants?.[user.uid];
+    if(!p){showOnly("landing");return}
+    if(room.meta?.status==="lobby"){
+      showOnly("studentLobby");
+      $("myNick").textContent=p.nick;
+      $("myTeam").textContent=p.team==="A"?"Equipo Sol":"Equipo Luna";
+      renderLobbyLists(room,"student");
+    }else if(room.meta?.status==="running"){
+      showOnly("raceScreen");renderRace(room,false);
+    }else if(room.meta?.status==="finished"){
+      showFinish(room,false);
+    }
+  });
+}
+function renderCode(elId,secret,progress){
+  const el=$(elId);el.innerHTML="";
+  [...secret].forEach((ch,i)=>{
+    const d=document.createElement("div");d.className="letter"+(i<progress?" open":"");d.textContent=ch;el.appendChild(d);
+  });
+}
+function renderRace(room,isHost){
+  const game=games[room.meta.gameId],secret=game.secret;
+  const A=room.teamState?.A||{progress:0},B=room.teamState?.B||{progress:0};
+  renderCode("codeA",secret,A.progress||0);renderCode("codeB",secret,B.progress||0);
+  $("scoreA").textContent=`${A.progress||0}/${secret.length}`;
+  $("scoreB").textContent=`${B.progress||0}/${secret.length}`;
+  const area=$("playArea");area.innerHTML="";
+  if(isHost){
+    const aNick=room.participants?.[A.activeUid]?.nick||"—",bNick=room.participants?.[B.activeUid]?.nick||"—";
+    area.innerHTML=`
+      <div class="kicker">${game.title}</div>
+      <div class="bigstatus">Wyścig trwa</div>
+      <div class="lobbygrid">
+        <div class="team a"><div class="teamtitle">Teraz czyta:</div><div class="waitname">${aNick}</div></div>
+        <div class="team b"><div class="teamtitle">Teraz czyta:</div><div class="waitname">${bNick}</div></div>
+      </div>
+      <div class="hostnote">Na ekranie głównym nie pokazujemy zagadek — widzą je tylko wylosowane osoby na telefonach.</div>`;
+    return;
+  }
+  const me=room.participants?.[user.uid],team=me?.team;
+  if(!team)return;
+  const state=room.teamState?.[team]||{};
+  const active=state.activeUid===user.uid;
+  if(active){
+    const puzzle=game.puzzles[state.puzzleIndex];
+    if(!puzzle){area.innerHTML="<b>Ładowanie nowej zagadki…</b>";return}
+    const [q,inf,a,opts]=puzzle;
+    area.innerHTML=`
+      <div class="kicker">${team==="A"?"Equipo Sol":"Equipo Luna"} · litera ${(state.progress||0)+1}/${game.secret.length}</div>
+      <div class="activebox ${team.toLowerCase()}">
+        <div class="shout">TO TY! Krzyknij swojej drużynie: „Dobra, ja mam!”</div>
+        <div class="hostnote">Nie pokazuj ekranu. Przeczytaj zdanie, wspólnie ustalcie końcówkę, a potem ją wybierz.</div>
+        <div class="prompt">${q.replace("__","_____")}</div>
+        <div class="inf">(${inf})</div>
+        <div class="answers" id="answerBtns"></div>
+      </div>`;
+    const box=$("answerBtns");
+    [...opts].sort(()=>Math.random()-.5).forEach(opt=>{
+      const b=document.createElement("button");b.className="ans";b.textContent="-"+opt;
+      b.onclick=()=>submitAnswer(team,state,opt,a);box.appendChild(b);
+    });
+  }else{
+    const activeNick=room.participants?.[state.activeUid]?.nick||"ktoś z drużyny";
+    area.innerHTML=`
+      <div class="kicker">${team==="A"?"Equipo Sol":"Equipo Luna"}</div>
+      <div class="bigstatus">Słuchaj swojej drużyny</div>
+      <div class="waitbox">
+        <div class="hostnote">Zagadkę ma teraz</div>
+        <div class="waitname">${activeNick}</div>
+        <div style="margin-top:8px">Ta osoba czyta zdanie. Razem ustalcie poprawną końcówkę.</div>
+      </div>`;
+  }
+}
+async function submitAnswer(team,state,opt,correct){
+  document.querySelectorAll(".ans").forEach(b=>b.disabled=true);
+  const before=currentRoom;
+  if(!before||before.meta.status!=="running")return;
+  const gameId=before.meta.gameId,vosotros=before.meta.vosotros!==false;
+  const lastUid=state.activeUid;
+  const nextUid=pickActive(before,team,lastUid);
+  const nextPuzzle=pickPuzzle(gameId,vosotros,state.puzzleIndex);
+  const isCorrect=opt===correct;
+  const tRef=roomRef(`teamState/${team}`);
+  const result=await runTransaction(tRef,current=>{
+    if(!current||current.activeUid!==user.uid||current.attempt!==state.attempt)return;
+    if(isCorrect){
+      const nextProgress=(current.progress||0)+1;
+      return {...current,progress:nextProgress,attempt:(current.attempt||0)+1,lastActiveUid:user.uid,
+        activeUid:nextProgress>=games[gameId].secret.length?null:nextUid,
+        puzzleIndex:nextProgress>=games[gameId].secret.length?current.puzzleIndex:nextPuzzle};
+    }else{
+      return {...current,attempt:(current.attempt||0)+1,lastActiveUid:user.uid,activeUid:nextUid,puzzleIndex:nextPuzzle};
+    }
+  });
+  if(!result.committed)return;
+  if(isCorrect){
+    toast("Dobrze! Odkrywacie literę.");
+    const newProgress=result.snapshot.val().progress||0;
+    if(newProgress>=games[gameId].secret.length){
+      const w=await runTransaction(roomRef("meta/winner"),cur=>cur||team);
+      if(w.snapshot.val()===team){
+        await update(roomRef("meta"),{status:"finished",finishedAt:serverTimestamp()});
+      }
+    }
+  }else{
+    toast("Nie. Ta sama litera — nowa zagadka!");
+  }
+}
+async function startGame(){
+  const snap=await get(roomRef());const room=snap.val();
+  await rebalance(room);
+  const snap2=await get(roomRef());const r=snap2.val();
+  const A=onlinePlayers(r,"A"),B=onlinePlayers(r,"B");
+  if(!A.length||!B.length){toast("Potrzebna jest osoba w obu drużynach.");return}
+  const vosotros=$("vosotrosToggle").checked;
+  const gameId=selectedGame;
+  const aUid=A[Math.floor(Math.random()*A.length)].uid,bUid=B[Math.floor(Math.random()*B.length)].uid;
+  const patch={
+    "meta/status":"running","meta/gameId":gameId,"meta/vosotros":vosotros,"meta/winner":null,"meta/startAt":serverTimestamp(),
+    "teamState/A":{progress:0,attempt:0,activeUid:aUid,lastActiveUid:null,puzzleIndex:pickPuzzle(gameId,vosotros,-1)},
+    "teamState/B":{progress:0,attempt:0,activeUid:bUid,lastActiveUid:null,puzzleIndex:pickPuzzle(gameId,vosotros,-1)}
+  };
+  await update(roomRef(),patch);
+}
+function showFinish(room,isHost){
+  showOnly("finishScreen");
+  const win=room.meta?.winner,game=games[room.meta?.gameId];
+  $("winnerText").textContent=win==="A"?"🏆 Equipo Sol wygrywa!":"🏆 Equipo Luna wygrywa!";
+  $("secretText").textContent=game?.secret||"";
+  $("hostFinishControls").classList.toggle("hidden",!isHost);
+}
+async function backToLobby(){
+  await update(roomRef(),{
+    "meta/status":"lobby","meta/winner":null,"meta/startAt":null,"meta/finishedAt":null,
+    "teamState":null
+  });
+}
+
+$("teacherRole").onclick=createRoom;
+$("studentRole").onclick=()=>{$("quickJoin").classList.remove("hidden");$("roomInput").focus()};
+$("joinBtn").onclick=()=>joinRoom($("roomInput").value);
+$("roomInput").addEventListener("keydown",e=>{if(e.key==="Enter")joinRoom($("roomInput").value)});
+$("startGameBtn").onclick=startGame;
+$("copyLinkBtn").onclick=async()=>{await navigator.clipboard.writeText(studentUrl(roomCode));toast("Link skopiowany.")};
+$("nextGameBtn").onclick=backToLobby;
+$("homeBtn").onclick=()=>{if(roomUnsub)roomUnsub();role=null;roomCode=null;currentRoom=null;history.replaceState({}, "", location.pathname);showOnly("landing")};
+$("fullBtn").onclick=async()=>{try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch(e){}};
+
+const urlRoom=new URL(location.href).searchParams.get("room");
+if(urlRoom){
+  $("quickJoin").classList.remove("hidden");
+  $("roomInput").value=urlRoom;
+  setTimeout(()=>$("joinBtn").focus(),100);
+}
+</script>
+</body>
+</html>
