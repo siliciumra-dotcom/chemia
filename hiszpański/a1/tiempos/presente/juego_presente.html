@@ -91,6 +91,52 @@ h2{margin:.35rem 0 1rem}
   .roomcode{font-size:2.6rem}
   .card{padding:18px}
 }
+
+.student-first{
+  text-align:center;
+  padding:18px 6px 6px;
+}
+.start-big{
+  font-size:clamp(1.35rem,4vw,2rem);
+  padding:18px 30px;
+  border-radius:20px;
+  min-width:min(420px,100%);
+  box-shadow:0 10px 0 rgba(0,0,0,.10);
+}
+.start-big:active{
+  transform:translateY(4px);
+  box-shadow:0 6px 0 rgba(0,0,0,.10);
+}
+.student-help{
+  color:var(--muted);
+  margin:12px auto 0;
+  max-width:560px;
+}
+.host-entry{
+  display:flex;
+  justify-content:flex-end;
+  margin-top:22px;
+}
+.host-link{
+  border:0;
+  background:transparent;
+  color:#9b948d;
+  font-size:.82rem;
+  cursor:pointer;
+  padding:6px 2px;
+  text-decoration:underline;
+  text-underline-offset:3px;
+}
+.host-link:hover{color:var(--ink)}
+
+
+.gamechoice:nth-child(5):last-child{
+  grid-column:1 / -1;
+}
+@media(max-width:760px){
+  .gamechoice:nth-child(5):last-child{grid-column:auto}
+}
+
 </style>
 </head>
 <body>
@@ -108,15 +154,23 @@ h2{margin:.35rem 0 1rem}
   </div>
 
   <section class="card" id="landing">
-    <div class="landing">
-      <button class="role" id="teacherRole"><b>Jestem prowadzącą</b><span>Tworzę pokój, wybieram grę i wyświetlam wyścig.</span></button>
-      <button class="role" id="studentRole"><b>Gram na telefonie</b><span>Wpisuję kod pokoju. Nick i drużynę przydziela program.</span></button>
+    <div class="student-first">
+      <div class="kicker">Presente · gra zespołowa</div>
+      <h2>Gotowi złamać kod?</h2>
+      <button class="btn start-big" id="studentRole">ROZPOCZNIJ GRĘ!</button>
+      <div class="student-help">Dołączysz do pokoju kodem od prowadzącej. Nick i drużynę przydzieli program.</div>
+
+      <div id="quickJoin" class="hidden" style="margin-top:22px;text-align:left;max-width:520px;margin-left:auto;margin-right:auto">
+        <div class="field"><label>Kod pokoju</label><input id="roomInput" inputmode="numeric" maxlength="6" placeholder="123456"></div>
+        <button class="btn" id="joinBtn" style="width:100%">Dołącz do gry</button>
+        <div class="err" id="joinErr"></div>
+      </div>
     </div>
-    <div id="quickJoin" class="hidden" style="margin-top:18px">
-      <div class="field"><label>Kod pokoju</label><input id="roomInput" inputmode="numeric" maxlength="6" placeholder="123456"></div>
-      <button class="btn" id="joinBtn">Dołącz do gry</button>
-      <div class="err" id="joinErr"></div>
+
+    <div class="host-entry">
+      <button class="host-link" id="teacherRole">Panel prowadzącej</button>
     </div>
+
     <div class="err" id="globalErr"></div>
   </section>
 
@@ -140,7 +194,7 @@ h2{margin:.35rem 0 1rem}
     </div>
 
     <div style="margin-top:22px">
-      <div class="kicker">Wybierz jedną z 4 gier</div>
+      <div class="kicker">Wybierz jedną z 5 gier</div>
       <div class="games" id="gameChoices"></div>
       <label class="switchline"><input type="checkbox" id="vosotrosToggle" checked> Uwzględniaj formy <i>vosotros</i></label>
       <div class="row">
@@ -156,7 +210,7 @@ h2{margin:.35rem 0 1rem}
     <div class="pill" id="myTeam"></div>
     <div class="waitbox">
       <b>Czekamy na start.</b>
-      <div class="hostnote">Nie musisz nic odświeżać. Gdy prowadząca uruchomi grę, wszyscy wystartują automatycznie.</div>
+      
     </div>
     <div class="lobbygrid">
       <div class="team a"><div class="teamtitle">Equipo Sol</div><div id="studentListA"></div></div>
@@ -213,7 +267,7 @@ const games = {
   g1:{
     title:"1. Złam regularny kod",
     desc:"Najczystsze odkrywanie końcówek -AR / -ER / -IR.",
-    secret:"PRESENTE",
+    secret:"MISTERIO",
     puzzles:[
       ["Yo habl__ español.","hablar","o",["o","as","a"],"yo"],
       ["Tú trabaj__ en una oficina.","trabajar","as",["o","as","an"],"tú"],
@@ -238,7 +292,7 @@ const games = {
   g2:{
     title:"2. Kto to robi?",
     desc:"Nazwy osób i grup zamiast samych zaimków — trzeba rozpoznać osobę.",
-    secret:"HABLAMOS",
+    secret:"AVENTURA",
     puzzles:[
       ["Mi profesora trabaj__ en Madrid.","trabajar","a",["o","a","an"],"él"],
       ["Carlos y Ana estudi__ español.","estudiar","an",["a","amos","an"],"ellos"],
@@ -263,7 +317,7 @@ const games = {
   g3:{
     title:"3. Rutyna bez tabelki",
     desc:"Codzienne czynności w pełnych, prostych zdaniach A0.",
-    secret:"VIVIMOS",
+    secret:"SORPRESA",
     puzzles:[
       ["Por la mañana yo desayun__ en casa.","desayunar","o",["o","as","a"],"yo"],
       ["Después tú trabaj__ ocho horas.","trabajar","as",["o","as","a"],"tú"],
@@ -288,7 +342,7 @@ const games = {
   g4:{
     title:"4. Finał mieszany",
     desc:"Pytania, przeczenia i różne podmioty — ten sam regularny kod.",
-    secret:"ESPAÑOL",
+    secret:"VICTORIA",
     puzzles:[
       ["¿Tú habl__ inglés?","hablar","as",["o","as","a"],"tú"],
       ["Yo no trabaj__ los domingos.","trabajar","o",["o","as","a"],"yo"],
@@ -308,6 +362,40 @@ const games = {
       ["¿Nosotros escrib__ ahora?","escribir","imos",["e","imos","en"],"nosotros"],
       ["Ellas no viv__ en Madrid.","vivir","en",["e","imos","en"],"ellos"],
       ["¿Vosotros escrib__ en español?","escribir","ís",["imos","ís","en"],"vosotros"]
+    ]
+  },
+  g5:{
+    title:"5. Detektywi presente",
+    desc:"Nowe zdania, różne osoby i wszystkie trzy grupy czasowników.",
+    secret:"CAMPEONES",
+    puzzles:[
+      ["Yo prepar__ el desayuno cada mañana.","preparar","o",["o","as","a"],"yo"],
+      ["Tú necesit__ un café por la mañana.","necesitar","as",["o","as","an"],"tú"],
+      ["Mi amiga compr__ fruta los sábados.","comprar","a",["as","a","amos"],"él"],
+      ["Nosotros practic__ español en clase.","practicar","amos",["a","amos","an"],"nosotros"],
+      ["Vosotros descans__ los domingos.","descansar","áis",["amos","áis","an"],"vosotros"],
+      ["Los estudiantes pregunt__ mucho.","preguntar","an",["a","amos","an"],"ellos"],
+
+      ["Yo vend__ libros por internet.","vender","o",["o","es","e"],"yo"],
+      ["Tú respond__ muy rápido.","responder","es",["o","es","en"],"tú"],
+      ["Carlos corr__ en el parque.","correr","e",["es","e","emos"],"él"],
+      ["Nosotros le__ textos cortos.","leer","emos",["e","emos","en"],"nosotros"],
+      ["Vosotros comprend__ español bastante bien.","comprender","éis",["emos","éis","en"],"vosotros"],
+      ["Mis amigos vend__ ropa online.","vender","en",["e","emos","en"],"ellos"],
+
+      ["Yo abr__ la ventana por la mañana.","abrir","o",["o","es","e"],"yo"],
+      ["Tú recib__ muchos mensajes.","recibir","es",["o","es","en"],"tú"],
+      ["Ana decid__ qué cocinar.","decidir","e",["es","e","imos"],"él"],
+      ["Nosotros compart__ piso.","compartir","imos",["e","imos","en"],"nosotros"],
+      ["Vosotros abr__ la tienda a las nueve.","abrir","ís",["imos","ís","en"],"vosotros"],
+      ["Ellos recib__ muchas visitas.","recibir","en",["e","imos","en"],"ellos"],
+
+      ["Mi padre y yo prepar__ la cena.","preparar","amos",["a","amos","an"],"nosotros"],
+      ["¿Tus amigos comprend__ la pregunta?","comprender","en",["e","emos","en"],"ellos"],
+      ["¿Marta recib__ correos en español?","recibir","e",["es","e","en"],"él"],
+      ["Yo no compr__ comida preparada.","comprar","o",["o","as","a"],"yo"],
+      ["¿Tú le__ mucho en español?","leer","es",["o","es","en"],"tú"],
+      ["Mis compañeros compart__ sus apuntes.","compartir","en",["e","imos","en"],"ellos"]
     ]
   }
 };
