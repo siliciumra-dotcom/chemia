@@ -137,6 +137,10 @@ h2{margin:.35rem 0 1rem}
   .gamechoice:nth-child(5):last-child{grid-column:auto}
 }
 
+
+.connection-tools{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.danger-lite{border-color:#e0bcbc!important;color:#8f3b3b!important;background:#fff8f8!important}
+.reset-note{font-size:.88rem;color:var(--muted);margin-top:8px}
 </style>
 </head>
 <body>
@@ -147,7 +151,9 @@ h2{margin:.35rem 0 1rem}
       <h1>ROMPE EL CÓDIGO</h1>
       <div class="sub">Dwie drużyny, jedno hasło. Tylko jedna wylosowana osoba dostaje zagadkę — czyta ją swojej drużynie i wspólnie wybieracie odpowiedź.</div>
     </div>
-    <div class="row">
+    <div class="connection-tools">
+      <button class="btn secondary hidden" id="reconnectBtn">↻ Odśwież połączenie</button>
+      <button class="btn secondary danger-lite hidden" id="resetRoomBtn">Resetuj pokój</button>
       <button class="btn secondary hidden" id="homeBtn">Wyjdź</button>
       <button class="btn secondary" id="fullBtn">Pełny ekran</button>
     </div>
@@ -182,8 +188,11 @@ h2{margin:.35rem 0 1rem}
         <div class="hostnote">Uczniowie skanują QR albo wpisują kod. Zespoły są automatycznie równoważone przed startem.</div>
         <div class="row" style="margin-top:10px">
           <button class="btn secondary" id="copyLinkBtn">Kopiuj link dla uczniów</button>
+          <button class="btn secondary" id="refreshPanelBtn">↻ Odśwież panel</button>
+          <button class="btn secondary" id="cleanOfflineBtn">Usuń rozłączonych</button>
           <span class="pill" id="countPill">0 graczy</span>
         </div>
+        <div class="reset-note">Reset pokoju zachowuje ten sam kod i obecnych graczy, ale zeruje rundę i wraca do lobby.</div>
       </div>
       <div class="qr" id="qr"></div>
     </div>
@@ -240,7 +249,7 @@ h2{margin:.35rem 0 1rem}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, signInAnonymously, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getAuth, signInAnonymously, onAuthStateChanged, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
   getDatabase, ref, set, get, update, onValue, onDisconnect, serverTimestamp,
   runTransaction, remove
@@ -257,9 +266,19 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
-await setPersistence(auth, browserLocalPersistence).catch(()=>{});
+await setPersistence(auth, browserSessionPersistence).catch(()=>{});
 
 const $ = id => document.getElementById(id);
+
+const CLIENT_KEY="presenteRaceClientId";
+const ROLE_KEY="presenteRaceRole";
+const ROOM_KEY="presenteRaceRoom";
+let clientId=sessionStorage.getItem(CLIENT_KEY);
+if(!clientId){
+  clientId=(crypto.randomUUID ? crypto.randomUUID() : "c_"+Date.now()+"_"+Math.random().toString(36).slice(2));
+  sessionStorage.setItem(CLIENT_KEY,clientId);
+}
+
 let user=null, role=null, roomCode=null, roomUnsub=null, balancing=false, selectedGame="g1";
 let currentRoom=null;
 
@@ -408,7 +427,10 @@ function toast(msg){
 }
 function showOnly(id){
   ["landing","hostLobby","studentLobby","raceScreen","finishScreen"].forEach(x=>$(x).classList.toggle("hidden",x!==id));
-  $("homeBtn").classList.toggle("hidden",id==="landing");
+  const inside=id!=="landing";
+  $("homeBtn").classList.toggle("hidden",!inside);
+  $("reconnectBtn").classList.toggle("hidden",!inside);
+  $("resetRoomBtn").classList.toggle("hidden",!(inside && role==="host"));
 }
 function ensureUser(){
   return new Promise(async(resolve,reject)=>{
@@ -477,14 +499,23 @@ async function createRoom(){
     }
     roomCode=code;role="host";
     await set(ref(db,`presentRace/${roomCode}`),{
-      meta:{hostUid:user.uid,status:"lobby",gameId:selectedGame,vosotros:true,winner:null,createdAt:serverTimestamp()},
+      meta:{
+        hostUid:user.uid,
+        hostClientId:clientId,
+        status:"lobby",
+        gameId:selectedGame,
+        vosotros:true,
+        winner:null,
+        createdAt:serverTimestamp()
+      },
       participants:{}
     });
-    localStorage.setItem("presenteRaceHostRoom",roomCode);
+    sessionStorage.setItem(ROLE_KEY,"host");
+    sessionStorage.setItem(ROOM_KEY,roomCode);
     openHost();
   }catch(e){$("globalErr").textContent="Nie udało się utworzyć pokoju: "+e.message}
 }
-async function joinRoom(code){
+async function joinRoom(code,{resume=false}={}){
   try{
     await ensureUser();
     roomCode=String(code||"").replace(/\D/g,"").slice(0,6);
@@ -492,26 +523,39 @@ async function joinRoom(code){
     const snap=await get(roomRef());
     if(!snap.exists())throw new Error("Nie ma takiego pokoju.");
     const room=snap.val();
-    if(room.meta?.status!=="lobby"){
-      const existing=room.participants?.[user.uid];
-      if(!existing)throw new Error("Gra już trwa.");
+
+    const existing=room.participants?.[clientId];
+    if(room.meta?.status!=="lobby" && !existing){
+      throw new Error("Gra już trwa. Dołączysz przy następnej rundzie.");
     }
+
     role="student";
-    const existing=room.participants?.[user.uid];
     if(existing){
-      await update(roomRef(`participants/${user.uid}`),{online:true,lastSeen:serverTimestamp()});
+      await update(roomRef(`participants/${clientId}`),{online:true,lastSeen:serverTimestamp()});
     }else{
       const a=onlinePlayers(room,"A").length,b=onlinePlayers(room,"B").length;
       const team=a<b?"A":b<a?"B":(Math.random()<.5?"A":"B");
-      await set(roomRef(`participants/${user.uid}`),{
-        nick:nickFor(user.uid,room),team,online:true,joinedAt:serverTimestamp(),lastSeen:serverTimestamp()
+      await set(roomRef(`participants/${clientId}`),{
+        nick:nickFor(clientId,room),team,online:true,
+        joinedAt:serverTimestamp(),lastSeen:serverTimestamp()
       });
     }
-    const pRef=roomRef(`participants/${user.uid}`);
+
+    const pRef=roomRef(`participants/${clientId}`);
     await onDisconnect(pRef).update({online:false,lastSeen:serverTimestamp()});
-    localStorage.setItem("presenteRaceStudentRoom",roomCode);
+    sessionStorage.setItem(ROLE_KEY,"student");
+    sessionStorage.setItem(ROOM_KEY,roomCode);
     openStudent();
-  }catch(e){$("joinErr").textContent=e.message}
+    if(resume)toast("Połączenie przywrócone.");
+  }catch(e){
+    $("joinErr").textContent=e.message;
+    if(resume){
+      sessionStorage.removeItem(ROLE_KEY);
+      sessionStorage.removeItem(ROOM_KEY);
+      role=null;roomCode=null;
+      showOnly("landing");
+    }
+  }
 }
 function subscribeRoom(cb){
   if(roomUnsub)roomUnsub();
@@ -555,7 +599,7 @@ function openHost(){
   if(window.QRCode)new QRCode($("qr"),{text:url,width:180,height:180});
   subscribeRoom(room=>{
     const m=room.meta||{};
-    if(m.hostUid!==user.uid){$("globalErr").textContent="Ten pokój ma inną prowadzącą.";return}
+    if((m.hostClientId && m.hostClientId!==clientId) || (!m.hostClientId && m.hostUid!==user.uid)){$("globalErr").textContent="Ten pokój ma inną prowadzącą.";return}
     if(m.status==="lobby"){
       showOnly("hostLobby");
       renderLobbyLists(room,"");
@@ -574,7 +618,7 @@ function openHost(){
 }
 function openStudent(){
   subscribeRoom(room=>{
-    const p=room.participants?.[user.uid];
+    const p=room.participants?.[clientId];
     if(!p){showOnly("landing");return}
     if(room.meta?.status==="lobby"){
       showOnly("studentLobby");
@@ -613,10 +657,10 @@ function renderRace(room,isHost){
       <div class="hostnote">Na ekranie głównym nie pokazujemy zagadek — widzą je tylko wylosowane osoby na telefonach.</div>`;
     return;
   }
-  const me=room.participants?.[user.uid],team=me?.team;
+  const me=room.participants?.[clientId],team=me?.team;
   if(!team)return;
   const state=room.teamState?.[team]||{};
-  const active=state.activeUid===user.uid;
+  const active=state.activeUid===clientId;
   if(active){
     const puzzle=game.puzzles[state.puzzleIndex];
     if(!puzzle){area.innerHTML="<b>Ładowanie nowej zagadki…</b>";return}
@@ -658,14 +702,14 @@ async function submitAnswer(team,state,opt,correct){
   const isCorrect=opt===correct;
   const tRef=roomRef(`teamState/${team}`);
   const result=await runTransaction(tRef,current=>{
-    if(!current||current.activeUid!==user.uid||current.attempt!==state.attempt)return;
+    if(!current||current.activeUid!==clientId||current.attempt!==state.attempt)return;
     if(isCorrect){
       const nextProgress=(current.progress||0)+1;
-      return {...current,progress:nextProgress,attempt:(current.attempt||0)+1,lastActiveUid:user.uid,
+      return {...current,progress:nextProgress,attempt:(current.attempt||0)+1,lastActiveUid:clientId,
         activeUid:nextProgress>=games[gameId].secret.length?null:nextUid,
         puzzleIndex:nextProgress>=games[gameId].secret.length?current.puzzleIndex:nextPuzzle};
     }else{
-      return {...current,attempt:(current.attempt||0)+1,lastActiveUid:user.uid,activeUid:nextUid,puzzleIndex:nextPuzzle};
+      return {...current,attempt:(current.attempt||0)+1,lastActiveUid:clientId,activeUid:nextUid,puzzleIndex:nextPuzzle};
     }
   });
   if(!result.committed)return;
@@ -682,12 +726,101 @@ async function submitAnswer(team,state,opt,correct){
     toast("Nie. Ta sama litera — nowa zagadka!");
   }
 }
+
+async function reconnectCurrent(){
+  try{
+    if(!role||!roomCode){
+      role=sessionStorage.getItem(ROLE_KEY);
+      roomCode=sessionStorage.getItem(ROOM_KEY);
+    }
+    if(!role||!roomCode){showOnly("landing");return}
+    await ensureUser();
+    if(roomUnsub){roomUnsub();roomUnsub=null}
+
+    if(role==="host"){
+      const snap=await get(roomRef());
+      if(!snap.exists())throw new Error("Pokój już nie istnieje.");
+      const room=snap.val(),m=room.meta||{};
+      if((m.hostClientId && m.hostClientId!==clientId) || (!m.hostClientId && m.hostUid!==user.uid)){
+        throw new Error("Nie można odzyskać panelu w tej karcie.");
+      }
+      openHost();
+      toast("Panel połączony ponownie.");
+    }else{
+      await joinRoom(roomCode,{resume:true});
+    }
+  }catch(e){toast("Nie udało się połączyć: "+e.message)}
+}
+
+async function resetRoomKeepCode(){
+  if(role!=="host"||!roomCode)return;
+  if(!confirm("Zresetować rundę? Kod pokoju i podłączeni gracze zostaną zachowani."))return;
+  try{
+    await update(roomRef(),{
+      "meta/status":"lobby",
+      "meta/winner":null,
+      "meta/startAt":null,
+      "meta/finishedAt":null,
+      "teamState":null
+    });
+    const snap=await get(roomRef());
+    if(snap.exists())await rebalance(snap.val());
+    toast("Pokój zresetowany — kod bez zmian.");
+  }catch(e){toast("Reset nie powiódł się: "+e.message)}
+}
+
+async function cleanOfflinePlayers(){
+  if(role!=="host"||!roomCode)return;
+  try{
+    const snap=await get(roomRef("participants"));
+    if(!snap.exists()){toast("Brak graczy.");return}
+    const patch={};let n=0;
+    for(const [id,p] of Object.entries(snap.val()||{})){
+      if(p.online!==true){patch[id]=null;n++}
+    }
+    if(!n){toast("Brak rozłączonych graczy.");return}
+    await update(roomRef("participants"),patch);
+    const rs=await get(roomRef());
+    if(rs.exists())await rebalance(rs.val());
+    toast(`Usunięto rozłączonych: ${n}.`);
+  }catch(e){toast("Nie udało się wyczyścić listy: "+e.message)}
+}
+
+async function resumeAfterRefresh(){
+  const savedRole=sessionStorage.getItem(ROLE_KEY);
+  const savedRoom=sessionStorage.getItem(ROOM_KEY);
+  if(!savedRole||!savedRoom)return false;
+  role=savedRole;roomCode=savedRoom;
+  try{
+    await ensureUser();
+    const snap=await get(roomRef());
+    if(!snap.exists())throw new Error("Pokój wygasł.");
+    const room=snap.val();
+
+    if(role==="host"){
+      const m=room.meta||{};
+      if((m.hostClientId && m.hostClientId!==clientId) || (!m.hostClientId && m.hostUid!==user.uid)){
+        throw new Error("To nie jest karta prowadzącej.");
+      }
+      openHost();
+    }else{
+      await joinRoom(roomCode,{resume:true});
+    }
+    return true;
+  }catch(e){
+    sessionStorage.removeItem(ROLE_KEY);
+    sessionStorage.removeItem(ROOM_KEY);
+    role=null;roomCode=null;
+    return false;
+  }
+}
+
 async function startGame(){
   const snap=await get(roomRef());const room=snap.val();
   await rebalance(room);
   const snap2=await get(roomRef());const r=snap2.val();
   const A=onlinePlayers(r,"A"),B=onlinePlayers(r,"B");
-  if(!A.length||!B.length){toast("Potrzebna jest osoba w obu drużynach.");return}
+  if(!A.length||!B.length){toast("Potrzebna jest co najmniej 1 aktywna osoba w obu drużynach.");return}
   const vosotros=$("vosotrosToggle").checked;
   const gameId=selectedGame;
   const aUid=A[Math.floor(Math.random()*A.length)].uid,bUid=B[Math.floor(Math.random()*B.length)].uid;
@@ -718,12 +851,29 @@ $("joinBtn").onclick=()=>joinRoom($("roomInput").value);
 $("roomInput").addEventListener("keydown",e=>{if(e.key==="Enter")joinRoom($("roomInput").value)});
 $("startGameBtn").onclick=startGame;
 $("copyLinkBtn").onclick=async()=>{await navigator.clipboard.writeText(studentUrl(roomCode));toast("Link skopiowany.")};
+$("refreshPanelBtn").onclick=reconnectCurrent;
+$("reconnectBtn").onclick=reconnectCurrent;
+$("resetRoomBtn").onclick=resetRoomKeepCode;
+$("cleanOfflineBtn").onclick=cleanOfflinePlayers;
 $("nextGameBtn").onclick=backToLobby;
-$("homeBtn").onclick=()=>{if(roomUnsub)roomUnsub();role=null;roomCode=null;currentRoom=null;history.replaceState({}, "", location.pathname);showOnly("landing")};
+$("homeBtn").onclick=async()=>{
+  try{
+    if(role==="student"&&roomCode){
+      await update(roomRef(`participants/${clientId}`),{online:false,lastSeen:serverTimestamp()});
+    }
+  }catch(e){}
+  if(roomUnsub)roomUnsub();
+  sessionStorage.removeItem(ROLE_KEY);
+  sessionStorage.removeItem(ROOM_KEY);
+  role=null;roomCode=null;currentRoom=null;
+  history.replaceState({}, "", location.pathname);
+  showOnly("landing");
+};
 $("fullBtn").onclick=async()=>{try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch(e){}};
 
 const urlRoom=new URL(location.href).searchParams.get("room");
-if(urlRoom){
+const resumed=await resumeAfterRefresh();
+if(!resumed && urlRoom){
   $("quickJoin").classList.remove("hidden");
   $("roomInput").value=urlRoom;
   setTimeout(()=>$("joinBtn").focus(),100);
