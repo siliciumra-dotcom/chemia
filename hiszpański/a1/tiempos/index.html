@@ -316,6 +316,7 @@ if(!clientId){
 let user=null, role=null, roomCode=null, roomUnsub=null, balancing=false;
 let currentRoom=null;
 const GAME_ORDER=["g1","g2","g3","g4","g5"];
+const GAME_BUILD="2026-09-16-atomic-round-finish-v3";
 
 const games = {
   g1:{
@@ -620,6 +621,83 @@ async function rebalance(room){
     if(shuffled.length)await update(roomRef(),patch);
   }finally{balancing=false}
 }
+
+let repairInProgress=false;
+
+async function repairRunningRoom(room){
+  if(role!=="host"||repairInProgress||room.meta?.status!=="running")return;
+
+  const gameId=room.meta?.gameId;
+  const game=games[gameId];
+  if(!game)return;
+
+  repairInProgress=true;
+  try{
+    // Naprawa starego stanu: pełne hasło, ale brak roundWinner.
+    if(!room.meta?.roundWinner){
+      const completed=["A","B"].filter(team=>
+        Number(room.teamState?.[team]?.progress||0)>=game.secret.length
+      );
+
+      if(completed.length===1){
+        const team=completed[0];
+        await runTransaction(roomRef(),data=>{
+          if(!data?.meta||data.meta.status!=="running"||data.meta.roundWinner)return;
+          const currentGame=games[data.meta.gameId];
+          if(!currentGame)return;
+          if(Number(data.teamState?.[team]?.progress||0)<currentGame.secret.length)return;
+
+          const idx=Number(data.meta.roundIndex||0);
+          const wins={
+            A:Number(data.meta.roundWins?.A||0),
+            B:Number(data.meta.roundWins?.B||0)
+          };
+          wins[team]+=1;
+          data.meta.roundWinner=team;
+          data.meta.roundWins=wins;
+          data.meta.roundEndedAt=Date.now();
+
+          if(idx>=GAME_ORDER.length-1){
+            data.meta.winner=wins.A>wins.B?"A":"B";
+            data.meta.status="finished";
+            data.meta.finishedAt=Date.now();
+          }
+          return data;
+        });
+        return;
+      }
+    }
+
+    // Jeśli aktywny czytający się rozłączył, losujemy nowego.
+    if(!room.meta?.roundWinner){
+      for(const team of ["A","B"]){
+        const state=room.teamState?.[team];
+        if(!state)continue;
+        if(Number(state.progress||0)>=game.secret.length)continue;
+
+        const active=state.activeUid ? room.participants?.[state.activeUid] : null;
+        if(active?.online===true)continue;
+
+        const replacement=pickActive(room,team,state.lastActiveUid||state.activeUid);
+        if(!replacement)continue;
+
+        const newPuzzle=pickPuzzle(gameId,room.meta.vosotros!==false,state.puzzleIndex);
+        await runTransaction(roomRef(`teamState/${team}`),current=>{
+          if(!current)return;
+          return {
+            ...current,
+            activeUid:replacement,
+            attempt:(current.attempt||0)+1,
+            puzzleIndex:newPuzzle
+          };
+        });
+      }
+    }
+  }finally{
+    repairInProgress=false;
+  }
+}
+
 function openHost(){
   showOnly("hostLobby");
   $("hostRoomCode").textContent=roomCode;
@@ -639,7 +717,9 @@ function openHost(){
       $("startHint").textContent=A+B<2?"Potrzebna jest co najmniej 1 osoba w każdej drużynie.":`Balans: ${A} + ${B}`;
       rebalance(room);
     }else if(m.status==="running"){
-      showOnly("raceScreen");renderRace(room,true);
+      showOnly("raceScreen");
+      renderRace(room,true);
+      repairRunningRoom(room);
     }else if(m.status==="finished"){
       showFinish(room,true);
     }
@@ -730,15 +810,32 @@ function renderRace(room,isHost){
   }
 
   if(isHost){
-    const aNick=room.participants?.[A.activeUid]?.nick||"—",bNick=room.participants?.[B.activeUid]?.nick||"—";
+    const aNick=room.participants?.[A.activeUid]?.nick||"—";
+    const bNick=room.participants?.[B.activeUid]?.nick||"—";
+
+    const roster=(team)=>{
+      const people=Object.entries(room.participants||{})
+        .filter(([uid,p])=>p.team===team)
+        .map(([uid,p])=>`${p.online===true?"●":"○"} ${p.nick}`);
+      return people.length?people.join(" · "):"brak graczy";
+    };
+
     area.innerHTML=`
       <div class="kicker">${game.title} · runda ${idx+1}/5</div>
       <div class="bigstatus">Wyścig trwa</div>
       <div class="lobbygrid">
-        <div class="team a"><div class="teamtitle">Teraz czyta:</div><div class="waitname">${aNick}</div></div>
-        <div class="team b"><div class="teamtitle">Teraz czyta:</div><div class="waitname">${bNick}</div></div>
+        <div class="team a">
+          <div class="teamtitle">Teraz czyta:</div>
+          <div class="waitname">${aNick}</div>
+          <div class="hostnote" style="margin-top:14px"><b>Skład:</b> ${roster("A")}</div>
+        </div>
+        <div class="team b">
+          <div class="teamtitle">Teraz czyta:</div>
+          <div class="waitname">${bNick}</div>
+          <div class="hostnote" style="margin-top:14px"><b>Skład:</b> ${roster("B")}</div>
+        </div>
       </div>
-      <div class="hostnote">Po zdobyciu hasła gra zatrzyma się. Następną rundę uruchamiasz ręcznie z panelu. Reset pokoju zeruje całą serię.</div>`;
+      <div class="hostnote">● połączony · ○ rozłączony. Zagadkę widzi tylko osoba wskazana jako „Teraz czyta”.</div>`;
     return;
   }
 
@@ -778,49 +875,84 @@ function renderRace(room,isHost){
 }
 async function submitAnswer(team,state,opt,correct){
   document.querySelectorAll(".ans").forEach(b=>b.disabled=true);
+
   const before=currentRoom;
-  if(!before||before.meta.status!=="running"||before.meta.roundWinner)return;
-  const gameId=before.meta.gameId,vosotros=before.meta.vosotros!==false;
+  if(!before||before.meta?.status!=="running"||before.meta?.roundWinner)return;
+
+  const gameId=before.meta.gameId;
+  const vosotros=before.meta.vosotros!==false;
+  const secretLength=games[gameId].secret.length;
   const lastUid=state.activeUid;
   const nextUid=pickActive(before,team,lastUid);
   const nextPuzzle=pickPuzzle(gameId,vosotros,state.puzzleIndex);
   const isCorrect=opt===correct;
-  const tRef=roomRef(`teamState/${team}`);
 
-  const result=await runTransaction(tRef,current=>{
+  // Jeden atomowy zapis: odpowiedź + postęp + ewentualne zakończenie rundy.
+  const result=await runTransaction(roomRef(),room=>{
+    if(!room||!room.meta||room.meta.status!=="running"||room.meta.roundWinner)return;
+
+    const current=room.teamState?.[team];
     if(!current||current.activeUid!==clientId||current.attempt!==state.attempt)return;
-    if(isCorrect){
-      const nextProgress=(current.progress||0)+1;
-      return {...current,progress:nextProgress,attempt:(current.attempt||0)+1,lastActiveUid:clientId,
-        activeUid:nextProgress>=games[gameId].secret.length?null:nextUid,
-        puzzleIndex:nextProgress>=games[gameId].secret.length?current.puzzleIndex:nextPuzzle};
-    }else{
-      return {...current,attempt:(current.attempt||0)+1,lastActiveUid:clientId,activeUid:nextUid,puzzleIndex:nextPuzzle};
+
+    room.teamState=room.teamState||{};
+    room.meta.roundWins=room.meta.roundWins||{A:0,B:0};
+
+    if(!isCorrect){
+      room.teamState[team]={
+        ...current,
+        attempt:(current.attempt||0)+1,
+        lastActiveUid:clientId,
+        activeUid:nextUid,
+        puzzleIndex:nextPuzzle
+      };
+      return room;
     }
+
+    const nextProgress=(current.progress||0)+1;
+    const finishedRound=nextProgress>=secretLength;
+
+    room.teamState[team]={
+      ...current,
+      progress:nextProgress,
+      attempt:(current.attempt||0)+1,
+      lastActiveUid:clientId,
+      activeUid:finishedRound?null:nextUid,
+      puzzleIndex:finishedRound?current.puzzleIndex:nextPuzzle
+    };
+
+    if(finishedRound){
+      const idx=Number(room.meta.roundIndex||0);
+      const wins={
+        A:Number(room.meta.roundWins?.A||0),
+        B:Number(room.meta.roundWins?.B||0)
+      };
+      wins[team]+=1;
+
+      room.meta.roundWinner=team;
+      room.meta.roundWins=wins;
+      room.meta.roundEndedAt=Date.now();
+
+      if(idx>=GAME_ORDER.length-1){
+        room.meta.winner=wins.A>wins.B?"A":"B";
+        room.meta.status="finished";
+        room.meta.finishedAt=Date.now();
+      }
+    }
+
+    return room;
   });
-  if(!result.committed)return;
+
+  if(!result.committed){
+    toast("Stan gry zmienił się — poczekaj chwilę.");
+    return;
+  }
 
   if(isCorrect){
-    toast("Dobrze! Odkrywacie literę.");
-    const newProgress=result.snapshot.val().progress||0;
-
-    if(newProgress>=games[gameId].secret.length){
-      const metaResult=await runTransaction(roomRef("meta"),meta=>{
-        if(!meta||meta.status!=="running"||meta.roundWinner)return;
-        const idx=Number(meta.roundIndex||0);
-        const wins={A:Number(meta.roundWins?.A||0),B:Number(meta.roundWins?.B||0)};
-        wins[team]+=1;
-
-        if(idx>=GAME_ORDER.length-1){
-          const seriesWinner=wins.A>wins.B?"A":"B";
-          return {...meta,roundWinner:team,roundWins:wins,winner:seriesWinner,status:"finished",finishedAt:Date.now()};
-        }
-        return {...meta,roundWinner:team,roundWins:wins,roundEndedAt:Date.now()};
-      });
-
-      if(metaResult.committed){
-        toast("Hasło zdobyte! Punkt za rundę.");
-      }
+    const committed=result.snapshot.val();
+    if(committed?.meta?.roundWinner===team){
+      toast("Hasło zdobyte! Runda zakończona.");
+    }else{
+      toast("Dobrze! Odkrywacie literę.");
     }
   }else{
     toast("Nie. Ta sama litera — nowa zagadka!");
