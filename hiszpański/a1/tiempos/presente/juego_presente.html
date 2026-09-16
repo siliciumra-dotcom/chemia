@@ -230,6 +230,7 @@ h2{margin:.35rem 0 1rem}
 
     <div style="margin-top:22px">
       <div class="kicker">Pełna rozgrywka · 5 rund</div>
+      <div class="hostnote" style="margin-top:6px">Po każdej rundzie gra zatrzymuje się. To Ty uruchamiasz następną rundę z panelu.</div>
       <div class="series-list">
         <div class="series-item"><b>1 · MISTERIO</b><small>regularne -AR / -ER / -IR</small></div>
         <div class="series-item"><b>2 · AVENTURA</b><small>różne podmioty</small></div>
@@ -314,7 +315,6 @@ if(!clientId){
 
 let user=null, role=null, roomCode=null, roomUnsub=null, balancing=false;
 let currentRoom=null;
-let scheduledAdvanceRound=-1;
 const GAME_ORDER=["g1","g2","g3","g4","g5"];
 
 const games = {
@@ -694,14 +694,38 @@ function renderRace(room,isHost){
   if(room.meta?.roundWinner){
     const win=room.meta.roundWinner;
     const winName=win==="A"?"Equipo Sol":"Equipo Luna";
-    area.innerHTML=`
-      <div class="intermission">
-        <div class="kicker">Runda ${idx+1}/5 zakończona</div>
-        <div class="round-winner">🏁 ${winName} zdobywa hasło!</div>
-        <div class="round-secret">${secret}</div>
-        <div class="countdown">${idx<4?"Za chwilę automatycznie rusza kolejna runda…":"Liczymy wynik całej serii…"}</div>
-      </div>`;
-    if(isHost && idx<4)scheduleNextRound(room);
+    const nextNumber=idx+2;
+
+    if(isHost){
+      area.innerHTML=`
+        <div class="intermission">
+          <div class="kicker">Runda ${idx+1}/5 zakończona</div>
+          <div class="round-winner">🏁 ${winName} zdobywa hasło!</div>
+          <div class="round-secret">${secret}</div>
+          ${idx<4
+            ? `<div class="countdown">Obie drużyny czekają. Kolejna runda nie ruszy bez Twojego kliknięcia.</div>
+               <button class="btn" id="startNextRoundBtn" style="margin-top:16px">ROZPOCZNIJ RUNDĘ ${nextNumber}</button>`
+            : `<div class="countdown">To była piąta, ostatnia runda.</div>`}
+        </div>`;
+      if(idx<4){
+        const nextBtn=$("startNextRoundBtn");
+        nextBtn.onclick=async()=>{
+          nextBtn.disabled=true;
+          nextBtn.textContent=`Uruchamiam rundę ${nextNumber}…`;
+          await advanceToNextRound(idx);
+        };
+      }
+    }else{
+      area.innerHTML=`
+        <div class="intermission">
+          <div class="kicker">Runda ${idx+1}/5 zakończona</div>
+          <div class="round-winner">🏁 ${winName} zdobywa hasło!</div>
+          <div class="round-secret">${secret}</div>
+          <div class="countdown">${idx<4
+            ? `Czekamy, aż prowadząca rozpocznie rundę ${nextNumber}.`
+            : `To była piąta, ostatnia runda.`}</div>
+        </div>`;
+    }
     return;
   }
 
@@ -714,7 +738,7 @@ function renderRace(room,isHost){
         <div class="team a"><div class="teamtitle">Teraz czyta:</div><div class="waitname">${aNick}</div></div>
         <div class="team b"><div class="teamtitle">Teraz czyta:</div><div class="waitname">${bNick}</div></div>
       </div>
-      <div class="hostnote">Po zdobyciu hasła kolejna runda uruchomi się automatycznie. Reset pokoju zeruje całą serię.</div>`;
+      <div class="hostnote">Po zdobyciu hasła gra zatrzyma się. Następną rundę uruchamiasz ręcznie z panelu. Reset pokoju zeruje całą serię.</div>`;
     return;
   }
 
@@ -802,16 +826,6 @@ async function submitAnswer(team,state,opt,correct){
     toast("Nie. Ta sama litera — nowa zagadka!");
   }
 }
-let roundAdvanceTimer=null;
-
-function scheduleNextRound(room){
-  const idx=Number(room.meta?.roundIndex||0);
-  if(idx>=4||scheduledAdvanceRound===idx)return;
-  scheduledAdvanceRound=idx;
-  clearTimeout(roundAdvanceTimer);
-  roundAdvanceTimer=setTimeout(()=>advanceToNextRound(idx),2600);
-}
-
 async function advanceToNextRound(expectedIndex){
   if(role!=="host"||!roomCode)return;
   try{
@@ -825,8 +839,7 @@ async function advanceToNextRound(expectedIndex){
     const nextGameId=GAME_ORDER[nextIndex];
     const A=onlinePlayers(room,"A"),B=onlinePlayers(room,"B");
     if(!A.length||!B.length){
-      scheduledAdvanceRound=-1;
-      toast("Kolejna runda czeka — brakuje aktywnego gracza w jednej drużynie.");
+      toast("Nie mogę rozpocząć kolejnej rundy — brakuje aktywnego gracza w jednej drużynie.");
       return;
     }
 
@@ -839,6 +852,7 @@ async function advanceToNextRound(expectedIndex){
       "meta/gameId":nextGameId,
       "meta/roundWinner":null,
       "meta/roundEndedAt":null,
+      "meta/roundStartedAt":serverTimestamp(),
       "teamState/A":{
         progress:0,attempt:0,activeUid:aUid,lastActiveUid:null,
         puzzleIndex:pickPuzzle(nextGameId,vosotros,-1)
@@ -848,9 +862,7 @@ async function advanceToNextRound(expectedIndex){
         puzzleIndex:pickPuzzle(nextGameId,vosotros,-1)
       }
     });
-    scheduledAdvanceRound=-1;
   }catch(e){
-    scheduledAdvanceRound=-1;
     toast("Nie udało się uruchomić kolejnej rundy: "+e.message);
   }
 }
@@ -960,7 +972,6 @@ async function startGame(){
   const gameId=GAME_ORDER[0];
   const aUid=A[Math.floor(Math.random()*A.length)].uid;
   const bUid=B[Math.floor(Math.random()*B.length)].uid;
-  scheduledAdvanceRound=-1;
 
   const patch={
     "meta/status":"running",
@@ -988,8 +999,6 @@ function showFinish(room,isHost){
   $("hostFinishControls").classList.toggle("hidden",!isHost);
 }
 async function backToLobby(){
-  scheduledAdvanceRound=-1;
-  clearTimeout(roundAdvanceTimer);
   await update(roomRef(),{
     "meta/status":"lobby",
     "meta/gameId":"g1",
