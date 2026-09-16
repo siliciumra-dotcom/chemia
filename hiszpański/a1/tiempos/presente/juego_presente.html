@@ -137,6 +137,36 @@ h2{margin:.35rem 0 1rem}
   .gamechoice:nth-child(5):last-child{grid-column:auto}
 }
 
+
+.connection-tools{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.danger-lite{border-color:#e0bcbc!important;color:#8f3b3b!important;background:#fff8f8!important}
+.reset-note{font-size:.88rem;color:var(--muted);margin-top:8px}
+
+.series-strip{
+  display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;
+  margin:0 0 14px;padding:10px 14px;border-radius:18px;background:rgba(255,255,255,.72);
+  border:1px solid var(--line);font-weight:900
+}
+.series-score{font-size:1.15rem}
+.round-chip{
+  display:inline-flex;align-items:center;gap:6px;padding:7px 10px;border-radius:999px;
+  background:#eee9e2;color:var(--muted);font-size:.88rem;font-weight:900
+}
+.round-chip.done{background:#e7f0ec;color:var(--a)}
+.round-chip.current{background:#20242d;color:#fff}
+.intermission{padding:34px 12px;text-align:center}
+.intermission .round-winner{font-size:clamp(2rem,6vw,4rem);font-weight:950;line-height:1.05;margin:12px 0}
+.intermission .round-secret{font-size:clamp(1.3rem,5vw,2.7rem);font-weight:950;letter-spacing:.12em;margin:12px 0}
+.countdown{font-size:1rem;color:var(--muted);font-weight:850;margin-top:14px}
+.series-list{
+  display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:14px 0 18px
+}
+.series-item{
+  border:1px solid var(--line);border-radius:14px;background:#fff;padding:10px 8px;text-align:center
+}
+.series-item b{display:block;font-size:.9rem}
+.series-item small{color:var(--muted)}
+@media(max-width:760px){.series-list{grid-template-columns:1fr}.series-item{text-align:left}}
 </style>
 </head>
 <body>
@@ -147,7 +177,9 @@ h2{margin:.35rem 0 1rem}
       <h1>ROMPE EL CÓDIGO</h1>
       <div class="sub">Dwie drużyny, jedno hasło. Tylko jedna wylosowana osoba dostaje zagadkę — czyta ją swojej drużynie i wspólnie wybieracie odpowiedź.</div>
     </div>
-    <div class="row">
+    <div class="connection-tools">
+      <button class="btn secondary hidden" id="reconnectBtn">↻ Odśwież połączenie</button>
+      <button class="btn secondary danger-lite hidden" id="resetRoomBtn">Resetuj pokój</button>
       <button class="btn secondary hidden" id="homeBtn">Wyjdź</button>
       <button class="btn secondary" id="fullBtn">Pełny ekran</button>
     </div>
@@ -182,8 +214,11 @@ h2{margin:.35rem 0 1rem}
         <div class="hostnote">Uczniowie skanują QR albo wpisują kod. Zespoły są automatycznie równoważone przed startem.</div>
         <div class="row" style="margin-top:10px">
           <button class="btn secondary" id="copyLinkBtn">Kopiuj link dla uczniów</button>
+          <button class="btn secondary" id="refreshPanelBtn">↻ Odśwież panel</button>
+          <button class="btn secondary" id="cleanOfflineBtn">Usuń rozłączonych</button>
           <span class="pill" id="countPill">0 graczy</span>
         </div>
+        <div class="reset-note">Reset pokoju zachowuje ten sam kod i obecnych graczy, ale zeruje rundę i wraca do lobby.</div>
       </div>
       <div class="qr" id="qr"></div>
     </div>
@@ -194,11 +229,17 @@ h2{margin:.35rem 0 1rem}
     </div>
 
     <div style="margin-top:22px">
-      <div class="kicker">Wybierz jedną z 5 gier</div>
-      <div class="games" id="gameChoices"></div>
+      <div class="kicker">Pełna rozgrywka · 5 rund</div>
+      <div class="series-list">
+        <div class="series-item"><b>1 · MISTERIO</b><small>regularne -AR / -ER / -IR</small></div>
+        <div class="series-item"><b>2 · AVENTURA</b><small>różne podmioty</small></div>
+        <div class="series-item"><b>3 · SORPRESA</b><small>codzienna rutyna</small></div>
+        <div class="series-item"><b>4 · VICTORIA</b><small>pytania i przeczenia</small></div>
+        <div class="series-item"><b>5 · CAMPEONES</b><small>finał mieszany</small></div>
+      </div>
       <label class="switchline"><input type="checkbox" id="vosotrosToggle" checked> Uwzględniaj formy <i>vosotros</i></label>
       <div class="row">
-        <button class="btn" id="startGameBtn">START — wszyscy ruszają jednocześnie</button>
+        <button class="btn" id="startGameBtn">START — rozpocznij 5 rund</button>
         <span class="hostnote" id="startHint"></span>
       </div>
     </div>
@@ -219,6 +260,7 @@ h2{margin:.35rem 0 1rem}
   </section>
 
   <section class="hidden" id="raceScreen">
+    <div class="series-strip" id="seriesStrip"></div>
     <div class="scoreboard">
       <div class="scoreteam a"><div class="scorehead"><b>Equipo Sol</b><span id="scoreA">0</span></div><div class="code" id="codeA"></div></div>
       <div class="scoreteam b"><div class="scorehead"><b>Equipo Luna</b><span id="scoreB">0</span></div><div class="code" id="codeB"></div></div>
@@ -227,11 +269,11 @@ h2{margin:.35rem 0 1rem}
   </section>
 
   <section class="card hidden finish" id="finishScreen">
-    <div class="kicker">Koniec wyścigu</div>
+    <div class="kicker">Koniec całej serii</div>
     <div class="winner" id="winnerText"></div>
     <div class="secret" id="secretText"></div>
     <div id="hostFinishControls" class="row hidden" style="justify-content:center;margin-top:22px">
-      <button class="btn" id="nextGameBtn">Wróć do lobby — zagraj w kolejną</button>
+      <button class="btn" id="nextGameBtn">Zagraj pełną serię jeszcze raz</button>
     </div>
   </section>
 </div>
@@ -240,7 +282,7 @@ h2{margin:.35rem 0 1rem}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, signInAnonymously, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getAuth, signInAnonymously, onAuthStateChanged, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
   getDatabase, ref, set, get, update, onValue, onDisconnect, serverTimestamp,
   runTransaction, remove
@@ -257,11 +299,23 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
-await setPersistence(auth, browserLocalPersistence).catch(()=>{});
+await setPersistence(auth, browserSessionPersistence).catch(()=>{});
 
 const $ = id => document.getElementById(id);
-let user=null, role=null, roomCode=null, roomUnsub=null, balancing=false, selectedGame="g1";
+
+const CLIENT_KEY="presenteRaceClientId";
+const ROLE_KEY="presenteRaceRole";
+const ROOM_KEY="presenteRaceRoom";
+let clientId=sessionStorage.getItem(CLIENT_KEY);
+if(!clientId){
+  clientId=(crypto.randomUUID ? crypto.randomUUID() : "c_"+Date.now()+"_"+Math.random().toString(36).slice(2));
+  sessionStorage.setItem(CLIENT_KEY,clientId);
+}
+
+let user=null, role=null, roomCode=null, roomUnsub=null, balancing=false;
 let currentRoom=null;
+let scheduledAdvanceRound=-1;
+const GAME_ORDER=["g1","g2","g3","g4","g5"];
 
 const games = {
   g1:{
@@ -408,7 +462,10 @@ function toast(msg){
 }
 function showOnly(id){
   ["landing","hostLobby","studentLobby","raceScreen","finishScreen"].forEach(x=>$(x).classList.toggle("hidden",x!==id));
-  $("homeBtn").classList.toggle("hidden",id==="landing");
+  const inside=id!=="landing";
+  $("homeBtn").classList.toggle("hidden",!inside);
+  $("reconnectBtn").classList.toggle("hidden",!inside);
+  $("resetRoomBtn").classList.toggle("hidden",!(inside && role==="host"));
 }
 function ensureUser(){
   return new Promise(async(resolve,reject)=>{
@@ -455,16 +512,7 @@ function nickFor(uid,room){
   }
   return `Jugador ${Math.floor(Math.random()*900+100)}`;
 }
-function renderGameChoices(){
-  $("gameChoices").innerHTML="";
-  Object.entries(games).forEach(([id,g])=>{
-    const b=document.createElement("button");b.className="gamechoice"+(id===selectedGame?" active":"");
-    b.innerHTML=`<b>${g.title}</b><small>${g.desc}</small>`;
-    b.onclick=()=>{selectedGame=id;renderGameChoices();};
-    $("gameChoices").appendChild(b);
-  });
-}
-renderGameChoices();
+function renderGameChoices(){ /* seria 5 rund — brak wyboru pojedynczej gry */ }
 
 async function createRoom(){
   try{
@@ -477,14 +525,26 @@ async function createRoom(){
     }
     roomCode=code;role="host";
     await set(ref(db,`presentRace/${roomCode}`),{
-      meta:{hostUid:user.uid,status:"lobby",gameId:selectedGame,vosotros:true,winner:null,createdAt:serverTimestamp()},
+      meta:{
+        hostUid:user.uid,
+        hostClientId:clientId,
+        status:"lobby",
+        gameId:"g1",
+        roundIndex:0,
+        roundWinner:null,
+        roundWins:{A:0,B:0},
+        vosotros:true,
+        winner:null,
+        createdAt:serverTimestamp()
+      },
       participants:{}
     });
-    localStorage.setItem("presenteRaceHostRoom",roomCode);
+    sessionStorage.setItem(ROLE_KEY,"host");
+    sessionStorage.setItem(ROOM_KEY,roomCode);
     openHost();
   }catch(e){$("globalErr").textContent="Nie udało się utworzyć pokoju: "+e.message}
 }
-async function joinRoom(code){
+async function joinRoom(code,{resume=false}={}){
   try{
     await ensureUser();
     roomCode=String(code||"").replace(/\D/g,"").slice(0,6);
@@ -492,26 +552,39 @@ async function joinRoom(code){
     const snap=await get(roomRef());
     if(!snap.exists())throw new Error("Nie ma takiego pokoju.");
     const room=snap.val();
-    if(room.meta?.status!=="lobby"){
-      const existing=room.participants?.[user.uid];
-      if(!existing)throw new Error("Gra już trwa.");
+
+    const existing=room.participants?.[clientId];
+    if(room.meta?.status!=="lobby" && !existing){
+      throw new Error("Gra już trwa. Dołączysz przy następnej rundzie.");
     }
+
     role="student";
-    const existing=room.participants?.[user.uid];
     if(existing){
-      await update(roomRef(`participants/${user.uid}`),{online:true,lastSeen:serverTimestamp()});
+      await update(roomRef(`participants/${clientId}`),{online:true,lastSeen:serverTimestamp()});
     }else{
       const a=onlinePlayers(room,"A").length,b=onlinePlayers(room,"B").length;
       const team=a<b?"A":b<a?"B":(Math.random()<.5?"A":"B");
-      await set(roomRef(`participants/${user.uid}`),{
-        nick:nickFor(user.uid,room),team,online:true,joinedAt:serverTimestamp(),lastSeen:serverTimestamp()
+      await set(roomRef(`participants/${clientId}`),{
+        nick:nickFor(clientId,room),team,online:true,
+        joinedAt:serverTimestamp(),lastSeen:serverTimestamp()
       });
     }
-    const pRef=roomRef(`participants/${user.uid}`);
+
+    const pRef=roomRef(`participants/${clientId}`);
     await onDisconnect(pRef).update({online:false,lastSeen:serverTimestamp()});
-    localStorage.setItem("presenteRaceStudentRoom",roomCode);
+    sessionStorage.setItem(ROLE_KEY,"student");
+    sessionStorage.setItem(ROOM_KEY,roomCode);
     openStudent();
-  }catch(e){$("joinErr").textContent=e.message}
+    if(resume)toast("Połączenie przywrócone.");
+  }catch(e){
+    $("joinErr").textContent=e.message;
+    if(resume){
+      sessionStorage.removeItem(ROLE_KEY);
+      sessionStorage.removeItem(ROOM_KEY);
+      role=null;roomCode=null;
+      showOnly("landing");
+    }
+  }
 }
 function subscribeRoom(cb){
   if(roomUnsub)roomUnsub();
@@ -555,7 +628,7 @@ function openHost(){
   if(window.QRCode)new QRCode($("qr"),{text:url,width:180,height:180});
   subscribeRoom(room=>{
     const m=room.meta||{};
-    if(m.hostUid!==user.uid){$("globalErr").textContent="Ten pokój ma inną prowadzącą.";return}
+    if((m.hostClientId && m.hostClientId!==clientId) || (!m.hostClientId && m.hostUid!==user.uid)){$("globalErr").textContent="Ten pokój ma inną prowadzącą.";return}
     if(m.status==="lobby"){
       showOnly("hostLobby");
       renderLobbyLists(room,"");
@@ -574,7 +647,7 @@ function openHost(){
 }
 function openStudent(){
   subscribeRoom(room=>{
-    const p=room.participants?.[user.uid];
+    const p=room.participants?.[clientId];
     if(!p){showOnly("landing");return}
     if(room.meta?.status==="lobby"){
       showOnly("studentLobby");
@@ -594,38 +667,70 @@ function renderCode(elId,secret,progress){
     const d=document.createElement("div");d.className="letter"+(i<progress?" open":"");d.textContent=ch;el.appendChild(d);
   });
 }
+function renderSeriesStrip(room){
+  const idx=Number(room.meta?.roundIndex||0);
+  const wins=room.meta?.roundWins||{A:0,B:0};
+  const chips=GAME_ORDER.map((gid,i)=>{
+    const cls=i<idx?"done":(i===idx?"current":"");
+    return `<span class="round-chip ${cls}">${i+1}</span>`;
+  }).join("");
+  $("seriesStrip").innerHTML=`
+    <span>Runda <b>${Math.min(idx+1,5)}/5</b></span>
+    <span class="series-score">☀️ ${wins.A||0} : ${wins.B||0} 🌙</span>
+    <span>${chips}</span>`;
+}
+
 function renderRace(room,isHost){
-  const game=games[room.meta.gameId],secret=game.secret;
+  renderSeriesStrip(room);
+  const idx=Number(room.meta?.roundIndex||0);
+  const gameId=room.meta?.gameId||GAME_ORDER[idx]||"g1";
+  const game=games[gameId],secret=game.secret;
   const A=room.teamState?.A||{progress:0},B=room.teamState?.B||{progress:0};
   renderCode("codeA",secret,A.progress||0);renderCode("codeB",secret,B.progress||0);
   $("scoreA").textContent=`${A.progress||0}/${secret.length}`;
   $("scoreB").textContent=`${B.progress||0}/${secret.length}`;
   const area=$("playArea");area.innerHTML="";
+
+  if(room.meta?.roundWinner){
+    const win=room.meta.roundWinner;
+    const winName=win==="A"?"Equipo Sol":"Equipo Luna";
+    area.innerHTML=`
+      <div class="intermission">
+        <div class="kicker">Runda ${idx+1}/5 zakończona</div>
+        <div class="round-winner">🏁 ${winName} zdobywa hasło!</div>
+        <div class="round-secret">${secret}</div>
+        <div class="countdown">${idx<4?"Za chwilę automatycznie rusza kolejna runda…":"Liczymy wynik całej serii…"}</div>
+      </div>`;
+    if(isHost && idx<4)scheduleNextRound(room);
+    return;
+  }
+
   if(isHost){
     const aNick=room.participants?.[A.activeUid]?.nick||"—",bNick=room.participants?.[B.activeUid]?.nick||"—";
     area.innerHTML=`
-      <div class="kicker">${game.title}</div>
+      <div class="kicker">${game.title} · runda ${idx+1}/5</div>
       <div class="bigstatus">Wyścig trwa</div>
       <div class="lobbygrid">
         <div class="team a"><div class="teamtitle">Teraz czyta:</div><div class="waitname">${aNick}</div></div>
         <div class="team b"><div class="teamtitle">Teraz czyta:</div><div class="waitname">${bNick}</div></div>
       </div>
-      <div class="hostnote">Na ekranie głównym nie pokazujemy zagadek — widzą je tylko wylosowane osoby na telefonach.</div>`;
+      <div class="hostnote">Po zdobyciu hasła kolejna runda uruchomi się automatycznie. Reset pokoju zeruje całą serię.</div>`;
     return;
   }
-  const me=room.participants?.[user.uid],team=me?.team;
+
+  const me=room.participants?.[clientId],team=me?.team;
   if(!team)return;
   const state=room.teamState?.[team]||{};
-  const active=state.activeUid===user.uid;
+  const active=state.activeUid===clientId;
   if(active){
     const puzzle=game.puzzles[state.puzzleIndex];
     if(!puzzle){area.innerHTML="<b>Ładowanie nowej zagadki…</b>";return}
     const [q,inf,a,opts]=puzzle;
     area.innerHTML=`
-      <div class="kicker">${team==="A"?"Equipo Sol":"Equipo Luna"} · litera ${(state.progress||0)+1}/${game.secret.length}</div>
+      <div class="kicker">${team==="A"?"Equipo Sol":"Equipo Luna"} · runda ${idx+1}/5 · litera ${(state.progress||0)+1}/${game.secret.length}</div>
       <div class="activebox ${team.toLowerCase()}">
         <div class="shout">TO TY! Krzyknij swojej drużynie: „Dobra, ja mam!”</div>
-        <div class="hostnote">Nie pokazuj ekranu. Przeczytaj zdanie, wspólnie ustalcie końcówkę, a potem ją wybierz.</div>
+        <div class="hostnote">Przeczytaj zdanie. Razem ustalcie poprawną końcówkę, a potem ją wybierz.</div>
         <div class="prompt">${q.replace("__","_____")}</div>
         <div class="inf">(${inf})</div>
         <div class="answers" id="answerBtns"></div>
@@ -638,7 +743,7 @@ function renderRace(room,isHost){
   }else{
     const activeNick=room.participants?.[state.activeUid]?.nick||"ktoś z drużyny";
     area.innerHTML=`
-      <div class="kicker">${team==="A"?"Equipo Sol":"Equipo Luna"}</div>
+      <div class="kicker">${team==="A"?"Equipo Sol":"Equipo Luna"} · runda ${idx+1}/5</div>
       <div class="bigstatus">Słuchaj swojej drużyny</div>
       <div class="waitbox">
         <div class="hostnote">Zagadkę ma teraz</div>
@@ -650,49 +755,225 @@ function renderRace(room,isHost){
 async function submitAnswer(team,state,opt,correct){
   document.querySelectorAll(".ans").forEach(b=>b.disabled=true);
   const before=currentRoom;
-  if(!before||before.meta.status!=="running")return;
+  if(!before||before.meta.status!=="running"||before.meta.roundWinner)return;
   const gameId=before.meta.gameId,vosotros=before.meta.vosotros!==false;
   const lastUid=state.activeUid;
   const nextUid=pickActive(before,team,lastUid);
   const nextPuzzle=pickPuzzle(gameId,vosotros,state.puzzleIndex);
   const isCorrect=opt===correct;
   const tRef=roomRef(`teamState/${team}`);
+
   const result=await runTransaction(tRef,current=>{
-    if(!current||current.activeUid!==user.uid||current.attempt!==state.attempt)return;
+    if(!current||current.activeUid!==clientId||current.attempt!==state.attempt)return;
     if(isCorrect){
       const nextProgress=(current.progress||0)+1;
-      return {...current,progress:nextProgress,attempt:(current.attempt||0)+1,lastActiveUid:user.uid,
+      return {...current,progress:nextProgress,attempt:(current.attempt||0)+1,lastActiveUid:clientId,
         activeUid:nextProgress>=games[gameId].secret.length?null:nextUid,
         puzzleIndex:nextProgress>=games[gameId].secret.length?current.puzzleIndex:nextPuzzle};
     }else{
-      return {...current,attempt:(current.attempt||0)+1,lastActiveUid:user.uid,activeUid:nextUid,puzzleIndex:nextPuzzle};
+      return {...current,attempt:(current.attempt||0)+1,lastActiveUid:clientId,activeUid:nextUid,puzzleIndex:nextPuzzle};
     }
   });
   if(!result.committed)return;
+
   if(isCorrect){
     toast("Dobrze! Odkrywacie literę.");
     const newProgress=result.snapshot.val().progress||0;
+
     if(newProgress>=games[gameId].secret.length){
-      const w=await runTransaction(roomRef("meta/winner"),cur=>cur||team);
-      if(w.snapshot.val()===team){
-        await update(roomRef("meta"),{status:"finished",finishedAt:serverTimestamp()});
+      const metaResult=await runTransaction(roomRef("meta"),meta=>{
+        if(!meta||meta.status!=="running"||meta.roundWinner)return;
+        const idx=Number(meta.roundIndex||0);
+        const wins={A:Number(meta.roundWins?.A||0),B:Number(meta.roundWins?.B||0)};
+        wins[team]+=1;
+
+        if(idx>=GAME_ORDER.length-1){
+          const seriesWinner=wins.A>wins.B?"A":"B";
+          return {...meta,roundWinner:team,roundWins:wins,winner:seriesWinner,status:"finished",finishedAt:Date.now()};
+        }
+        return {...meta,roundWinner:team,roundWins:wins,roundEndedAt:Date.now()};
+      });
+
+      if(metaResult.committed){
+        toast("Hasło zdobyte! Punkt za rundę.");
       }
     }
   }else{
     toast("Nie. Ta sama litera — nowa zagadka!");
   }
 }
+let roundAdvanceTimer=null;
+
+function scheduleNextRound(room){
+  const idx=Number(room.meta?.roundIndex||0);
+  if(idx>=4||scheduledAdvanceRound===idx)return;
+  scheduledAdvanceRound=idx;
+  clearTimeout(roundAdvanceTimer);
+  roundAdvanceTimer=setTimeout(()=>advanceToNextRound(idx),2600);
+}
+
+async function advanceToNextRound(expectedIndex){
+  if(role!=="host"||!roomCode)return;
+  try{
+    const snap=await get(roomRef());
+    if(!snap.exists())return;
+    const room=snap.val();
+    const meta=room.meta||{};
+    if(meta.status!=="running"||!meta.roundWinner||Number(meta.roundIndex||0)!==expectedIndex)return;
+
+    const nextIndex=expectedIndex+1;
+    const nextGameId=GAME_ORDER[nextIndex];
+    const A=onlinePlayers(room,"A"),B=onlinePlayers(room,"B");
+    if(!A.length||!B.length){
+      scheduledAdvanceRound=-1;
+      toast("Kolejna runda czeka — brakuje aktywnego gracza w jednej drużynie.");
+      return;
+    }
+
+    const aUid=A[Math.floor(Math.random()*A.length)].uid;
+    const bUid=B[Math.floor(Math.random()*B.length)].uid;
+    const vosotros=meta.vosotros!==false;
+
+    await update(roomRef(),{
+      "meta/roundIndex":nextIndex,
+      "meta/gameId":nextGameId,
+      "meta/roundWinner":null,
+      "meta/roundEndedAt":null,
+      "teamState/A":{
+        progress:0,attempt:0,activeUid:aUid,lastActiveUid:null,
+        puzzleIndex:pickPuzzle(nextGameId,vosotros,-1)
+      },
+      "teamState/B":{
+        progress:0,attempt:0,activeUid:bUid,lastActiveUid:null,
+        puzzleIndex:pickPuzzle(nextGameId,vosotros,-1)
+      }
+    });
+    scheduledAdvanceRound=-1;
+  }catch(e){
+    scheduledAdvanceRound=-1;
+    toast("Nie udało się uruchomić kolejnej rundy: "+e.message);
+  }
+}
+
+async function reconnectCurrent(){
+  try{
+    if(!role||!roomCode){
+      role=sessionStorage.getItem(ROLE_KEY);
+      roomCode=sessionStorage.getItem(ROOM_KEY);
+    }
+    if(!role||!roomCode){showOnly("landing");return}
+    await ensureUser();
+    if(roomUnsub){roomUnsub();roomUnsub=null}
+
+    if(role==="host"){
+      const snap=await get(roomRef());
+      if(!snap.exists())throw new Error("Pokój już nie istnieje.");
+      const room=snap.val(),m=room.meta||{};
+      if((m.hostClientId && m.hostClientId!==clientId) || (!m.hostClientId && m.hostUid!==user.uid)){
+        throw new Error("Nie można odzyskać panelu w tej karcie.");
+      }
+      openHost();
+      toast("Panel połączony ponownie.");
+    }else{
+      await joinRoom(roomCode,{resume:true});
+    }
+  }catch(e){toast("Nie udało się połączyć: "+e.message)}
+}
+
+async function resetRoomKeepCode(){
+  if(role!=="host"||!roomCode)return;
+  if(!confirm("Zresetować rundę? Kod pokoju i podłączeni gracze zostaną zachowani."))return;
+  try{
+    await update(roomRef(),{
+      "meta/status":"lobby",
+      "meta/gameId":"g1",
+      "meta/roundIndex":0,
+      "meta/roundWinner":null,
+      "meta/roundWins/A":0,
+      "meta/roundWins/B":0,
+      "meta/winner":null,
+      "meta/startAt":null,
+      "meta/finishedAt":null,
+      "meta/roundEndedAt":null,
+      "teamState":null
+    });
+    const snap=await get(roomRef());
+    if(snap.exists())await rebalance(snap.val());
+    toast("Pokój zresetowany — kod bez zmian.");
+  }catch(e){toast("Reset nie powiódł się: "+e.message)}
+}
+
+async function cleanOfflinePlayers(){
+  if(role!=="host"||!roomCode)return;
+  try{
+    const snap=await get(roomRef("participants"));
+    if(!snap.exists()){toast("Brak graczy.");return}
+    const patch={};let n=0;
+    for(const [id,p] of Object.entries(snap.val()||{})){
+      if(p.online!==true){patch[id]=null;n++}
+    }
+    if(!n){toast("Brak rozłączonych graczy.");return}
+    await update(roomRef("participants"),patch);
+    const rs=await get(roomRef());
+    if(rs.exists())await rebalance(rs.val());
+    toast(`Usunięto rozłączonych: ${n}.`);
+  }catch(e){toast("Nie udało się wyczyścić listy: "+e.message)}
+}
+
+async function resumeAfterRefresh(){
+  const savedRole=sessionStorage.getItem(ROLE_KEY);
+  const savedRoom=sessionStorage.getItem(ROOM_KEY);
+  if(!savedRole||!savedRoom)return false;
+  role=savedRole;roomCode=savedRoom;
+  try{
+    await ensureUser();
+    const snap=await get(roomRef());
+    if(!snap.exists())throw new Error("Pokój wygasł.");
+    const room=snap.val();
+
+    if(role==="host"){
+      const m=room.meta||{};
+      if((m.hostClientId && m.hostClientId!==clientId) || (!m.hostClientId && m.hostUid!==user.uid)){
+        throw new Error("To nie jest karta prowadzącej.");
+      }
+      openHost();
+    }else{
+      await joinRoom(roomCode,{resume:true});
+    }
+    return true;
+  }catch(e){
+    sessionStorage.removeItem(ROLE_KEY);
+    sessionStorage.removeItem(ROOM_KEY);
+    role=null;roomCode=null;
+    return false;
+  }
+}
+
 async function startGame(){
   const snap=await get(roomRef());const room=snap.val();
   await rebalance(room);
   const snap2=await get(roomRef());const r=snap2.val();
   const A=onlinePlayers(r,"A"),B=onlinePlayers(r,"B");
-  if(!A.length||!B.length){toast("Potrzebna jest osoba w obu drużynach.");return}
+  if(!A.length||!B.length){toast("Potrzebna jest co najmniej 1 aktywna osoba w obu drużynach.");return}
+
   const vosotros=$("vosotrosToggle").checked;
-  const gameId=selectedGame;
-  const aUid=A[Math.floor(Math.random()*A.length)].uid,bUid=B[Math.floor(Math.random()*B.length)].uid;
+  const gameId=GAME_ORDER[0];
+  const aUid=A[Math.floor(Math.random()*A.length)].uid;
+  const bUid=B[Math.floor(Math.random()*B.length)].uid;
+  scheduledAdvanceRound=-1;
+
   const patch={
-    "meta/status":"running","meta/gameId":gameId,"meta/vosotros":vosotros,"meta/winner":null,"meta/startAt":serverTimestamp(),
+    "meta/status":"running",
+    "meta/gameId":gameId,
+    "meta/roundIndex":0,
+    "meta/roundWinner":null,
+    "meta/roundWins/A":0,
+    "meta/roundWins/B":0,
+    "meta/vosotros":vosotros,
+    "meta/winner":null,
+    "meta/startAt":serverTimestamp(),
+    "meta/finishedAt":null,
+    "meta/roundEndedAt":null,
     "teamState/A":{progress:0,attempt:0,activeUid:aUid,lastActiveUid:null,puzzleIndex:pickPuzzle(gameId,vosotros,-1)},
     "teamState/B":{progress:0,attempt:0,activeUid:bUid,lastActiveUid:null,puzzleIndex:pickPuzzle(gameId,vosotros,-1)}
   };
@@ -700,14 +981,26 @@ async function startGame(){
 }
 function showFinish(room,isHost){
   showOnly("finishScreen");
-  const win=room.meta?.winner,game=games[room.meta?.gameId];
-  $("winnerText").textContent=win==="A"?"🏆 Equipo Sol wygrywa!":"🏆 Equipo Luna wygrywa!";
-  $("secretText").textContent=game?.secret||"";
+  const win=room.meta?.winner;
+  const wins=room.meta?.roundWins||{A:0,B:0};
+  $("winnerText").textContent=win==="A"?"🏆 Equipo Sol wygrywa całą serię!":"🏆 Equipo Luna wygrywa całą serię!";
+  $("secretText").innerHTML=`${wins.A||0} : ${wins.B||0}<div style="font-size:.42em;letter-spacing:.03em;margin-top:12px">MISTERIO · AVENTURA · SORPRESA · VICTORIA · CAMPEONES</div>`;
   $("hostFinishControls").classList.toggle("hidden",!isHost);
 }
 async function backToLobby(){
+  scheduledAdvanceRound=-1;
+  clearTimeout(roundAdvanceTimer);
   await update(roomRef(),{
-    "meta/status":"lobby","meta/winner":null,"meta/startAt":null,"meta/finishedAt":null,
+    "meta/status":"lobby",
+    "meta/gameId":"g1",
+    "meta/roundIndex":0,
+    "meta/roundWinner":null,
+    "meta/roundWins/A":0,
+    "meta/roundWins/B":0,
+    "meta/winner":null,
+    "meta/startAt":null,
+    "meta/finishedAt":null,
+    "meta/roundEndedAt":null,
     "teamState":null
   });
 }
@@ -718,12 +1011,29 @@ $("joinBtn").onclick=()=>joinRoom($("roomInput").value);
 $("roomInput").addEventListener("keydown",e=>{if(e.key==="Enter")joinRoom($("roomInput").value)});
 $("startGameBtn").onclick=startGame;
 $("copyLinkBtn").onclick=async()=>{await navigator.clipboard.writeText(studentUrl(roomCode));toast("Link skopiowany.")};
+$("refreshPanelBtn").onclick=reconnectCurrent;
+$("reconnectBtn").onclick=reconnectCurrent;
+$("resetRoomBtn").onclick=resetRoomKeepCode;
+$("cleanOfflineBtn").onclick=cleanOfflinePlayers;
 $("nextGameBtn").onclick=backToLobby;
-$("homeBtn").onclick=()=>{if(roomUnsub)roomUnsub();role=null;roomCode=null;currentRoom=null;history.replaceState({}, "", location.pathname);showOnly("landing")};
+$("homeBtn").onclick=async()=>{
+  try{
+    if(role==="student"&&roomCode){
+      await update(roomRef(`participants/${clientId}`),{online:false,lastSeen:serverTimestamp()});
+    }
+  }catch(e){}
+  if(roomUnsub)roomUnsub();
+  sessionStorage.removeItem(ROLE_KEY);
+  sessionStorage.removeItem(ROOM_KEY);
+  role=null;roomCode=null;currentRoom=null;
+  history.replaceState({}, "", location.pathname);
+  showOnly("landing");
+};
 $("fullBtn").onclick=async()=>{try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch(e){}};
 
 const urlRoom=new URL(location.href).searchParams.get("room");
-if(urlRoom){
+const resumed=await resumeAfterRefresh();
+if(!resumed && urlRoom){
   $("quickJoin").classList.remove("hidden");
   $("roomInput").value=urlRoom;
   setTimeout(()=>$("joinBtn").focus(),100);
