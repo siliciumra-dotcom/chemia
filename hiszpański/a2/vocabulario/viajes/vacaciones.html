@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Sopa de letras · Pretérito perfecto</title>
+<style>
+:root{
+  --bg1:#6b6ee8; --bg2:#9a5bc7; --card:#ffffff; --ink:#1f2635; --muted:#6f7686;
+  --accent:#5b63d8; --accent2:#efeefe; --ok:#2f8a62; --okbg:#e9f7f1; --line:#e3e5ec;
+  --shadow:0 22px 60px rgba(39,32,90,.24);
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:var(--ink)}
+body{
+  background:
+    radial-gradient(circle at 12% 9%,rgba(255,255,255,.20),transparent 25%),
+    radial-gradient(circle at 88% 18%,rgba(255,255,255,.14),transparent 25%),
+    linear-gradient(135deg,var(--bg1),var(--bg2));
+  padding:22px;
+}
+.wrap{max-width:1180px;margin:auto}
+.card{background:rgba(255,255,255,.97);border-radius:28px;padding:26px;box-shadow:var(--shadow)}
+header{text-align:center;margin-bottom:20px}
+h1{font-size:clamp(2rem,5vw,3.2rem);margin:0 0 5px;letter-spacing:-.035em}
+.subtitle{color:var(--muted);margin:0}
+.main{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(280px,.72fr);gap:22px;align-items:start}
+.boardbox{background:#fafaff;border:1px solid var(--line);border-radius:22px;padding:14px;overflow:auto}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(18,1fr);
+  gap:2px;
+  width:min(100%,760px);
+  min-width:560px;
+  margin:auto;
+  user-select:none;
+  touch-action:none;
+}
+.cell{
+  aspect-ratio:1/1; display:grid; place-items:center;
+  background:white;border:1px solid #eceef3;border-radius:5px;
+  font-weight:800;font-size:clamp(.78rem,1.8vw,1.04rem);
+  cursor:pointer; transition:.08s;
+}
+.cell.selected{background:#dfe2ff;border-color:#9097ef;color:#2c348e}
+.cell.found{background:var(--okbg);border-color:#87c9ac;color:#176943}
+.panel{background:white;border:1px solid var(--line);border-radius:22px;padding:18px}
+.panel h2{margin:0 0 6px;font-size:1.15rem}
+.help{color:var(--muted);font-size:.88rem;line-height:1.45;margin-bottom:14px}
+.words{display:grid;gap:8px}
+.word{
+  display:flex;justify-content:space-between;gap:10px;align-items:center;
+  border:1px solid var(--line);border-radius:12px;padding:9px 11px;background:#fff;
+}
+.word .es{font-weight:900;letter-spacing:.03em}
+.word .pl{font-size:.82rem;color:var(--muted);opacity:0;transition:.15s;text-align:right}
+.word.done{background:var(--okbg);border-color:#b8dfce}
+.word.done .es{text-decoration:line-through;color:#3d7b62}
+.word.done .pl{opacity:1}
+.stats{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}
+.pill{background:#f4f5f8;border:1px solid var(--line);border-radius:999px;padding:7px 10px;font-size:.84rem;font-weight:800}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+button{border:0;border-radius:12px;padding:11px 14px;font:inherit;font-weight:850;cursor:pointer}
+.primary{background:var(--accent);color:white}
+.secondary{background:white;border:1px solid var(--line);color:var(--ink)}
+.message{margin-top:12px;min-height:24px;font-weight:800;color:var(--accent)}
+.donebox{display:none;margin-top:14px;background:var(--okbg);border:1px solid #b8dfce;border-radius:15px;padding:14px;text-align:center;font-weight:900}
+.donebox.show{display:block}
+@media(max-width:850px){
+  body{padding:10px}
+  .card{padding:16px}
+  .main{grid-template-columns:1fr}
+  .grid{min-width:520px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <section class="card">
+    <header>
+      <h1>Sopa de letras</h1>
+      <p class="subtitle">Pretérito perfecto</p>
+    </header>
+
+    <div class="main">
+      <div class="boardbox">
+        <div id="grid" class="grid" aria-label="Sopa de letras"></div>
+      </div>
+
+      <aside class="panel">
+        <h2>Palabras</h2>
+        <div class="help">Encuentra las 12 palabras.</div>
+
+        <div id="words" class="words"></div>
+
+        <div class="stats">
+          <span id="progress" class="pill">0 / 12</span>
+          <span id="timer" class="pill">00:00</span>
+        </div>
+
+        <div class="actions">
+          <button id="hintBtn" class="secondary">Pista</button>
+          <button id="resetBtn" class="secondary">Reiniciar</button>
+          <button id="newBtn" class="primary">Nueva sopa</button>
+        </div>
+
+        <div id="message" class="message"></div>
+        <div id="doneBox" class="donebox">Has encontrado todas las palabras.</div>
+      </aside>
+    </div>
+  </section>
+</div>
+
+<script>
+const SIZE=18;
+const WORDS=[{"word": "VIAJADO", "pl": "podróżował/a"}, {"word": "VISITADO", "pl": "odwiedził/a"}, {"word": "PROBADO", "pl": "spróbował/a"}, {"word": "CONOCIDO", "pl": "poznał/a"}, {"word": "DESCUBIERTO", "pl": "odkrył/a"}, {"word": "HECHO", "pl": "zrobił/a"}, {"word": "VISTO", "pl": "zobaczył/a"}, {"word": "PERDIDO", "pl": "zgubił/a"}, {"word": "NADADO", "pl": "pływał/a"}, {"word": "COMPRADO", "pl": "kupił/a"}, {"word": "SACADO", "pl": "zrobił/a / wyjął(a)"}, {"word": "VUELTO", "pl": "wrócił/a"}];
+const BASE_GRID=[["P", "L", "M", "S", "Q", "Y", "Z", "W", "J", "X", "Q", "Z", "V", "V", "V", "J", "N", "B"], ["I", "K", "C", "C", "A", "O", "J", "B", "W", "J", "Y", "E", "O", "S", "Y", "O", "A", "U"], ["C", "N", "I", "R", "K", "N", "K", "T", "G", "Z", "P", "I", "D", "P", "V", "X", "S", "Z"], ["D", "V", "X", "B", "F", "H", "E", "C", "H", "O", "E", "P", "E", "I", "R", "Z", "T", "R"], ["N", "E", "V", "M", "L", "D", "P", "U", "O", "T", "F", "C", "S", "A", "C", "A", "D", "O"], ["W", "O", "A", "B", "E", "P", "A", "T", "T", "N", "N", "T", "C", "K", "D", "I", "D", "I"], ["Y", "O", "W", "P", "R", "Q", "L", "Z", "S", "S", "O", "Q", "U", "C", "S", "I", "W", "U"], ["B", "G", "G", "E", "Z", "E", "D", "D", "F", "H", "G", "C", "B", "C", "D", "P", "V", "M"], ["K", "A", "Z", "E", "U", "V", "F", "G", "I", "P", "Y", "O", "I", "R", "G", "I", "E", "A"], ["S", "I", "V", "V", "R", "U", "I", "G", "O", "R", "K", "M", "E", "D", "S", "C", "T", "W"], ["H", "A", "H", "A", "N", "R", "B", "A", "X", "O", "J", "P", "R", "I", "O", "W", "K", "F"], ["G", "M", "R", "X", "W", "F", "R", "K", "J", "B", "Z", "R", "T", "E", "R", "S", "P", "T"], ["I", "T", "V", "J", "W", "F", "L", "C", "W", "A", "K", "A", "O", "N", "R", "S", "L", "J"], ["C", "X", "W", "P", "A", "W", "Z", "U", "V", "D", "D", "D", "N", "G", "Z", "F", "Z", "X"], ["R", "V", "C", "Z", "P", "X", "P", "N", "B", "O", "A", "O", "X", "U", "P", "U", "W", "J"], ["J", "R", "O", "A", "B", "U", "A", "Y", "T", "D", "I", "E", "T", "K", "A", "D", "Z", "F"], ["Q", "U", "Z", "U", "F", "Z", "N", "T", "A", "X", "X", "T", "D", "I", "U", "L", "X", "H"], ["K", "A", "C", "K", "L", "X", "I", "N", "T", "J", "X", "Z", "Y", "O", "X", "N", "O", "Q"]];
+const BASE_PLACEMENTS={"DESCUBIERTO": [[2, 12], [3, 12], [4, 12], [5, 12], [6, 12], [7, 12], [8, 12], [9, 12], [10, 12], [11, 12], [12, 12]], "VISITADO": [[7, 16], [8, 15], [9, 14], [10, 13], [11, 12], [12, 11], [13, 10], [14, 9]], "CONOCIDO": [[3, 7], [4, 8], [5, 9], [6, 10], [7, 11], [8, 12], [9, 13], [10, 14]], "COMPRADO": [[7, 11], [8, 11], [9, 11], [10, 11], [11, 11], [12, 11], [13, 11], [14, 11]], "VIAJADO": [[8, 5], [9, 6], [10, 7], [11, 8], [12, 9], [13, 10], [14, 11]], "PROBADO": [[8, 9], [9, 9], [10, 9], [11, 9], [12, 9], [13, 9], [14, 9]], "PERDIDO": [[10, 11], [9, 12], [8, 13], [7, 14], [6, 15], [5, 16], [4, 17]], "NADADO": [[17, 7], [16, 8], [15, 9], [14, 10], [13, 11], [12, 12]], "SACADO": [[4, 12], [4, 13], [4, 14], [4, 15], [4, 16], [4, 17]], "VUELTO": [[9, 3], [8, 4], [7, 5], [6, 6], [5, 7], [4, 8]], "HECHO": [[3, 5], [3, 6], [3, 7], [3, 8], [3, 9]], "VISTO": [[2, 14], [3, 13], [4, 12], [5, 11], [6, 10]]};
+
+let gridData=BASE_GRID.map(r=>[...r]);
+let placements=JSON.parse(JSON.stringify(BASE_PLACEMENTS));
+let found=new Set();
+let first=null;
+let dragging=false;
+let dragStart=null;
+let seconds=0;
+let timerId=setInterval(()=>{seconds++; renderTimer();},1000);
+
+const gridEl=document.getElementById('grid');
+const wordsEl=document.getElementById('words');
+const progressEl=document.getElementById('progress');
+const timerEl=document.getElementById('timer');
+const messageEl=document.getElementById('message');
+const doneBox=document.getElementById('doneBox');
+
+function renderTimer(){
+  const m=String(Math.floor(seconds/60)).padStart(2,'0');
+  const s=String(seconds%60).padStart(2,'0');
+  timerEl.textContent=`${m}:${s}`;
+}
+
+function key(r,c){return `${r},${c}`}
+
+function coordsInLine(a,b){
+  const dr=b.r-a.r, dc=b.c-a.c;
+  const steps=Math.max(Math.abs(dr),Math.abs(dc));
+  if(steps===0) return [{r:a.r,c:a.c}];
+  const sr=dr/steps, sc=dc/steps;
+  if(!Number.isInteger(sr)||!Number.isInteger(sc)||Math.abs(sr)>1||Math.abs(sc)>1) return null;
+  if(sr!==0 && sc!==0 && Math.abs(dr)!==Math.abs(dc)) return null;
+  const out=[];
+  for(let i=0;i<=steps;i++) out.push({r:a.r+sr*i,c:a.c+sc*i});
+  return out;
+}
+
+function wordForCoords(coords){
+  if(!coords) return null;
+  const seq=coords.map(p=>gridData[p.r][p.c]).join('');
+  const rev=[...seq].reverse().join('');
+  return WORDS.find(x=>x.word===seq || x.word===rev) || null;
+}
+
+function renderGrid(){
+  gridEl.innerHTML='';
+  for(let r=0;r<SIZE;r++) for(let c=0;c<SIZE;c++){
+    const b=document.createElement('button');
+    b.type='button'; b.className='cell'; b.textContent=gridData[r][c];
+    b.dataset.r=r; b.dataset.c=c;
+    b.addEventListener('click',onCellClick);
+    b.addEventListener('pointerdown',onPointerDown);
+    b.addEventListener('pointerenter',onPointerEnter);
+    b.addEventListener('pointerup',onPointerUp);
+    gridEl.appendChild(b);
+  }
+  repaint();
+}
+
+function renderWords(){
+  wordsEl.innerHTML='';
+  WORDS.forEach(item=>{
+    const d=document.createElement('div');
+    d.className='word'+(found.has(item.word)?' done':'');
+    d.dataset.word=item.word;
+    d.innerHTML=`<span class="es">${item.word}</span><span class="pl">${item.pl}</span>`;
+    wordsEl.appendChild(d);
+  });
+  progressEl.textContent=`${found.size} / ${WORDS.length}`;
+  doneBox.classList.toggle('show',found.size===WORDS.length);
+}
+
+function repaint(selection=[]){
+  const sel=new Set(selection.map(p=>key(p.r,p.c)));
+  const foundCells=new Set();
+  found.forEach(w=>(placements[w]||[]).forEach(([r,c])=>foundCells.add(key(r,c))));
+  [...gridEl.children].forEach(el=>{
+    const k=key(Number(el.dataset.r),Number(el.dataset.c));
+    el.classList.toggle('selected',sel.has(k));
+    el.classList.toggle('found',foundCells.has(k));
+  });
+}
+
+function onCellClick(e){
+  if(dragging) return;
+  const p={r:Number(e.currentTarget.dataset.r),c:Number(e.currentTarget.dataset.c)};
+  if(!first){
+    first=p; repaint([p]); messageEl.textContent='Elige la última letra.';
+  }else{
+    const coords=coordsInLine(first,p);
+    checkSelection(coords);
+    first=null;
+  }
+}
+
+function onPointerDown(e){
+  dragging=true;
+  dragStart={r:Number(e.currentTarget.dataset.r),c:Number(e.currentTarget.dataset.c)};
+  repaint([dragStart]);
+  try{e.currentTarget.setPointerCapture(e.pointerId)}catch{}
+}
+
+function onPointerEnter(e){
+  if(!dragging||!dragStart) return;
+  const end={r:Number(e.currentTarget.dataset.r),c:Number(e.currentTarget.dataset.c)};
+  repaint(coordsInLine(dragStart,end)||[dragStart]);
+}
+
+function onPointerUp(e){
+  if(!dragging||!dragStart) return;
+  const end={r:Number(e.currentTarget.dataset.r),c:Number(e.currentTarget.dataset.c)};
+  const coords=coordsInLine(dragStart,end);
+  dragging=false; dragStart=null; first=null;
+  if(coords && coords.length>1) checkSelection(coords);
+  else repaint();
+}
+
+window.addEventListener('pointerup',()=>{dragging=false;dragStart=null;});
+
+function checkSelection(coords){
+  const match=wordForCoords(coords);
+  if(match){
+    if(found.has(match.word)){
+      messageEl.textContent='Esa palabra ya está encontrada.';
+    }else{
+      found.add(match.word);
+      messageEl.textContent=`✓ ${match.word} — ${match.pl}`;
+      renderWords();
+    }
+  }else{
+    messageEl.textContent='No es una palabra de la lista.';
+  }
+  repaint();
+}
+
+function resetGame(){
+  found.clear(); first=null; dragging=false; dragStart=null; seconds=0;
+  messageEl.textContent='';
+  renderTimer(); renderWords(); repaint();
+}
+
+function randomizeSoup(){
+  // Regenerate in-browser: preserve word placements but refill non-word letters
+  // and rotate the entire board by a random symmetry for a fresh-looking soup.
+  const transforms=[
+    (r,c)=>[r,c],
+    (r,c)=>[c,SIZE-1-r],
+    (r,c)=>[SIZE-1-r,SIZE-1-c],
+    (r,c)=>[SIZE-1-c,r],
+    (r,c)=>[r,SIZE-1-c],
+    (r,c)=>[SIZE-1-r,c],
+    (r,c)=>[c,r],
+    (r,c)=>[SIZE-1-c,SIZE-1-r]
+  ];
+  const t=transforms[Math.floor(Math.random()*transforms.length)];
+  const fresh=Array.from({length:SIZE},()=>Array(SIZE).fill(''));
+  const newPlacements={};
+  for(const [word,coords] of Object.entries(BASE_PLACEMENTS)){
+    newPlacements[word]=coords.map(([r,c])=>t(r,c));
+    newPlacements[word].forEach(([r,c],i)=>fresh[r][c]=word[i]);
+  }
+  const letters='ABCDEFGHIJKLMNÑOPQRSTUVWXYZ'.replace('Ñ','');
+  for(let r=0;r<SIZE;r++)for(let c=0;c<SIZE;c++)if(!fresh[r][c])fresh[r][c]=letters[Math.floor(Math.random()*letters.length)];
+  gridData=fresh; placements=newPlacements; resetGame(); renderGrid();
+}
+
+document.getElementById('resetBtn').addEventListener('click',resetGame);
+document.getElementById('newBtn').addEventListener('click',randomizeSoup);
+document.getElementById('hintBtn').addEventListener('click',()=>{
+  const remaining=WORDS.filter(x=>!found.has(x.word));
+  if(!remaining.length) return;
+  const item=remaining[Math.floor(Math.random()*remaining.length)];
+  const coord=placements[item.word][0];
+  const el=[...gridEl.children].find(x=>Number(x.dataset.r)===coord[0]&&Number(x.dataset.c)===coord[1]);
+  el.classList.add('selected');
+  messageEl.textContent=`Pista: empieza por “${item.word[0]}”.`;
+  setTimeout(()=>repaint(),900);
+});
+
+renderGrid();
+renderWords();
+renderTimer();
+</script>
+</body>
+</html>
