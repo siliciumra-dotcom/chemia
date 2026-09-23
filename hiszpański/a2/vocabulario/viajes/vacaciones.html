@@ -123,6 +123,8 @@ let found=new Set();
 let first=null;
 let dragging=false;
 let dragStart=null;
+let dragCurrent=null;
+let activePointerId=null;
 let seconds=0;
 let timerId=setInterval(()=>{seconds++; renderTimer();},1000);
 
@@ -168,8 +170,6 @@ function renderGrid(){
     b.dataset.r=r; b.dataset.c=c;
     b.addEventListener('click',onCellClick);
     b.addEventListener('pointerdown',onPointerDown);
-    b.addEventListener('pointerenter',onPointerEnter);
-    b.addEventListener('pointerup',onPointerUp);
     gridEl.appendChild(b);
   }
   repaint();
@@ -199,11 +199,11 @@ function repaint(selection=[]){
   });
 }
 
-function onCellClick(e){
-  if(dragging) return;
-  const p={r:Number(e.currentTarget.dataset.r),c:Number(e.currentTarget.dataset.c)};
+function chooseEndpoint(p){
   if(!first){
-    first=p; repaint([p]); messageEl.textContent='Elige la última letra.';
+    first=p;
+    repaint([p]);
+    messageEl.textContent='Elige la última letra.';
   }else{
     const coords=coordsInLine(first,p);
     checkSelection(coords);
@@ -211,29 +211,87 @@ function onCellClick(e){
   }
 }
 
+function onCellClick(e){
+  // Obsługa klawiatury i zwykłego click. Click powstały po pointerup
+  // jest pomijany, bo pointerup obsługuje dotyk/mysz samodzielnie.
+  if(e.currentTarget.dataset.skipClick==='1'){
+    e.currentTarget.dataset.skipClick='0';
+    return;
+  }
+  chooseEndpoint({r:Number(e.currentTarget.dataset.r),c:Number(e.currentTarget.dataset.c)});
+}
+
+function cellFromPoint(x,y){
+  const el=document.elementFromPoint(x,y);
+  const cell=el && el.closest ? el.closest('.cell') : null;
+  if(!cell || !gridEl.contains(cell)) return null;
+  return {
+    r:Number(cell.dataset.r),
+    c:Number(cell.dataset.c),
+    el:cell
+  };
+}
+
 function onPointerDown(e){
+  if(e.pointerType==='mouse' && e.button!==0) return;
+  e.preventDefault();
   dragging=true;
+  activePointerId=e.pointerId;
   dragStart={r:Number(e.currentTarget.dataset.r),c:Number(e.currentTarget.dataset.c)};
+  dragCurrent={...dragStart};
+  first=null;
   repaint([dragStart]);
-  try{e.currentTarget.setPointerCapture(e.pointerId)}catch{}
+  messageEl.textContent='Arrastra hasta la última letra.';
 }
 
-function onPointerEnter(e){
-  if(!dragging||!dragStart) return;
-  const end={r:Number(e.currentTarget.dataset.r),c:Number(e.currentTarget.dataset.c)};
-  repaint(coordsInLine(dragStart,end)||[dragStart]);
+function onPointerMove(e){
+  if(!dragging || activePointerId!==e.pointerId || !dragStart) return;
+  e.preventDefault();
+  const hit=cellFromPoint(e.clientX,e.clientY);
+  if(!hit) return;
+  dragCurrent={r:hit.r,c:hit.c};
+  repaint(coordsInLine(dragStart,dragCurrent)||[dragStart]);
 }
 
-function onPointerUp(e){
-  if(!dragging||!dragStart) return;
-  const end={r:Number(e.currentTarget.dataset.r),c:Number(e.currentTarget.dataset.c)};
+function finishDrag(e){
+  if(!dragging || activePointerId!==e.pointerId || !dragStart) return;
+  e.preventDefault();
+
+  const hit=cellFromPoint(e.clientX,e.clientY);
+  const end=hit ? {r:hit.r,c:hit.c} : (dragCurrent||dragStart);
   const coords=coordsInLine(dragStart,end);
-  dragging=false; dragStart=null; first=null;
-  if(coords && coords.length>1) checkSelection(coords);
-  else repaint();
+  const wasDrag=coords && coords.length>1;
+  const startEl=[...gridEl.children].find(x=>
+    Number(x.dataset.r)===dragStart.r && Number(x.dataset.c)===dragStart.c
+  );
+
+  dragging=false;
+  activePointerId=null;
+  dragStart=null;
+  dragCurrent=null;
+  first=null;
+
+  // Pointerup sam kończy gest; ewentualny syntetyczny click ignorujemy.
+  if(startEl) startEl.dataset.skipClick='1';
+
+  if(wasDrag){
+    checkSelection(coords);
+  }else{
+    // Tap/click bez przeciągania = wybór pierwszej albo ostatniej litery.
+    chooseEndpoint(end);
+  }
 }
 
-window.addEventListener('pointerup',()=>{dragging=false;dragStart=null;});
+window.addEventListener('pointermove',onPointerMove,{passive:false});
+window.addEventListener('pointerup',finishDrag,{passive:false});
+window.addEventListener('pointercancel',e=>{
+  if(activePointerId!==e.pointerId) return;
+  dragging=false;
+  activePointerId=null;
+  dragStart=null;
+  dragCurrent=null;
+  repaint();
+});
 
 function checkSelection(coords){
   const match=wordForCoords(coords);
@@ -252,7 +310,7 @@ function checkSelection(coords){
 }
 
 function resetGame(){
-  found.clear(); first=null; dragging=false; dragStart=null; seconds=0;
+  found.clear(); first=null; dragging=false; dragStart=null; dragCurrent=null; activePointerId=null; seconds=0;
   messageEl.textContent='';
   renderTimer(); renderWords(); repaint();
 }
