@@ -25,21 +25,28 @@ header{text-align:center;margin-bottom:20px}
 h1{font-size:clamp(2rem,5vw,3.2rem);margin:0 0 5px;letter-spacing:-.035em}
 .subtitle{color:var(--muted);margin:0}
 .main{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(280px,.72fr);gap:22px;align-items:start}
-.boardbox{background:#fafaff;border:1px solid var(--line);border-radius:22px;padding:14px;overflow:auto}
+.boardbox{background:#fafaff;border:1px solid var(--line);border-radius:22px;padding:14px;overflow:hidden}
 .grid{
   display:grid;
-  grid-template-columns:repeat(18,1fr);
+  grid-template-columns:repeat(18,minmax(0,1fr));
   gap:2px;
-  width:min(100%,760px);
-  min-width:560px;
+  width:100%;
+  max-width:760px;
+  min-width:0;
   margin:auto;
   user-select:none;
   touch-action:none;
 }
 .cell{
-  aspect-ratio:1/1; display:grid; place-items:center;
+  aspect-ratio:1/1;
+  min-width:0;
+  padding:0;
+  display:grid;
+  place-items:center;
   background:white;border:1px solid #eceef3;border-radius:5px;
-  font-weight:800;font-size:clamp(.78rem,1.8vw,1.04rem);
+  font-weight:800;
+  font-size:clamp(.58rem,2.1vw,1.04rem);
+  line-height:1;
   cursor:pointer; transition:.08s;
 }
 .cell.selected{background:#dfe2ff;border-color:#9097ef;color:#2c348e}
@@ -70,7 +77,34 @@ button{border:0;border-radius:12px;padding:11px 14px;font:inherit;font-weight:85
   body{padding:10px}
   .card{padding:16px}
   .main{grid-template-columns:1fr}
-  .grid{min-width:520px}
+  .boardbox{padding:8px}
+  .grid{gap:1.5px}
+  .cell{font-size:clamp(.62rem,2.45vw,.94rem);border-radius:4px}
+}
+@media(max-width:520px){
+  body{padding:5px}
+  .wrap{width:100%}
+  .card{padding:10px;border-radius:18px}
+  header{margin-bottom:12px}
+  h1{font-size:clamp(1.65rem,8vw,2.25rem)}
+  .main{gap:12px}
+  .boardbox{padding:4px;border-radius:14px}
+  .grid{gap:1px}
+  .cell{font-size:clamp(.52rem,2.75vw,.78rem);border-radius:3px;border-width:1px}
+  .panel{padding:14px;border-radius:16px}
+  .words{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+  .word{padding:7px 8px;min-width:0;gap:4px}
+  .word .es{font-size:.78rem;overflow-wrap:anywhere}
+  .word .pl{font-size:.7rem}
+  .actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+  .actions button{padding:10px 5px;font-size:.78rem}
+}
+@media(max-width:360px){
+  .card{padding:7px}
+  .boardbox{padding:3px}
+  .grid{gap:.5px}
+  .cell{font-size:.49rem;border-radius:2px}
+  .words{grid-template-columns:1fr}
 }
 </style>
 </head>
