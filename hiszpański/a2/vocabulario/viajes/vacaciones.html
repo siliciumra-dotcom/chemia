@@ -89,7 +89,7 @@ button{border:0;border-radius:12px;padding:11px 14px;font:inherit;font-weight:85
 
       <aside class="panel">
         <h2>Palabras</h2>
-        <div class="help">Encuentra las 12 palabras.</div>
+        <div class="help">Encuentra las 12 palabras. Puedes arrastrar, hacer clic letra por letra o hacer clic en la primera y la última letra.</div>
 
         <div id="words" class="words"></div>
 
@@ -120,10 +120,11 @@ const BASE_PLACEMENTS={"DESCUBIERTO": [[2, 12], [3, 12], [4, 12], [5, 12], [6, 1
 let gridData=BASE_GRID.map(r=>[...r]);
 let placements=JSON.parse(JSON.stringify(BASE_PLACEMENTS));
 let found=new Set();
-let first=null;
+let clickPath=[];
 let dragging=false;
 let dragStart=null;
 let dragCurrent=null;
+let dragMoved=false;
 let activePointerId=null;
 let seconds=0;
 let timerId=setInterval(()=>{seconds++; renderTimer();},1000);
@@ -199,16 +200,73 @@ function repaint(selection=[]){
   });
 }
 
-function chooseEndpoint(p){
-  if(!first){
-    first=p;
-    repaint([p]);
-    messageEl.textContent='Elige la última letra.';
-  }else{
-    const coords=coordsInLine(first,p);
-    checkSelection(coords);
-    first=null;
+function samePoint(a,b){
+  return !!a && !!b && a.r===b.r && a.c===b.c;
+}
+
+function samePath(a,b){
+  if(!a || !b || a.length!==b.length) return false;
+  return a.every((p,i)=>samePoint(p,b[i]));
+}
+
+function handleTap(p){
+  // 1) Pierwsze kliknięcie rozpoczyna wybór.
+  if(!clickPath.length){
+    clickPath=[p];
+    repaint(clickPath);
+    messageEl.textContent='Haz clic letra por letra o toca la última letra.';
+    return;
   }
+
+  const start=clickPath[0];
+  const last=clickPath[clickPath.length-1];
+
+  // Ponowne kliknięcie tej samej kratki niczego nie zmienia.
+  if(samePoint(p,last)){
+    repaint(clickPath);
+    return;
+  }
+
+  const fullLine=coordsInLine(start,p);
+
+  // 2) Klikanie literka po literce: nowa kratka musi być dokładnie
+  // kolejną kratką na tej samej prostej.
+  if(fullLine && fullLine.length===clickPath.length+1 && samePath(fullLine.slice(0,-1),clickPath)){
+    clickPath=[...fullLine];
+    repaint(clickPath);
+
+    // Gdy po kliknięciu kolejnej litery powstało całe słowo,
+    // zaliczamy je automatycznie — nie potrzeba dodatkowego przycisku.
+    if(wordForCoords(clickPath)){
+      const completed=[...clickPath];
+      clickPath=[];
+      checkSelection(completed);
+    }else{
+      messageEl.textContent='Sigue seleccionando las letras.';
+    }
+    return;
+  }
+
+  // 3) Pierwsza + ostatnia litera: jeśli drugie kliknięcie jest dalej
+  // na tej samej prostej, sprawdzamy cały odcinek pomiędzy nimi.
+  if(clickPath.length===1 && fullLine && fullLine.length>1){
+    clickPath=[];
+    checkSelection(fullLine);
+    return;
+  }
+
+  // Jeśli podczas klikania literka po literce kliknięto dalej na tej
+  // samej prostej, traktujemy to jako wskazanie ostatniej litery.
+  if(clickPath.length>1 && fullLine && fullLine.length>clickPath.length){
+    clickPath=[];
+    checkSelection(fullLine);
+    return;
+  }
+
+  // Kliknięcie poza dotychczasowym kierunkiem rozpoczyna nowy wybór.
+  clickPath=[p];
+  repaint(clickPath);
+  messageEl.textContent='Nueva selección: continúa letra por letra o toca la última letra.';
 }
 
 function onCellClick(e){
@@ -218,7 +276,7 @@ function onCellClick(e){
     e.currentTarget.dataset.skipClick='0';
     return;
   }
-  chooseEndpoint({r:Number(e.currentTarget.dataset.r),c:Number(e.currentTarget.dataset.c)});
+  handleTap({r:Number(e.currentTarget.dataset.r),c:Number(e.currentTarget.dataset.c)});
 }
 
 function cellFromPoint(x,y){
@@ -239,9 +297,8 @@ function onPointerDown(e){
   activePointerId=e.pointerId;
   dragStart={r:Number(e.currentTarget.dataset.r),c:Number(e.currentTarget.dataset.c)};
   dragCurrent={...dragStart};
-  first=null;
-  repaint([dragStart]);
-  messageEl.textContent='Arrastra hasta la última letra.';
+  dragMoved=false;
+  // Nie kasujemy clickPath: zwykły tap ma móc być drugim/trzecim kliknięciem.
 }
 
 function onPointerMove(e){
@@ -250,7 +307,13 @@ function onPointerMove(e){
   const hit=cellFromPoint(e.clientX,e.clientY);
   if(!hit) return;
   dragCurrent={r:hit.r,c:hit.c};
-  repaint(coordsInLine(dragStart,dragCurrent)||[dragStart]);
+
+  if(!samePoint(dragStart,dragCurrent)){
+    dragMoved=true;
+    clickPath=[]; // rozpoczęcie przeciągania anuluje wybór klikany
+    repaint(coordsInLine(dragStart,dragCurrent)||[dragStart]);
+    messageEl.textContent='Arrastra hasta la última letra.';
+  }
 }
 
 function finishDrag(e){
@@ -260,7 +323,6 @@ function finishDrag(e){
   const hit=cellFromPoint(e.clientX,e.clientY);
   const end=hit ? {r:hit.r,c:hit.c} : (dragCurrent||dragStart);
   const coords=coordsInLine(dragStart,end);
-  const wasDrag=coords && coords.length>1;
   const startEl=[...gridEl.children].find(x=>
     Number(x.dataset.r)===dragStart.r && Number(x.dataset.c)===dragStart.c
   );
@@ -269,16 +331,17 @@ function finishDrag(e){
   activePointerId=null;
   dragStart=null;
   dragCurrent=null;
-  first=null;
 
   // Pointerup sam kończy gest; ewentualny syntetyczny click ignorujemy.
   if(startEl) startEl.dataset.skipClick='1';
 
-  if(wasDrag){
+  if(dragMoved && coords && coords.length>1){
+    dragMoved=false;
+    clickPath=[];
     checkSelection(coords);
   }else{
-    // Tap/click bez przeciągania = wybór pierwszej albo ostatniej litery.
-    chooseEndpoint(end);
+    dragMoved=false;
+    handleTap(end);
   }
 }
 
@@ -290,7 +353,8 @@ window.addEventListener('pointercancel',e=>{
   activePointerId=null;
   dragStart=null;
   dragCurrent=null;
-  repaint();
+  dragMoved=false;
+  repaint(clickPath);
 });
 
 function checkSelection(coords){
@@ -310,7 +374,7 @@ function checkSelection(coords){
 }
 
 function resetGame(){
-  found.clear(); first=null; dragging=false; dragStart=null; dragCurrent=null; activePointerId=null; seconds=0;
+  found.clear(); clickPath=[]; dragging=false; dragStart=null; dragCurrent=null; dragMoved=false; activePointerId=null; seconds=0;
   messageEl.textContent='';
   renderTimer(); renderWords(); repaint();
 }
