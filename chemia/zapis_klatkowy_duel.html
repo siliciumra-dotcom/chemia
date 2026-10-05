@@ -3,513 +3,555 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#10131b">
 <title>Zapis klatkowy — pojedynek 1 vs 1</title>
 <style>
 :root{
-  --bg:#0d1017;--panel:#171b26;--panel2:#202636;--line:#3b4358;--text:#f7f8fb;
-  --muted:#aeb6c9;--accent:#ffd45b;--good:#59d58b;--bad:#ff6b7a;--blue:#6ca6ff;
+ --bg:#0a0e15;--panel:#171c28;--line:#333c51;--text:#f6f8fc;--muted:#a9b3c7;
+ --accent:#ffd45b;--good:#58d58c;--bad:#ff6d7c;--blue:#6ca6ff
 }
 *{box-sizing:border-box}
-html,body{margin:0;background:radial-gradient(circle at 50% -20%,#26304a 0,#10141e 42%,#090b11 100%);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;min-height:100%}
+html,body{margin:0;min-height:100%;background:radial-gradient(circle at 50% -20%,#29334e 0,#111621 42%,#090b11 100%);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
 body{padding:12px 12px calc(18px + env(safe-area-inset-bottom))}
 button,input{font:inherit}
-button{border:0;border-radius:16px;min-height:54px;padding:12px 17px;font-weight:900;cursor:pointer;touch-action:manipulation}
-button:disabled{opacity:.35;cursor:not-allowed}
-input{width:100%;border:1px solid var(--line);background:#0e121c;color:white;border-radius:14px;padding:15px;font-size:18px;outline:none}
+button{border:0;border-radius:16px;min-height:52px;padding:12px 16px;font-weight:900;cursor:pointer;touch-action:manipulation}
+button:disabled{opacity:.38;cursor:not-allowed}
+input{width:100%;border:1px solid var(--line);background:#0d121b;color:white;border-radius:14px;padding:14px;font-size:17px;outline:none}
 input:focus{border-color:var(--blue);box-shadow:0 0 0 3px #6ca6ff22}
-.wrap{max-width:760px;margin:auto}
+.wrap{max-width:860px;margin:auto}
 .hidden{display:none!important}
-.card{background:linear-gradient(180deg,#191e2b,#141823);border:1px solid #2e3549;border-radius:24px;padding:18px;box-shadow:0 18px 50px #0007}
+.card{background:linear-gradient(180deg,#191f2c,#141823);border:1px solid #2e3549;border-radius:24px;padding:18px}
 .hero{text-align:center;padding:28px 18px}
-.kicker{font-size:12px;font-weight:900;letter-spacing:.15em;color:var(--accent);text-transform:uppercase}
-h1{font-size:clamp(30px,8vw,48px);margin:7px 0 8px;line-height:.98}
+.kicker{font-size:11px;font-weight:900;letter-spacing:.15em;color:var(--accent);text-transform:uppercase}
+h1{font-size:clamp(31px,8vw,49px);line-height:1;margin:7px 0 9px}
 h2,h3,p{margin-top:0}
 .muted{color:var(--muted)}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .primary{background:var(--accent);color:#17130a}
-.secondary{background:#2a3144;color:white;border:1px solid #424c66}
-.joinBtn{background:var(--blue);color:#08111f}
-.good{background:var(--good);color:#07150d}
-.danger{background:var(--bad);color:#19070a}
-label{display:block;text-align:left;font-size:12px;font-weight:800;color:var(--muted);margin:14px 2px 7px}
-.code{font-size:46px;font-weight:1000;letter-spacing:.12em;margin:8px 0}
-.copylink{overflow-wrap:anywhere;color:#a9c9ff;font-size:12px;margin:8px 0 14px}
-.people{display:grid;gap:8px;margin-top:14px}
-.person{display:flex;justify-content:space-between;align-items:center;background:#0f141f;border:1px solid #2d3548;padding:12px 14px;border-radius:14px}
-.dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--good);margin-right:7px}
+.secondary{background:#293145;color:#fff;border:1px solid #424c66}
+.blue{background:var(--blue);color:#08111f}
+.good{background:var(--good);color:#06150c}
+.danger{background:var(--bad);color:#1a080b}
+.roleButtons{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:19px}
+.roleBtn{min-height:112px;padding:18px}
+.roleBtn .ico{display:block;font-size:35px;margin-bottom:7px}
+.roleBtn small{display:block;font-size:12px;font-weight:600;opacity:.8;margin-top:5px}
+.status{margin-top:11px;padding:10px 12px;border-radius:12px;background:#101622;border:1px solid #30394e;font-size:13px;color:var(--muted)}
+.status.ok{color:#b9f5ce;border-color:#2d6947}.status.bad{color:#ffc0c7;border-color:#71323b}
+label{display:block;text-align:left;font-size:12px;font-weight:800;color:var(--muted);margin:13px 2px 6px}
+.backBtn{margin-bottom:10px;min-height:42px;padding:8px 12px;font-size:13px}
+.grid2{display:grid;grid-template-columns:1.03fr .97fr;gap:14px}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.code{font-size:52px;font-weight:1000;letter-spacing:.12em;margin:6px 0}
+.share{padding:14px;background:#0e131d;border:1px solid #30384c;border-radius:18px;text-align:center}
+#qr{display:grid;place-items:center;min-height:226px;max-width:246px;margin:12px auto;background:white;padding:10px;border-radius:15px}
+#qr img,#qr canvas{max-width:100%;height:auto}
+.url{font-size:11px;color:#a9c9ff;overflow-wrap:anywhere}
+.people{display:grid;gap:8px;margin-top:10px}
+.person{display:grid;grid-template-columns:1fr auto;align-items:center;background:#101622;border:1px solid #30394e;border-radius:14px;padding:12px 14px}
+.score{font-size:27px;font-weight:1000}
+.empty{padding:18px;text-align:center;color:var(--muted);border:1px dashed #3b465f;border-radius:14px}
+.topline{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+.pill{border:1px solid #3b465e;background:#111722;border-radius:999px;padding:6px 10px;font-size:12px;font-weight:800;color:#d7deec}
+.control{margin-top:14px}
+.bigSpecies{font-size:68px;font-weight:1000;text-align:center;margin:5px 0}
+.winner{padding:12px;text-align:center;border-radius:14px;background:#183126;color:#baf5cf;font-weight:900;margin-top:10px}
 .topbar{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;margin-bottom:10px}
-.player{background:#141a27;border:1px solid #333c51;border-radius:17px;padding:10px;min-width:0}
-.player.right{text-align:right}
-.pname{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.score{font-size:28px;font-weight:1000}
-.vs{font-weight:1000;color:var(--accent)}
-.round{text-align:center;font-size:12px;color:var(--muted);margin:2px 0 9px}
-.task{background:linear-gradient(135deg,#202b43,#252039);border:1px solid #414c69;border-radius:22px;padding:16px;text-align:center}
-.species{font-size:clamp(54px,17vw,90px);font-weight:1000;line-height:1;margin:2px 0 5px}
-.meta{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
-.pill{background:#111722;border:1px solid #39445c;border-radius:999px;padding:6px 10px;font-size:12px;color:#d6dbea;font-weight:800}
-.board{margin-top:12px;background:#0b0f17;border:1px solid #2d3548;border-radius:21px;padding:12px;min-height:165px}
-.empty{min-height:135px;display:grid;place-items:center;text-align:center;color:#7f899e;font-size:14px;padding:18px}
-.subshell{display:grid;grid-template-columns:46px 1fr;align-items:center;gap:9px;margin:8px 0;animation:pop .16s ease-out}
-@keyframes pop{from{transform:scale(.96);opacity:.2}to{transform:scale(1);opacity:1}}
-.slabel{font-weight:1000;font-size:19px;text-align:center;color:#dfe6fa}
-.boxes{display:flex;gap:5px;min-height:46px;align-items:end}
-.orbital{height:43px;width:43px;border:2px solid #d7dded;border-top:0;display:flex;align-items:center;justify-content:center;position:relative;background:#111725;border-radius:0 0 3px 3px}
-.arrows{display:flex;align-items:flex-end;justify-content:center;gap:1px;height:38px}
-.arr{font-size:32px;line-height:35px;font-family:Georgia,serif;font-weight:900}
-.up{color:#f8fbff} .down{color:var(--accent)}
-.controls{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:11px}
-.controls button{font-size:16px}
-.check{grid-column:1/-1;background:var(--good);color:#06150c;font-size:20px;min-height:60px}
-.eCount{text-align:center;color:var(--muted);font-size:13px;margin:9px 0 0}
-.feedback{min-height:28px;margin:9px 4px 0;text-align:center;font-weight:900}
-.feedback.bad{color:var(--bad)} .feedback.ok{color:var(--good)}
-.overlay{position:fixed;inset:0;background:#05070bd9;backdrop-filter:blur(7px);display:grid;place-items:center;padding:18px;z-index:20}
-.overlayBox{max-width:540px;width:100%;background:#191f2d;border:1px solid #414b65;border-radius:27px;padding:24px;text-align:center;box-shadow:0 24px 80px #000}
-.bigIcon{font-size:62px}
-.correctCfg{font-size:18px;line-height:1.65;background:#0c111b;border-radius:15px;padding:12px;margin:12px 0;color:#fff}
-.smallnote{font-size:12px;color:var(--muted);line-height:1.45}
-.status{margin-top:10px;color:var(--muted);font-size:13px;min-height:20px}
-@media(max-width:520px){
- body{padding:7px 7px calc(12px + env(safe-area-inset-bottom))}
- .card{border-radius:19px;padding:12px}
- .hero{padding:20px 13px}
- .grid2{grid-template-columns:1fr}
- .orbital{width:34px;height:38px}
- .boxes{gap:4px;min-height:40px}
- .arr{font-size:28px;line-height:31px}
- .subshell{grid-template-columns:38px 1fr;gap:6px}
- .slabel{font-size:17px}
- .task{padding:12px}
- .species{font-size:62px}
- button{min-height:50px}
+.player{background:#101622;border:1px solid #30394e;border-radius:15px;padding:10px}.player.right{text-align:right}
+.pname{font-size:12px;color:var(--muted)}.vs{font-weight:1000;color:var(--accent)}
+.round{text-align:center;color:var(--muted);font-size:12px;margin-bottom:8px}
+.task{background:linear-gradient(135deg,#202b43,#252039);border:1px solid #414c69;border-radius:20px;padding:14px;text-align:center}
+.species{font-size:clamp(55px,18vw,88px);font-weight:1000;line-height:1;margin:4px 0}
+.meta{display:flex;justify-content:center;gap:7px;flex-wrap:wrap}
+.board{margin-top:11px;background:#0b0f17;border:1px solid #2d3548;border-radius:20px;padding:11px;min-height:165px}
+.boardEmpty{min-height:135px;display:grid;place-items:center;text-align:center;color:#7f899e;font-size:14px}
+.subshell{display:grid;grid-template-columns:45px 1fr;gap:8px;align-items:center;margin:7px 0}
+.slabel{font-size:18px;font-weight:1000;text-align:center}
+.boxes{display:flex;gap:5px;align-items:end}
+.orbital{width:42px;height:42px;border:2px solid #d7dded;border-top:0;display:flex;align-items:center;justify-content:center;background:#111725}
+.arrows{display:flex;height:36px;align-items:flex-end;justify-content:center;gap:1px}
+.arr{font-size:31px;line-height:33px;font-family:Georgia,serif;font-weight:900}.down{color:var(--accent)}
+.gameControls{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.check{grid-column:1/-1;background:var(--good);color:#06150c;font-size:20px;min-height:59px}
+.feedback{min-height:26px;text-align:center;font-weight:900;margin-top:8px}.feedback.bad{color:var(--bad)}.feedback.ok{color:var(--good)}
+.waiting{text-align:center;padding:35px 18px}.big{font-size:58px}
+.overlay{position:fixed;inset:0;background:#05070be8;display:grid;place-items:center;padding:18px;z-index:20}
+.overlayBox{max-width:520px;width:100%;background:#191f2d;border:1px solid #414b65;border-radius:25px;padding:22px;text-align:center}
+.correct{background:#0d121b;border-radius:14px;padding:11px;margin-top:10px;font-size:18px}
+@media(max-width:720px){
+ .grid2,.roleButtons,.actions{grid-template-columns:1fr}
+}
+@media(max-width:500px){
+ body{padding:7px}.card{padding:11px}.orbital{width:34px;height:38px}.arr{font-size:28px}.subshell{grid-template-columns:37px 1fr;gap:5px}.species{font-size:61px}
 }
 </style>
 </head>
 <body>
 <main class="wrap">
-<section id="landing" class="card hero">
-  <div class="kicker">CHEMIA • 1 VS 1 • FIREBASE</div>
-  <h1>Zapis klatkowy</h1>
-  <p class="muted">Buduj konfigurację elektron po elektronie. Klatki pojawiają się dopiero wtedy, gdy są potrzebne. Pierwsza osoba z poprawnym zapisem zdobywa punkt.</p>
-  <label>Twoje imię</label>
-  <input id="nick" maxlength="18" autocomplete="nickname" placeholder="np. Ola">
-  <div class="grid2" style="margin-top:13px">
-    <button id="createBtn" class="primary">UTWÓRZ POJEDYNEK</button>
-    <button id="showJoinBtn" class="secondary">DOŁĄCZ DO GRY</button>
-  </div>
-  <div id="joinFields" class="hidden">
-    <label>Kod pokoju</label>
-    <input id="roomInput" inputmode="numeric" maxlength="6" placeholder="123456">
-    <button id="joinBtn" class="joinBtn" style="width:100%;margin-top:10px">DOŁĄCZ</button>
-  </div>
-  <div id="landingStatus" class="status">Łączenie z Firebase…</div>
+
+<section id="home" class="card hero">
+ <div class="kicker">CHEMIA • ZAPIS KLATKOWY</div>
+ <h1>Pojedynek 1 vs 1</h1>
+ <p class="muted">Wybierz, jak chcesz wejść do gry.</p>
+ <div class="roleButtons">
+   <button id="teacherModeBtn" class="primary roleBtn" type="button">
+     <span class="ico">👩‍🏫</span>PROWADZĘ GRĘ
+     <small>Tworzę pokój, QR i steruję rundami</small>
+   </button>
+   <button id="playerModeBtn" class="blue roleBtn" type="button">
+     <span class="ico">📱</span>DOŁĄCZAM JAKO GRACZ
+     <small>Wpisuję imię i kod pokoju</small>
+   </button>
+ </div>
+ <div id="homeStatus" class="status">Firebase: uruchamianie…</div>
 </section>
 
-<section id="lobby" class="card hidden">
-  <div class="kicker">POKÓJ</div>
-  <div id="roomCode" class="code">------</div>
-  <div id="joinLink" class="copylink"></div>
-  <div class="grid2">
-    <button id="copyBtn" class="secondary">KOPIUJ LINK</button>
-    <button id="leaveBtn" class="secondary">WYJDŹ</button>
-  </div>
-  <h3 style="margin:18px 0 7px">Gracze</h3>
-  <div id="players" class="people"></div>
-  <div id="lobbyStatus" class="status">Czekamy na drugiego gracza…</div>
+<section id="teacherSetup" class="card hero hidden">
+ <button class="secondary backBtn" id="teacherBackBtn" type="button">← Wróć</button>
+ <div class="kicker">PANEL NAUCZYCIELA</div>
+ <h1>Zapis klatkowy</h1>
+ <p class="muted">Nie jesteś graczem. Tworzysz pokój i zarządzasz pojedynkiem dwóch uczniów.</p>
+ <button id="createBtn" class="primary" type="button" style="width:100%">UTWÓRZ POKÓJ</button>
+ <div id="teacherStatus" class="status">Gotowe do utworzenia pokoju.</div>
+</section>
+
+<section id="teacherPanel" class="hidden">
+ <div class="grid2">
+   <section class="card">
+     <div class="kicker">DOŁĄCZANIE</div>
+     <div id="roomCode" class="code">------</div>
+     <div class="share">
+       <b>Uczniowie skanują ten QR</b>
+       <div id="qr"></div>
+       <div id="joinUrl" class="url"></div>
+     </div>
+     <div class="actions">
+       <button id="copyBtn" class="secondary" type="button">KOPIUJ LINK</button>
+       <button id="newRoomBtn" class="secondary" type="button">NOWY POKÓJ</button>
+     </div>
+   </section>
+
+   <section class="card">
+     <div class="topline">
+       <div><div class="kicker">GRACZE</div><h2 style="margin:5px 0">Pojedynek</h2></div>
+       <span id="countPill" class="pill">0 / 2</span>
+     </div>
+     <div id="teacherPlayers" class="people"><div class="empty">Czekam na dwóch graczy.</div></div>
+     <button id="startBtn" class="good" type="button" style="width:100%;margin-top:12px" disabled>START GRY</button>
+     <div id="lobbyStatus" class="status">Do rozpoczęcia potrzebne są dokładnie 2 osoby.</div>
+   </section>
+ </div>
+
+ <section id="teacherControl" class="card control hidden">
+   <div class="topline">
+     <div><div class="kicker">STEROWANIE</div><h2 id="teacherRoundTitle" style="margin:5px 0">Runda 1</h2></div>
+     <span id="statePill" class="pill">W GRZE</span>
+   </div>
+   <div id="teacherSpecies" class="bigSpecies">Zn</div>
+   <div id="teacherScores" class="people"></div>
+   <div id="winnerBox" class="winner hidden"></div>
+   <div class="actions">
+     <button id="nextBtn" class="primary" type="button" disabled>NASTĘPNA RUNDA</button>
+     <button id="finishBtn" class="danger" type="button">ZAKOŃCZ GRĘ</button>
+   </div>
+ </section>
+</section>
+
+<section id="playerJoin" class="card hero hidden">
+ <button class="secondary backBtn" id="playerBackBtn" type="button">← Wróć</button>
+ <div class="kicker">GRACZ</div>
+ <h1>Dołącz do pojedynku</h1>
+ <label for="nick">Twoje imię</label>
+ <input id="nick" maxlength="18" placeholder="np. Ola">
+ <label for="roomInput">Kod pokoju</label>
+ <input id="roomInput" inputmode="numeric" maxlength="6" placeholder="123456">
+ <button id="joinBtn" class="blue" type="button" style="width:100%;margin-top:12px">DOŁĄCZ</button>
+ <div id="playerStatus" class="status">Wpisz imię i kod pokoju.</div>
+</section>
+
+<section id="waiting" class="card waiting hidden">
+ <div class="big">⏳</div><h2>Jesteś w pokoju</h2>
+ <p class="muted">Czekaj, aż nauczyciel rozpocznie pojedynek.</p>
+ <div id="waitNames"></div>
 </section>
 
 <section id="game" class="card hidden">
-  <div class="topbar">
-    <div class="player"><div class="pname" id="meName">Ty</div><div class="score" id="meScore">0</div></div>
-    <div class="vs">VS</div>
-    <div class="player right"><div class="pname" id="opName">Rival</div><div class="score" id="opScore">0</div></div>
-  </div>
-  <div id="roundLabel" class="round">Runda 1</div>
-  <div class="task">
-    <div class="kicker">ZBUDUJ KONFIGURACJĘ</div>
-    <div id="speciesLabel" class="species">Zn</div>
-    <div class="meta">
-      <span id="atomicNo" class="pill">Z = 30</span>
-      <span id="speciesKind" class="pill">ATOM</span>
-    </div>
-  </div>
-  <div id="board" class="board"></div>
-  <div class="controls">
-    <button id="removeBtn" class="secondary">− ODEJMIJ e⁻</button>
-    <button id="addBtn" class="primary">+ DODAJ e⁻</button>
-    <button id="checkBtn" class="check">SPRAWDŹ</button>
-  </div>
-  <div id="countLabel" class="eCount">Elektrony w układzie: 0</div>
-  <div id="feedback" class="feedback"></div>
+ <div class="topbar">
+  <div class="player"><div id="meName" class="pname">Ty</div><div id="meScore" class="score">0</div></div>
+  <div class="vs">VS</div>
+  <div class="player right"><div id="opName" class="pname">Rywal</div><div id="opScore" class="score">0</div></div>
+ </div>
+ <div id="roundLabel" class="round">Runda 1</div>
+ <div class="task">
+   <div class="kicker">ZBUDUJ KONFIGURACJĘ</div>
+   <div id="speciesLabel" class="species">Zn</div>
+   <div class="meta"><span id="z" class="pill">Z = 30</span><span id="kind" class="pill">ATOM</span></div>
+ </div>
+ <div id="board" class="board"></div>
+ <div class="gameControls">
+   <button id="removeBtn" class="secondary" type="button">− ODEJMIJ e⁻</button>
+   <button id="addBtn" class="primary" type="button">+ DODAJ e⁻</button>
+   <button id="checkBtn" class="check" type="button">SPRAWDŹ</button>
+ </div>
+ <div id="electronCount" class="muted" style="text-align:center;margin-top:8px;font-size:13px">Elektrony: 0</div>
+ <div id="feedback" class="feedback"></div>
 </section>
 
-<section id="resultOverlay" class="overlay hidden">
-  <div class="overlayBox">
-    <div id="overlayIcon" class="bigIcon">⚡</div>
-    <h2 id="overlayTitle">Punkt!</h2>
-    <div id="overlayText" class="muted"></div>
-    <div id="correctCfg" class="correctCfg"></div>
-    <div class="smallnote">Za chwilę kolejna konfiguracja.</div>
-  </div>
+<section id="roundOverlay" class="overlay hidden">
+ <div class="overlayBox">
+   <div class="big">⚡</div><h2 id="overlayTitle">Koniec rundy</h2>
+   <div id="overlayText" class="muted"></div><div id="correct" class="correct"></div>
+   <p class="muted">Czekaj, aż nauczyciel uruchomi następną rundę.</p>
+ </div>
 </section>
 
 <section id="finalOverlay" class="overlay hidden">
-  <div class="overlayBox">
-    <div class="bigIcon">🏆</div>
-    <h2 id="finalTitle">Koniec pojedynku</h2>
-    <p id="finalText" class="muted"></p>
-    <button id="againBtn" class="primary" style="width:100%">NOWY POJEDYNEK</button>
-  </div>
+ <div class="overlayBox">
+   <div class="big">🏆</div><h2 id="finalTitle">Koniec gry</h2><p id="finalText" class="muted"></p>
+   <button id="returnHomeBtn" class="primary" type="button" style="width:100%">WRÓĆ DO STARTU</button>
+ </div>
 </section>
+
 </main>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import {
-  getAuth, signInAnonymously, onAuthStateChanged,
-  setPersistence, browserSessionPersistence
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import {
-  getDatabase, ref, get, set, update, onValue, onDisconnect,
-  serverTimestamp, runTransaction
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 
-const firebaseConfig = {
-  apiKey: "AIzaSyAdBK1SDrZD3Qft6iTQwE9vDK6VTPZOViM",
-  authDomain: "me-gusta-siliciumra.firebaseapp.com",
-  databaseURL: "https://me-gusta-siliciumra-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "me-gusta-siliciumra",
-  appId: "1:75421431819:web:b9bc7388366f6c9546ef0e"
-};
+<script>
+(function(){
+"use strict";
 
-const SPECIES=[{"id":"H","label":"H","name":"wodór","Z":1,"charge":0,"occ":{"1s":1}},{"id":"He","label":"He","name":"hel","Z":2,"charge":0,"occ":{"1s":2}},{"id":"Li","label":"Li","name":"lit","Z":3,"charge":0,"occ":{"1s":2,"2s":1}},{"id":"C","label":"C","name":"węgiel","Z":6,"charge":0,"occ":{"1s":2,"2s":2,"2p":2}},{"id":"N","label":"N","name":"azot","Z":7,"charge":0,"occ":{"1s":2,"2s":2,"2p":3}},{"id":"O","label":"O","name":"tlen","Z":8,"charge":0,"occ":{"1s":2,"2s":2,"2p":4}},{"id":"Ne","label":"Ne","name":"neon","Z":10,"charge":0,"occ":{"1s":2,"2s":2,"2p":6}},{"id":"Na","label":"Na","name":"sód","Z":11,"charge":0,"occ":{"1s":2,"2s":2,"2p":6,"3s":1}},{"id":"Mg","label":"Mg","name":"magnez","Z":12,"charge":0,"occ":{"1s":2,"2s":2,"2p":6,"3s":2}},{"id":"Al","label":"Al","name":"glin","Z":13,"charge":0,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":1}},{"id":"Si","label":"Si","name":"krzem","Z":14,"charge":0,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":2}},{"id":"P","label":"P","name":"fosfor","Z":15,"charge":0,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":3}},{"id":"S","label":"S","name":"siarka","Z":16,"charge":0,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":4}},{"id":"Cl","label":"Cl","name":"chlor","Z":17,"charge":0,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":5}},{"id":"K","label":"K","name":"potas","Z":19,"charge":0,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":6,"4s":1}},{"id":"Ca","label":"Ca","name":"wapń","Z":20,"charge":0,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":6,"4s":2}},{"id":"Sc","label":"Sc","name":"skand","Z":21,"charge":0,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":6,"4s":2,"3d":1}},{"id":"Ti","label":"Ti","name":"tytan","Z":22,"charge":0,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":6,"4s":2,"3d":2}},{"id":"Cr","label":"Cr","name":"chrom","Z":24,"charge":0,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":6,"4s":1,"3d":5}},{"id":"Mn","label":"Mn","name":"mangan","Z":25,"charge":0,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":6,"4s":2,"3d":5}},{"id":"Fe","label":"Fe","name":"żelazo","Z":26,"charge":0,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":6,"4s":2,"3d":6}},{"id":"Co","label":"Co","name":"kobalt","Z":27,"charge":0,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":6,"4s":2,"3d":7}},{"id":"Ni","label":"Ni","name":"nikiel","Z":28,"charge":0,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":6,"4s":2,"3d":8}},{"id":"Cu","label":"Cu","name":"miedź","Z":29,"charge":0,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":6,"4s":1,"3d":10}},{"id":"Zn","label":"Zn","name":"cynk","Z":30,"charge":0,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":6,"4s":2,"3d":10}},{"id":"O2m","label":"O²⁻","name":"jon tlenkowy","Z":8,"charge":-2,"occ":{"1s":2,"2s":2,"2p":6}},{"id":"Na1p","label":"Na⁺","name":"jon sodu","Z":11,"charge":1,"occ":{"1s":2,"2s":2,"2p":6}},{"id":"Mg2p","label":"Mg²⁺","name":"jon magnezu","Z":12,"charge":2,"occ":{"1s":2,"2s":2,"2p":6}},{"id":"Al3p","label":"Al³⁺","name":"jon glinu","Z":13,"charge":3,"occ":{"1s":2,"2s":2,"2p":6}},{"id":"S2m","label":"S²⁻","name":"jon siarczkowy","Z":16,"charge":-2,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":6}},{"id":"Cl1m","label":"Cl⁻","name":"jon chlorkowy","Z":17,"charge":-1,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":6}},{"id":"K1p","label":"K⁺","name":"jon potasu","Z":19,"charge":1,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":6}},{"id":"Ca2p","label":"Ca²⁺","name":"jon wapnia","Z":20,"charge":2,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":6}},{"id":"Sc3p","label":"Sc³⁺","name":"jon skandu(III)","Z":21,"charge":3,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":6}},{"id":"Ti2p","label":"Ti²⁺","name":"jon tytanu(II)","Z":22,"charge":2,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":6,"3d":2}},{"id":"Cr2p","label":"Cr²⁺","name":"jon chromu(II)","Z":24,"charge":2,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":6,"3d":4}},{"id":"Cr3p","label":"Cr³⁺","name":"jon chromu(III)","Z":24,"charge":3,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":6,"3d":3}},{"id":"Mn2p","label":"Mn²⁺","name":"jon manganu(II)","Z":25,"charge":2,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":6,"3d":5}},{"id":"Fe2p","label":"Fe²⁺","name":"jon żelaza(II)","Z":26,"charge":2,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":6,"3d":6}},{"id":"Fe3p","label":"Fe³⁺","name":"jon żelaza(III)","Z":26,"charge":3,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":6,"3d":5}},{"id":"Co2p","label":"Co²⁺","name":"jon kobaltu(II)","Z":27,"charge":2,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":6,"3d":7}},{"id":"Ni2p","label":"Ni²⁺","name":"jon niklu(II)","Z":28,"charge":2,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":6,"3d":8}},{"id":"Cu1p","label":"Cu⁺","name":"jon miedzi(I)","Z":29,"charge":1,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":6,"3d":10}},{"id":"Cu2p","label":"Cu²⁺","name":"jon miedzi(II)","Z":29,"charge":2,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":6,"3d":9}},{"id":"Zn2p","label":"Zn²⁺","name":"jon cynku","Z":30,"charge":2,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":6,"3d":10}}];
-const BY_ID=Object.fromEntries(SPECIES.map(x=>[x.id,x]));
-const SUBS=[
-  {id:'1s',boxes:1,cap:2},{id:'2s',boxes:1,cap:2},{id:'2p',boxes:3,cap:6},
-  {id:'3s',boxes:1,cap:2},{id:'3p',boxes:3,cap:6},{id:'4s',boxes:1,cap:2},
-  {id:'3d',boxes:5,cap:10},{id:'4p',boxes:3,cap:6},{id:'5s',boxes:1,cap:2}
+var FIREBASE={"apiKey":"AIzaSyAdBK1SDrZD3Qft6iTQwE9vDK6VTPZOViM","authDomain":"me-gusta-siliciumra.firebaseapp.com","databaseURL":"https://me-gusta-siliciumra-default-rtdb.europe-west1.firebasedatabase.app","projectId":"me-gusta-siliciumra","appId":"1:75421431819:web:b9bc7388366f6c9546ef0e"};
+var SPECIES=[{"id":"H","label":"H","Z":1,"charge":0,"occ":{"1s":1}},{"id":"He","label":"He","Z":2,"charge":0,"occ":{"1s":2}},{"id":"Li","label":"Li","Z":3,"charge":0,"occ":{"1s":2,"2s":1}},{"id":"C","label":"C","Z":6,"charge":0,"occ":{"1s":2,"2s":2,"2p":2}},{"id":"N","label":"N","Z":7,"charge":0,"occ":{"1s":2,"2s":2,"2p":3}},{"id":"O","label":"O","Z":8,"charge":0,"occ":{"1s":2,"2s":2,"2p":4}},{"id":"Ne","label":"Ne","Z":10,"charge":0,"occ":{"1s":2,"2s":2,"2p":6}},{"id":"Na","label":"Na","Z":11,"charge":0,"occ":{"1s":2,"2s":2,"2p":6,"3s":1}},{"id":"Mg","label":"Mg","Z":12,"charge":0,"occ":{"1s":2,"2s":2,"2p":6,"3s":2}},{"id":"Al","label":"Al","Z":13,"charge":0,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":1}},{"id":"Si","label":"Si","Z":14,"charge":0,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":2}},{"id":"P","label":"P","Z":15,"charge":0,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":3}},{"id":"S","label":"S","Z":16,"charge":0,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":4}},{"id":"Cl","label":"Cl","Z":17,"charge":0,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":5}},{"id":"K","label":"K","Z":19,"charge":0,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":6,"4s":1}},{"id":"Ca","label":"Ca","Z":20,"charge":0,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":6,"4s":2}},{"id":"Sc","label":"Sc","Z":21,"charge":0,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":6,"4s":2,"3d":1}},{"id":"Ti","label":"Ti","Z":22,"charge":0,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":6,"4s":2,"3d":2}},{"id":"Cr","label":"Cr","Z":24,"charge":0,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":6,"4s":1,"3d":5}},{"id":"Mn","label":"Mn","Z":25,"charge":0,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":6,"4s":2,"3d":5}},{"id":"Fe","label":"Fe","Z":26,"charge":0,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":6,"4s":2,"3d":6}},{"id":"Co","label":"Co","Z":27,"charge":0,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":6,"4s":2,"3d":7}},{"id":"Ni","label":"Ni","Z":28,"charge":0,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":6,"4s":2,"3d":8}},{"id":"Cu","label":"Cu","Z":29,"charge":0,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":6,"4s":1,"3d":10}},{"id":"Zn","label":"Zn","Z":30,"charge":0,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":6,"4s":2,"3d":10}},{"id":"O2m","label":"O²⁻","Z":8,"charge":-2,"occ":{"1s":2,"2s":2,"2p":6}},{"id":"Na1p","label":"Na⁺","Z":11,"charge":1,"occ":{"1s":2,"2s":2,"2p":6}},{"id":"Mg2p","label":"Mg²⁺","Z":12,"charge":2,"occ":{"1s":2,"2s":2,"2p":6}},{"id":"Al3p","label":"Al³⁺","Z":13,"charge":3,"occ":{"1s":2,"2s":2,"2p":6}},{"id":"S2m","label":"S²⁻","Z":16,"charge":-2,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":6}},{"id":"Cl1m","label":"Cl⁻","Z":17,"charge":-1,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":6}},{"id":"K1p","label":"K⁺","Z":19,"charge":1,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":6}},{"id":"Ca2p","label":"Ca²⁺","Z":20,"charge":2,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":6}},{"id":"Sc3p","label":"Sc³⁺","Z":21,"charge":3,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":6}},{"id":"Ti2p","label":"Ti²⁺","Z":22,"charge":2,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":6,"3d":2}},{"id":"Cr2p","label":"Cr²⁺","Z":24,"charge":2,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":6,"3d":4}},{"id":"Cr3p","label":"Cr³⁺","Z":24,"charge":3,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":6,"3d":3}},{"id":"Mn2p","label":"Mn²⁺","Z":25,"charge":2,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":6,"3d":5}},{"id":"Fe2p","label":"Fe²⁺","Z":26,"charge":2,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":6,"3d":6}},{"id":"Fe3p","label":"Fe³⁺","Z":26,"charge":3,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":6,"3d":5}},{"id":"Co2p","label":"Co²⁺","Z":27,"charge":2,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":6,"3d":7}},{"id":"Ni2p","label":"Ni²⁺","Z":28,"charge":2,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":6,"3d":8}},{"id":"Cu1p","label":"Cu⁺","Z":29,"charge":1,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":6,"3d":10}},{"id":"Cu2p","label":"Cu²⁺","Z":29,"charge":2,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":6,"3d":9}},{"id":"Zn2p","label":"Zn²⁺","Z":30,"charge":2,"occ":{"1s":2,"2s":2,"2p":6,"3s":2,"3p":6,"3d":10}}];
+var BY_ID={};SPECIES.forEach(function(s){BY_ID[s.id]=s});
+var SUBS=[
+ {id:"1s",boxes:1,cap:2},{id:"2s",boxes:1,cap:2},{id:"2p",boxes:3,cap:6},
+ {id:"3s",boxes:1,cap:2},{id:"3p",boxes:3,cap:6},{id:"4s",boxes:1,cap:2},
+ {id:"3d",boxes:5,cap:10},{id:"4p",boxes:3,cap:6},{id:"5s",boxes:1,cap:2}
 ];
-const MAIN_IDS=SPECIES.filter(s=>!s.occ['3d']).map(s=>s.id);
-const TRANS_IDS=SPECIES.filter(s=>s.occ['3d']).map(s=>s.id);
-const TARGET_SCORE=5, ROOT='orbitalDuels';
-const $=id=>document.getElementById(id);
-const app=initializeApp(firebaseConfig), auth=getAuth(app), db=getDatabase(app);
 
-let user=null, roomCode=null, room=null, unsub=null, isHost=false;
-let currentCount=0, seenRound=-1, wrongChecks=0, advanceGuard=-1, startGuard=false;
+var ROOT="orbitalDuels",TARGET_SCORE=5;
+var user=null,db=null,ready=false,mode=null,roomCode=null,room=null,listener=null;
+var currentCount=0,seenRound=-1;
 
-function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function $(id){return document.getElementById(id)}
+function esc(v){return String(v==null?"":v).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function only(screen){
+ ["home","teacherSetup","teacherPanel","playerJoin","waiting","game"].forEach(function(id){
+   $(id).classList.toggle("hidden",id!==screen);
+ });
+}
 function code6(){return String(Math.floor(100000+Math.random()*900000))}
-function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
-function totalE(s){return Object.values(s.occ).reduce((a,b)=>a+b,0)}
-function configText(occ){
-  const sup={0:'⁰',1:'¹',2:'²',3:'³',4:'⁴',5:'⁵',6:'⁶',7:'⁷',8:'⁸',9:'⁹'};
-  return SUBS.filter(x=>(occ[x.id]||0)>0).map(x=>x.id+String(occ[x.id]).split('').map(d=>sup[d]).join('')).join(' ');
-}
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
+function total(s){return Object.values(s.occ).reduce(function(a,b){return a+b},0)}
+function rr(extra){return db.ref(ROOT+"/"+roomCode+(extra?"/"+extra:""))}
+function entries(){return Object.entries((room&&room.players)||{})}
+function me(){return room&&room.players&&user?room.players[user.uid]:null}
+function opp(){var e=entries();for(var i=0;i<e.length;i++)if(e[i][0]!==user.uid)return e[i];return null}
+function target(){return room&&room.current?BY_ID[room.current.speciesId]:null}
+function status(id,msg,kind){var e=$(id);e.textContent=msg;e.className="status"+(kind?" "+kind:"")}
+
 function buildDeck(){
-  // Zawsze mieszanka: co najmniej kilka atomów/jonów metali przejściowych już od początku.
-  const main=shuffle(MAIN_IDS).slice(0,8), trans=shuffle(TRANS_IDS).slice(0,8);
-  const first=shuffle([...main.slice(0,4),...trans.slice(0,5)]);
-  const rest=shuffle([...main.slice(4),...trans.slice(5)]);
-  return [...first,...rest];
+ var main=shuffle(SPECIES.filter(function(s){return !s.occ["3d"]}).map(function(s){return s.id})).slice(0,10);
+ var trans=shuffle(SPECIES.filter(function(s){return !!s.occ["3d"]}).map(function(s){return s.id})).slice(0,10);
+ return shuffle(main.slice(0,5).concat(trans.slice(0,5))).concat(shuffle(main.slice(5).concat(trans.slice(5))));
 }
-function rr(path=''){return ref(db,`${ROOT}/${roomCode}${path?'/'+path:''}`)}
-function myPlayer(){return room?.players?.[user?.uid]||null}
-function entries(){return Object.entries(room?.players||{})}
-function opponent(){
-  return entries().find(([uid])=>uid!==user?.uid)||null;
+function configText(occ){
+ var sup={"0":"⁰","1":"¹","2":"²","3":"³","4":"⁴","5":"⁵","6":"⁶","7":"⁷","8":"⁸","9":"⁹"};
+ return SUBS.filter(function(x){return (occ[x.id]||0)>0})
+   .map(function(x){return x.id+String(occ[x.id]).split("").map(function(d){return sup[d]}).join("")})
+   .join(" ");
 }
-function show(id){
-  ['landing','lobby','game'].forEach(x=>$(x).classList.toggle('hidden',x!==id));
+function prefixOcc(t,n){
+ var o={},r=Math.max(0,n);
+ for(var i=0;i<SUBS.length;i++){
+   var s=SUBS[i],wanted=t.occ[s.id]||0,take=Math.min(wanted,r);
+   if(take>0)o[s.id]=take;
+   r-=take;if(r<=0)return o;
+ }
+ var ex={};Object.keys(t.occ).forEach(function(k){ex[k]=t.occ[k]});
+ if(r>0){
+   var ord=(t.occ["3d"]||0)>0?["3d","4s","4p","5s"]:SUBS.map(function(x){return x.id});
+   for(i=0;i<ord.length&&r>0;i++){
+     var ss=SUBS.find(function(x){return x.id===ord[i]});if(!ss)continue;
+     var have=ex[ss.id]||0,add=Math.min(ss.cap-have,r);
+     if(add>0){ex[ss.id]=have+add;r-=add}
+   }
+ }
+ return ex;
 }
-function setStatus(msg){$('landingStatus').textContent=msg||''}
-
-function targetForRoom(){
-  const id=room?.current?.speciesId;
-  return id?BY_ID[id]:null;
+function arrows(n,b){
+ var c=[];for(var i=0;i<b;i++)c.push([]);
+ for(i=0;i<Math.min(n,b);i++)c[i].push("↑");
+ var p=n-b;for(i=0;i<b&&p>0;i++,p--)c[i].push("↓");
+ return c;
 }
-function prefixOcc(target,count){
-  const occ={};
-  let remaining=Math.max(0,count);
-  // Najpierw dokładnie ścieżka prowadząca do prawidłowej konfiguracji danego atomu/jonu.
-  for(const sub of SUBS){
-    const wanted=target.occ[sub.id]||0;
-    const take=Math.min(wanted,remaining);
-    if(take>0)occ[sub.id]=take;
-    remaining-=take;
-    if(remaining<=0)return occ;
-  }
-  // Jeśli gracz przesadzi, nadal pozwalamy dodać kilka elektronów,
-  // aby sam musiał zdecydować, że konfiguracja jest już błędna.
-  const targetOcc={...target.occ};
-  let extras=remaining;
-  if(extras>0){
-    const highest=SUBS.map((s,i)=>({...s,i,n:targetOcc[s.id]||0})).filter(x=>x.n>0).at(-1);
-    let order=[];
-    if((targetOcc['3d']||0)>0){
-      if((targetOcc['3d']||0)<10) order=['3d','4s','4p','5s'];
-      else if((targetOcc['4s']||0)<2) order=['4s','4p','5s'];
-      else order=['4p','5s'];
-    } else if(highest){
-      if(highest.n<highest.cap)order.push(highest.id);
-      order.push(...SUBS.slice(highest.i+1).map(x=>x.id));
-    } else order=SUBS.map(x=>x.id);
-    for(const id of order){
-      const sub=SUBS.find(x=>x.id===id); if(!sub)continue;
-      const have=targetOcc[id]||0, free=sub.cap-have;
-      const add=Math.min(free,extras);
-      if(add>0){targetOcc[id]=have+add;extras-=add}
-      if(extras<=0)break;
-    }
-    return targetOcc;
-  }
-  return occ;
+function makeJoinUrl(){
+ var u=new URL(location.href);
+ u.search="";
+ u.searchParams.set("mode","player");
+ u.searchParams.set("room",roomCode);
+ return u.href;
 }
-function arrowsFor(n,boxes){
-  const cells=Array.from({length:boxes},()=>[]);
-  const singles=Math.min(n,boxes);
-  for(let i=0;i<singles;i++)cells[i].push('↑');
-  let pairs=n-boxes;
-  for(let i=0;i<boxes&&pairs>0;i++,pairs--)cells[i].push('↓');
-  return cells;
+function drawQR(){
+ $("qr").innerHTML="";
+ var u=makeJoinUrl();$("joinUrl").textContent=u;
+ if(typeof QRCode!=="undefined"){
+   new QRCode($("qr"),{text:u,width:220,height:220,correctLevel:QRCode.CorrectLevel.M});
+ }else{
+   $("qr").innerHTML='<div style="color:#111;padding:30px">QR nie załadował się.<br>Użyj linku poniżej.</div>';
+ }
 }
-function renderBoard(){
-  const target=targetForRoom(); if(!target)return;
-  const max=totalE(target)+3;
-  currentCount=Math.max(0,Math.min(currentCount,max));
-  const occ=prefixOcc(target,currentCount);
-  const visible=SUBS.filter(s=>(occ[s.id]||0)>0);
-  if(!visible.length){
-    $('board').innerHTML='<div class="empty">Klikaj <b>+ DODAJ e⁻</b>.<br>Kolejne podpowłoki będą pojawiały się dopiero wtedy, kiedy dotrze do nich elektron.</div>';
-  } else {
-    $('board').innerHTML=visible.map(sub=>{
-      const n=occ[sub.id]||0,cells=arrowsFor(n,sub.boxes);
-      return `<div class="subshell"><div class="slabel">${sub.id}</div><div class="boxes">${cells.map(c=>`<div class="orbital"><div class="arrows">${c.map((a,i)=>`<span class="arr ${i?'down':'up'}">${a}</span>`).join('')}</div></div>`).join('')}</div></div>`;
-    }).join('');
-  }
-  $('countLabel').textContent=`Elektrony w układzie: ${currentCount}`;
-  $('removeBtn').disabled=currentCount<=0 || !!room?.current?.winnerUid;
-  $('addBtn').disabled=currentCount>=max || !!room?.current?.winnerUid;
-  $('checkBtn').disabled=!!room?.current?.winnerUid;
-}
-function render(){
-  if(!room)return;
-  if(room.status==='lobby'){
-    show('lobby');
-    $('roomCode').textContent=roomCode;
-    const u=new URL(location.href);u.searchParams.set('room',roomCode);
-    $('joinLink').textContent=u.href;
-    const ps=entries();
-    $('players').innerHTML=ps.map(([uid,p])=>`<div class="person"><span><span class="dot" style="background:${p.online===false?'#687185':'var(--good)'}"></span>${esc(p.nick)}</span><b>${uid===room.hostUid?'HOST':''}</b></div>`).join('');
-    $('lobbyStatus').textContent=ps.length<2?'Czekamy na drugiego gracza…':'Oboje jesteście. Start za moment…';
-    if(isHost && ps.length===2 && !startGuard){startGuard=true;setTimeout(startGame,1200)}
-    return;
-  }
-  if(room.status==='finished'){
-    renderScores();
-    show('game');
-    const win=room.players?.[room.winnerUid];
-    $('finalTitle').textContent=room.winnerUid===user.uid?'Wygrywasz! 🏆':`${win?.nick||'Rywal'} wygrywa`;
-    $('finalText').textContent=`Wynik: ${myPlayer()?.score||0} : ${opponent()?.[1]?.score||0}`;
-    $('finalOverlay').classList.remove('hidden');
-    return;
-  }
-  if(room.status==='playing'){
-    show('game'); renderScores();
-    const target=targetForRoom(); if(!target)return;
-    const round=room.round||0;
-    if(round!==seenRound){
-      seenRound=round;currentCount=0;wrongChecks=0;
-      $('feedback').textContent='';$('feedback').className='feedback';
-      $('resultOverlay').classList.add('hidden');
-    }
-    $('roundLabel').textContent=`Runda ${round+1} • pierwszy do ${TARGET_SCORE} punktów`;
-    $('speciesLabel').textContent=target.label;
-    $('atomicNo').textContent=`Z = ${target.Z}`;
-    $('speciesKind').textContent=target.charge===0?'ATOM — STAN PODSTAWOWY':'JON';
-    renderBoard();
-    if(room.current?.winnerUid){
-      const w=room.players?.[room.current.winnerUid];
-      $('overlayIcon').textContent=room.current.winnerUid===user.uid?'⚡':'⏱️';
-      $('overlayTitle').textContent=room.current.winnerUid===user.uid?'Punkt dla Ciebie!':`Punkt: ${w?.nick||'rywal'}`;
-      $('overlayText').textContent=`Poprawna konfiguracja dla ${target.label}:`;
-      $('correctCfg').textContent=configText(target.occ);
-      $('resultOverlay').classList.remove('hidden');
-      if(isHost && advanceGuard!==round){advanceGuard=round;setTimeout(()=>advanceRound(round),2400)}
-    }
-  }
-}
-function renderScores(){
-  const me=myPlayer(),op=opponent();
-  $('meName').textContent=me?.nick||'Ty';$('meScore').textContent=me?.score||0;
-  $('opName').textContent=op?.[1]?.nick||'Rywal';$('opScore').textContent=op?.[1]?.score||0;
-}
-
-let authReadyPromise = null;
-
-async function connectFirebase(){
-  if(user)return user;
-  if(authReadyPromise)return authReadyPromise;
-
-  authReadyPromise=(async()=>{
-    await setPersistence(auth,browserSessionPersistence).catch(()=>{});
-    const cred=await signInAnonymously(auth);
-    user=cred.user;
-    return user;
-  })();
-
-  try{
-    return await authReadyPromise;
-  }catch(e){
-    authReadyPromise=null;
-    throw e;
-  }
-}
-
-async function ensureUser(){
-  if(user)return user;
-  return await connectFirebase();
-}
-
-onAuthStateChanged(auth,u=>{
-  user=u||null;
-  if(u && $('landingStatus').textContent.startsWith('Łączenie')){
-    setStatus('Firebase połączone ✓');
-  }
-});
-
-connectFirebase()
-  .then(()=>setStatus('Firebase połączone ✓'))
-  .catch(e=>setStatus('Błąd Firebase: '+(e?.message||e)));
-
-$('nick').value=localStorage.getItem('orbitalDuelNick')||'';
-const params=new URLSearchParams(location.search);
-if(params.get('room')){ $('roomInput').value=params.get('room').replace(/\D/g,'').slice(0,6);$('joinFields').classList.remove('hidden') }
-
-$('showJoinBtn').onclick=()=>{
-  $('joinFields').classList.toggle('hidden');
-  if(!$('joinFields').classList.contains('hidden'))$('roomInput').focus();
-};
-$('createBtn').onclick=createRoom;
-$('joinBtn').onclick=()=>joinRoom($('roomInput').value);
-$('copyBtn').onclick=async()=>{
-  const s=$('joinLink').textContent;
-  try{await navigator.clipboard.writeText(s);$('copyBtn').textContent='SKOPIOWANO ✓';setTimeout(()=>$('copyBtn').textContent='KOPIUJ LINK',1300)}
-  catch{prompt('Skopiuj link:',s)}
-};
-$('leaveBtn').onclick=()=>location.href=location.pathname;
-$('againBtn').onclick=()=>location.href=location.pathname;
-$('addBtn').onclick=()=>{if(room?.status!=='playing'||room.current?.winnerUid)return;currentCount++;wrongChecks=0;$('feedback').textContent='';renderBoard()};
-$('removeBtn').onclick=()=>{if(room?.status!=='playing'||room.current?.winnerUid)return;currentCount--;wrongChecks=0;$('feedback').textContent='';renderBoard()};
-$('checkBtn').onclick=checkAnswer;
-
-async function createRoom(){
-  try{
-    setStatus('Łączenie z Firebase…');
-    await ensureUser();
-    const nick=$('nick').value.trim().replace(/\s+/g,' ').slice(0,18);
-    if(nick.length<2)throw Error('Najpierw wpisz imię.');
-    localStorage.setItem('orbitalDuelNick',nick);
-    $('createBtn').disabled=true;
-    for(let i=0;i<12;i++){
-      const c=code6(),snap=await get(ref(db,`${ROOT}/${c}`));
-      if(!snap.exists()){
-        roomCode=c;isHost=true;
-        const deck=buildDeck();
-        await set(ref(db,`${ROOT}/${c}`),{
-          kind:'orbital_duel_2026_10',hostUid:user.uid,createdAt:serverTimestamp(),
-          status:'lobby',targetScore:TARGET_SCORE,round:0,deck,
-          players:{[user.uid]:{nick,score:0,online:true,joinedAt:serverTimestamp()}}
-        });
-        await onDisconnect(ref(db,`${ROOT}/${c}/players/${user.uid}/online`)).set(false);
-        setStatus('');
-        subscribe();return;
-      }
-    }
-    throw Error('Nie udało się utworzyć kodu pokoju.');
-  }catch(e){
-    setStatus('Błąd: '+(e?.message||e));
-    $('createBtn').disabled=false;
-  }
-}
-async function joinRoom(raw){
-  try{
-    setStatus('Łączenie z Firebase…');
-    await ensureUser();
-    const nick=$('nick').value.trim().replace(/\s+/g,' ').slice(0,18);
-    if(nick.length<2)throw Error('Najpierw wpisz imię.');
-    localStorage.setItem('orbitalDuelNick',nick);
-    const c=String(raw||'').replace(/\D/g,'').slice(0,6);
-    if(c.length!==6)throw Error('Kod musi mieć 6 cyfr.');
-    const snap=await get(ref(db,`${ROOT}/${c}`));
-    if(!snap.exists())throw Error('Nie ma takiego pokoju.');
-    const data=snap.val();
-    const ps=data.players||{};
-    if(data.status!=='lobby' && !ps[user.uid])throw Error('Ten pojedynek już trwa.');
-    if(!ps[user.uid] && Object.keys(ps).length>=2)throw Error('W tym pokoju są już dwie osoby.');
-    roomCode=c;isHost=data.hostUid===user.uid;
-    await update(ref(db,`${ROOT}/${c}/players/${user.uid}`),{
-      nick,score:ps[user.uid]?.score||0,online:true,joinedAt:ps[user.uid]?.joinedAt||Date.now()
-    });
-    await onDisconnect(ref(db,`${ROOT}/${c}/players/${user.uid}/online`)).set(false);
-    setStatus('');
-    subscribe();
-  }catch(e){
-    setStatus('Błąd: '+(e?.message||e));
-  }
+function unsubscribe(){
+ if(listener&&roomCode&&db){rr().off("value",listener)}
+ listener=null;
 }
 function subscribe(){
-  if(unsub)unsub();
-  unsub=onValue(rr(),s=>{
-    if(!s.exists()){location.href=location.pathname;return}
-    room=s.val();isHost=room.hostUid===user.uid;render();
-  },e=>setStatus('Firebase: '+e.message));
+ unsubscribe();
+ listener=function(s){
+   if(!s.exists()){room=null;return}
+   room=s.val();
+   if(mode==="teacher")renderTeacher();
+   else if(mode==="player")renderPlayer();
+ };
+ rr().on("value",listener,function(e){
+   if(mode==="teacher")status("teacherStatus","Firebase: "+e.message,"bad");
+   else status("playerStatus","Firebase: "+e.message,"bad");
+ });
+}
+
+/* ---------- TEACHER ---------- */
+async function createRoom(){
+ if(!ready||!user){status("teacherStatus","Firebase jeszcze się łączy.","bad");return}
+ $("createBtn").disabled=true;status("teacherStatus","Tworzę pokój…","");
+ try{
+   for(var i=0;i<15;i++){
+     var c=code6(),snap=await db.ref(ROOT+"/"+c).once("value");
+     if(!snap.exists()){
+       roomCode=c;
+       await db.ref(ROOT+"/"+c).set({
+         kind:"orbital_duel_single_file_2026_10",
+         hostUid:user.uid,
+         createdAt:firebase.database.ServerValue.TIMESTAMP,
+         status:"lobby",targetScore:TARGET_SCORE,round:0,
+         deck:buildDeck(),players:{}
+       });
+       drawQR();subscribe();only("teacherPanel");return;
+     }
+   }
+   throw new Error("Nie udało się utworzyć kodu.");
+ }catch(e){
+   status("teacherStatus","Błąd: "+(e.message||e),"bad");$("createBtn").disabled=false;
+ }
+}
+function renderTeacher(){
+ only("teacherPanel");
+ $("roomCode").textContent=roomCode;
+ if(!$("joinUrl").textContent)drawQR();
+ var ps=entries();$("countPill").textContent=ps.length+" / 2";
+ $("teacherPlayers").innerHTML=ps.length
+   ?ps.map(function(p){return '<div class="person"><div>'+esc(p[1].nick)+'</div><div class="score">'+(p[1].score||0)+'</div></div>'}).join("")
+   :'<div class="empty">Czekam na dwóch graczy.</div>';
+
+ var lobby=room.status==="lobby";
+ $("startBtn").disabled=!(lobby&&ps.length===2);
+ $("lobbyStatus").textContent=lobby
+   ?(ps.length===2?"Dwóch graczy gotowych. Możesz rozpocząć.":"Do rozpoczęcia potrzebne są dokładnie 2 osoby.")
+   :"Gra została rozpoczęta.";
+
+ if(room.status==="playing"||room.status==="finished"){
+   $("teacherControl").classList.remove("hidden");
+   $("teacherRoundTitle").textContent="Runda "+((room.round||0)+1);
+   var t=target();$("teacherSpecies").textContent=t?t.label:"—";
+   $("teacherScores").innerHTML=ps.map(function(p){
+     return '<div class="person"><div>'+esc(p[1].nick)+'</div><div class="score">'+(p[1].score||0)+'</div></div>';
+   }).join("");
+   var won=room.current&&room.current.winnerUid;
+   if(won){
+     var w=room.players[won];
+     $("winnerBox").classList.remove("hidden");
+     $("winnerBox").textContent="Punkt zdobywa: "+(w?w.nick:"gracz");
+     $("nextBtn").disabled=room.status!=="playing";
+   }else{
+     $("winnerBox").classList.add("hidden");$("nextBtn").disabled=true;
+   }
+   $("statePill").textContent=room.status==="finished"?"KONIEC":"W GRZE";
+ }else{
+   $("teacherControl").classList.add("hidden");
+ }
 }
 async function startGame(){
-  if(!isHost||!room||room.status!=='lobby'||entries().length!==2)return;
-  const first=room.deck?.[0]||buildDeck()[0];
-  await update(rr(),{status:'playing',round:0,current:{speciesId:first,winnerUid:null,startedAt:Date.now()}});
+ if(!room||room.status!=="lobby"||entries().length!==2)return;
+ var first=room.deck[0];
+ await rr().update({status:"playing",round:0,current:{speciesId:first,winnerUid:null,startedAt:Date.now()}});
+}
+async function nextRound(){
+ if(!room||room.status!=="playing"||!room.current||!room.current.winnerUid)return;
+ var winner=room.current.winnerUid;
+ if((room.players[winner].score||0)>=TARGET_SCORE){
+   await rr().update({status:"finished",winnerUid:winner,finishedAt:Date.now()});
+   return;
+ }
+ var next=(room.round||0)+1,deck=Array.isArray(room.deck)?room.deck.slice():[];
+ if(!deck[next])deck=deck.concat(buildDeck());
+ await rr().update({deck:deck,round:next,current:{speciesId:deck[next],winnerUid:null,startedAt:Date.now()}});
+}
+async function finishGame(){
+ if(roomCode)await rr().update({status:"finished",finishedAt:Date.now()});
+}
+
+/* ---------- PLAYER ---------- */
+async function joinGame(){
+ if(!ready||!user){status("playerStatus","Firebase jeszcze się łączy.","bad");return}
+ var nick=$("nick").value.trim().replace(/\s+/g," ").slice(0,18);
+ var c=$("roomInput").value.replace(/\D/g,"").slice(0,6);
+ if(nick.length<2){status("playerStatus","Wpisz imię.","bad");return}
+ if(c.length!==6){status("playerStatus","Wpisz 6-cyfrowy kod.","bad");return}
+ try{
+   var s=await db.ref(ROOT+"/"+c).once("value");
+   if(!s.exists())throw new Error("Nie ma takiego pokoju.");
+   var data=s.val(),ps=data.players||{};
+   if(data.status!=="lobby"&&!ps[user.uid])throw new Error("Gra już trwa.");
+   if(!ps[user.uid]&&Object.keys(ps).length>=2)throw new Error("W pokoju są już dwie osoby.");
+   roomCode=c;mode="player";
+   await db.ref(ROOT+"/"+c+"/players/"+user.uid).update({
+     nick:nick,score:(ps[user.uid]&&ps[user.uid].score)||0,
+     online:true,joinedAt:(ps[user.uid]&&ps[user.uid].joinedAt)||Date.now()
+   });
+   db.ref(ROOT+"/"+c+"/players/"+user.uid+"/online").onDisconnect().set(false);
+   subscribe();
+ }catch(e){
+   status("playerStatus","Błąd: "+(e.message||e),"bad");
+ }
+}
+function renderPlayer(){
+ if(room.status==="lobby"){
+   only("waiting");
+   $("waitNames").textContent=entries().map(function(x){return x[1].nick}).join(" vs ");
+   return;
+ }
+ if(room.status==="finished"){
+   only("game");renderScores();
+   var w=room.players&&room.players[room.winnerUid];
+   $("finalTitle").textContent=room.winnerUid===user.uid?"Wygrywasz! 🏆":((w&&w.nick)||"Rywal")+" wygrywa";
+   $("finalText").textContent="Wynik: "+((me()&&me().score)||0)+" : "+((opp()&&opp()[1].score)||0);
+   $("finalOverlay").classList.remove("hidden");
+   return;
+ }
+ if(room.status==="playing"){
+   only("game");renderScores();
+   var t=target(),r=room.round||0;if(!t)return;
+   if(r!==seenRound){
+     seenRound=r;currentCount=0;$("feedback").textContent="";
+     $("roundOverlay").classList.add("hidden");
+   }
+   $("roundLabel").textContent="Runda "+(r+1);
+   $("speciesLabel").textContent=t.label;$("z").textContent="Z = "+t.Z;
+   $("kind").textContent=t.charge===0?"ATOM — STAN PODSTAWOWY":"JON";
+   renderBoard();
+   if(room.current&&room.current.winnerUid){
+     var win=room.players[room.current.winnerUid];
+     $("overlayTitle").textContent=room.current.winnerUid===user.uid?"Punkt dla Ciebie!":"Punkt dla "+(win?win.nick:"rywala");
+     $("overlayText").textContent="Poprawna konfiguracja:";
+     $("correct").textContent=configText(t.occ);
+     $("roundOverlay").classList.remove("hidden");
+   }
+ }
+}
+function renderScores(){
+ var m=me(),o=opp();
+ $("meName").textContent=m?m.nick:"Ty";$("meScore").textContent=m?m.score||0:0;
+ $("opName").textContent=o?o[1].nick:"Rywal";$("opScore").textContent=o?o[1].score||0:0;
+}
+function renderBoard(){
+ var t=target();if(!t)return;
+ var max=total(t)+3;currentCount=Math.max(0,Math.min(currentCount,max));
+ var occ=prefixOcc(t,currentCount),html="";
+ SUBS.forEach(function(s){
+   var n=occ[s.id]||0;if(!n)return;
+   html+='<div class="subshell"><div class="slabel">'+s.id+'</div><div class="boxes">';
+   arrows(n,s.boxes).forEach(function(cell){
+     html+='<div class="orbital"><div class="arrows">';
+     cell.forEach(function(a,i){html+='<span class="arr '+(i?"down":"up")+'">'+a+'</span>'});
+     html+='</div></div>';
+   });
+   html+='</div></div>';
+ });
+ if(!html)html='<div class="boardEmpty">Klikaj <b>+ DODAJ e⁻</b>.<br>Kolejne klatki pojawią się dopiero wtedy, gdy są potrzebne.</div>';
+ $("board").innerHTML=html;
+ $("electronCount").textContent="Elektrony: "+currentCount;
+ var lock=!!(room&&room.current&&room.current.winnerUid);
+ $("addBtn").disabled=lock||currentCount>=max;
+ $("removeBtn").disabled=lock||currentCount<=0;
+ $("checkBtn").disabled=lock;
 }
 async function checkAnswer(){
-  if(!room||room.status!=='playing'||room.current?.winnerUid)return;
-  const target=targetForRoom();if(!target)return;
-  if(currentCount!==totalE(target)){
-    wrongChecks++;
-    $('feedback').className='feedback bad';
-    $('feedback').textContent=wrongChecks>=2
-      ? 'Jeszcze nie. Sprawdź liczbę elektronów atomu/jonu i popraw układ.'
-      : 'Jeszcze nie — popraw konfigurację.';
-    $('checkBtn').disabled=true;setTimeout(()=>{if(!room?.current?.winnerUid)$('checkBtn').disabled=false},650);
-    return;
-  }
-  $('feedback').className='feedback ok';$('feedback').textContent='POPRAWNIE! Czekamy, kto był pierwszy…';
-  const uid=user.uid;
-  await runTransaction(rr(),data=>{
-    if(!data||data.status!=='playing'||data.current?.winnerUid)return data;
-    data.current.winnerUid=uid;data.current.wonAt=Date.now();
-    if(!data.players?.[uid])return data;
-    data.players[uid].score=(data.players[uid].score||0)+1;
-    return data;
-  },{applyLocally:false});
+ if(!room||room.status!=="playing"||(room.current&&room.current.winnerUid))return;
+ var t=target();
+ if(currentCount!==total(t)){
+   $("feedback").className="feedback bad";$("feedback").textContent="Jeszcze nie — popraw konfigurację.";return;
+ }
+ $("feedback").className="feedback ok";$("feedback").textContent="POPRAWNIE!";
+ await rr().transaction(function(d){
+   if(!d||d.status!=="playing"||(d.current&&d.current.winnerUid))return d;
+   d.current.winnerUid=user.uid;d.current.wonAt=Date.now();
+   d.players[user.uid].score=(d.players[user.uid].score||0)+1;
+   return d;
+ });
 }
-async function advanceRound(roundAtWin){
-  if(!room)return;
-  await runTransaction(rr(),data=>{
-    if(!data||data.status!=='playing'||data.round!==roundAtWin||!data.current?.winnerUid)return data;
-    const w=data.current.winnerUid;
-    if((data.players?.[w]?.score||0)>=(data.targetScore||TARGET_SCORE)){
-      data.status='finished';data.winnerUid=w;data.finishedAt=Date.now();return data;
-    }
-    const next=(data.round||0)+1;
-    let deck=Array.isArray(data.deck)?data.deck:[];
-    if(!deck[next])deck=[...deck,...buildDeck()];
-    data.deck=deck;data.round=next;
-    data.current={speciesId:deck[next],winnerUid:null,startedAt:Date.now()};
-    return data;
-  },{applyLocally:false});
+
+/* ---------- UI ---------- */
+$("teacherModeBtn").addEventListener("click",function(){mode="teacher";only("teacherSetup")});
+$("playerModeBtn").addEventListener("click",function(){mode="player";only("playerJoin")});
+$("teacherBackBtn").addEventListener("click",function(){mode=null;only("home")});
+$("playerBackBtn").addEventListener("click",function(){mode=null;only("home")});
+$("createBtn").addEventListener("click",createRoom);
+$("joinBtn").addEventListener("click",joinGame);
+$("startBtn").addEventListener("click",startGame);
+$("nextBtn").addEventListener("click",nextRound);
+$("finishBtn").addEventListener("click",finishGame);
+$("newRoomBtn").addEventListener("click",function(){unsubscribe();roomCode=null;room=null;$("teacherControl").classList.add("hidden");only("teacherSetup");$("createBtn").disabled=false});
+$("copyBtn").addEventListener("click",async function(){
+ var u=makeJoinUrl();
+ try{await navigator.clipboard.writeText(u);this.textContent="SKOPIOWANO ✓";var b=this;setTimeout(function(){b.textContent="KOPIUJ LINK"},1200)}
+ catch(e){prompt("Skopiuj link:",u)}
+});
+$("addBtn").addEventListener("click",function(){if(!room||room.status!=="playing"||(room.current&&room.current.winnerUid))return;currentCount++;$("feedback").textContent="";renderBoard()});
+$("removeBtn").addEventListener("click",function(){if(!room||room.status!=="playing"||(room.current&&room.current.winnerUid))return;currentCount--;$("feedback").textContent="";renderBoard()});
+$("checkBtn").addEventListener("click",checkAnswer);
+$("returnHomeBtn").addEventListener("click",function(){location.href=location.pathname});
+
+/* ---------- FIREBASE ---------- */
+try{
+ firebase.initializeApp(FIREBASE);
+ db=firebase.database();
+ var auth=firebase.auth();
+ auth.setPersistence(firebase.auth.Auth.Persistence.SESSION).catch(function(){});
+ auth.onAuthStateChanged(function(u){
+   if(u){
+     user=u;ready=true;
+     status("homeStatus","Firebase: połączono ✓","ok");
+     status("teacherStatus","Firebase: połączono ✓","ok");
+     status("playerStatus","Firebase: połączono ✓","ok");
+   }
+ });
+ auth.signInAnonymously().catch(function(e){
+   status("homeStatus","Błąd logowania: "+e.message,"bad");
+ });
+}catch(e){
+ status("homeStatus","Błąd Firebase: "+(e.message||e),"bad");
 }
+
+/* QR / link: ten sam plik */
+var params=new URLSearchParams(location.search);
+var qRoom=(params.get("room")||"").replace(/\D/g,"").slice(0,6);
+var qMode=params.get("mode");
+if(qRoom){
+ $("roomInput").value=qRoom;
+ mode="player";
+ only("playerJoin");
+}
+})();
 </script>
 </body>
 </html>
