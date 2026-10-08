@@ -1,1 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#eef5ff">
+  <title>Español · Juegos interactivos</title>
+  <style>
+    *{box-sizing:border-box}
+    :root{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;color:#243047}
+    body{margin:0;min-height:100vh;background:radial-gradient(circle at 10% 5%,#d9e8ff 0,transparent 38%),radial-gradient(circle at 95% 85%,#fce6e2 0,transparent 35%),linear-gradient(135deg,#f0f6ff,#fafbff);padding:48px 18px}
+    main{max-width:940px;margin:auto}
+    header{text-align:center;margin:18px 0 44px}
+    .eyebrow{display:inline-block;letter-spacing:.13em;text-transform:uppercase;font-size:12px;font-weight:800;color:#5268a2;background:#e2eafe;padding:9px 15px;border-radius:99px}
+    h1{font-size:clamp(34px,6vw,49px);line-height:1.1;letter-spacing:-.04em;margin:18px 0 12px}
+    .lead{color:#667287;font-size:17px;margin:0}
+    .section-title{font-size:18px;font-weight:800;margin:0 0 18px}
+    .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:20px}
+    .card{background:white;border:1px solid #e1e7f1;border-radius:22px;padding:27px;box-shadow:0 12px 32px rgba(27,46,80,.07)}
+    .symbol{width:56px;height:56px;display:grid;place-items:center;background:#edf1ff;border-radius:16px;color:#445bb0;font-size:31px;font-weight:800}
+    h2{font-size:23px;letter-spacing:-.025em;margin:22px 0 9px}
+    .desc{color:#637086;line-height:1.6;font-size:15px;margin:0 0 20px}
+    .tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:23px}
+    .tag{background:#f3f6fc;border-radius:8px;padding:7px 10px;color:#50617c;font-weight:650;font-size:12px}
+    a.play{display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:13px 19px;background:#3d59c8;border-radius:12px;color:white;text-decoration:none;font-weight:750;transition:background .2s,transform .2s}
+    a.play:hover{background:#2e46a8;transform:translateY(-2px)}
+    a.play:focus-visible{outline:3px solid #96aaff;outline-offset:3px}
+    footer{text-align:center;margin-top:46px;color:#8993a6;font-size:13px}
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <span class="eyebrow">Aprender jugando</span>
+      <h1>Español interactivo</h1>
+      <p class="lead">Actividades para practicar español de una forma divertida.</p>
+    </header>
+    <section aria-labelledby="juegos">
+      <h2 class="section-title" id="juegos">Juegos disponibles</h2>
+      <div class="cards">
+        <article class="card">
+          <div class="symbol" aria-hidden="true">▦</div>
+          <h2>Crucigrama: el subjuntivo</h2>
+          <p class="desc">Completa el crucigrama con 16 formas del presente de subjuntivo. Practica los cambios vocálicos de los verbos irregulares.</p>
+          <div class="tags">
+            <span class="tag">16 verbos</span>
+            <span class="tag">e → ie</span>
+            <span class="tag">o → ue</span>
+            <span class="tag">e → i</span>
+          </div>
+          <a class="play" href="./Crucigrama_subjuntivo_16_verbos.html">Jugar ahora <span aria-hidden="true">→</span></a>
+        </article>
+      </div>
+    </section>
+    <footer>Español · Actividades interactivas</footer>
+  </main>
+</body>
+</html>
 
